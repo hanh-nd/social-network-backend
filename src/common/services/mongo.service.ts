@@ -10,12 +10,8 @@ import { ConfigKey } from '../config';
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => {
                 return {
-                    uri: configService.get<string>(
-                        ConfigKey.MONGO_DATABASE_CONNECTION_STRING,
-                    ),
-                    dbName: configService.get<string>(
-                        ConfigKey.MONGO_DATABASE_NAME,
-                    ),
+                    uri: configService.get<string>(ConfigKey.MONGO_DATABASE_CONNECTION_STRING),
+                    dbName: configService.get<string>(ConfigKey.MONGO_DATABASE_NAME),
                 };
             },
         }),

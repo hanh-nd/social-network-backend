@@ -14,7 +14,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     async findAll(where = {}): Promise<T[]> {
         Object.assign(where, {
             deletedAt: {
-                $ne: null,
+                $eq: null,
             },
         });
         return this._model.find(where).populate(this._populateOnFind).exec();
@@ -23,13 +23,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     async findOne(where?: object): Promise<T | null> {
         Object.assign(where, {
             deletedAt: {
-                $ne: null,
+                $eq: null,
             },
         });
-        const item = await this._model
-            .findOne(where)
-            .populate(this._populateOnFind)
-            .exec();
+        const item = await this._model.findOne(where).populate(this._populateOnFind).exec();
         if (item) {
             return item as T;
         }
@@ -55,5 +52,21 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return this.update(id, {
             deletedAt: Date.now(),
         } as unknown as Partial<T>);
+    }
+
+    async bulkCreate(items: Partial<T>[]): Promise<T[]> {
+        return this._model.insertMany(items);
+    }
+
+    async bulkDelete(ids: string[]): Promise<void> {
+        await this._model.updateMany(
+            {
+                _id: ids.map((id) => new ObjectId(id)),
+            },
+            {
+                deletedAt: Date.now(),
+            },
+        );
+        return;
     }
 }

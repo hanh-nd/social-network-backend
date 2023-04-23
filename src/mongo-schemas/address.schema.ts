@@ -11,8 +11,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
     versionKey: false,
 })
 export class Address {
-    _id: string;
-
     @Prop({ required: true, type: String })
     province: string;
 

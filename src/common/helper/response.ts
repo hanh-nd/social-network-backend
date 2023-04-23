@@ -23,11 +23,7 @@ export class SuccessResponse {
     }
 }
 export class ErrorResponse {
-    constructor(
-        code = HttpStatus.INTERNAL_SERVER_ERROR,
-        message = '',
-        errors: IErrorResponse[] = [],
-    ) {
+    constructor(code = HttpStatus.INTERNAL_SERVER_ERROR, message = '', errors: IErrorResponse[] = []) {
         return {
             code,
             message,

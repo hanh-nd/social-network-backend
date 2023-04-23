@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { Types, Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { Address, AddressSchema } from './address.schema';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
@@ -23,17 +23,17 @@ export class User extends MongoBaseSchema {
     @Prop({ required: true, unique: true, type: String })
     username: string;
 
-    @Prop({ required: true, type: Types.ObjectId, alias: 'roleId' })
-    role_id: ObjectId;
+    @Prop({ required: true, type: Types.ObjectId })
+    roleId: ObjectId;
 
-    @Prop({ required: false, type: String, alias: 'avatarId' })
-    avatar_id: string;
+    @Prop({ required: false, type: String })
+    avatarId: string;
 
-    @Prop({ required: false, type: String, alias: 'coverId' })
-    cover_id: string;
+    @Prop({ required: false, type: String })
+    coverId: string;
 
-    @Prop({ required: true, type: String, alias: 'fullName' })
-    full_name: string;
+    @Prop({ required: true, type: String })
+    fullName: string;
 
     @Prop({ required: true, type: String })
     password: string;
@@ -50,8 +50,8 @@ export class User extends MongoBaseSchema {
     @Prop({ required: false, default: true, type: Boolean })
     active: boolean;
 
-    @Prop({ required: false, type: Date, alias: 'lastOnlineAt' })
-    last_online_at: Date;
+    @Prop({ required: false, default: Date.now, type: Date })
+    lastOnlineAt: Date;
 
     @Prop({ required: false, type: AddressSchema })
     address: Address;
@@ -69,25 +69,22 @@ export class User extends MongoBaseSchema {
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'subscriberIds',
     })
-    subscriber_ids: ObjectId[];
+    subscriberIds: ObjectId[];
 
     @Prop({
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'subscribingIds',
     })
-    subscribing_ids: ObjectId[];
+    subscribingIds: ObjectId[];
 
     @Prop({
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'blockedIds',
     })
-    blocked_ids: ObjectId[];
+    blockedIds: ObjectId[];
 }
 
 const BaseUserSchema = SchemaFactory.createForClass(User);

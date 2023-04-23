@@ -35,15 +35,15 @@ export class Comment extends MongoBaseSchema {
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'reactIds',
+        ref: MongoCollection.USER,
     })
-    react_ids: ObjectId[];
+    reactIds: ObjectId[];
 
-    @Prop({ required: false, type: String, alias: 'pictureId' })
-    picture_id: string;
+    @Prop({ required: false, type: String })
+    pictureId: string;
 
-    @Prop({ required: false, type: String, alias: 'videoId' })
-    video_id: string;
+    @Prop({ required: false, type: String })
+    videoId: string;
 
     @Prop({ required: true, default: 0, type: Number })
     point: number;
