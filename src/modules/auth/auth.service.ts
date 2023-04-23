@@ -9,6 +9,7 @@ import { DefaultInternalServerErrorException } from 'src/common/exception/defaul
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
 import { generateRandomString } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
+import { IDataResources } from 'src/common/resources/data.resource';
 import { User } from 'src/mongo-schemas';
 import { compare, hash } from 'src/plugins/bcrypt';
 import {
@@ -25,6 +26,7 @@ export class AuthService {
         private configService: ConfigService,
         private jwtService: JwtService,
         private dataServices: IDataServices,
+        private dataResources: IDataResources,
     ) {}
 
     async login(body: ILoginBody) {
@@ -42,7 +44,17 @@ export class AuthService {
         }
 
         const token = await this.signUserToken(existedUser);
-        return token;
+        const updatedUser = await this.dataServices.users.updateById(existedUser._id, {
+            lastOnlineAt: moment().toISOString(),
+            lastRefreshToken: token.refreshToken,
+        });
+
+        const userDto = await this.dataResources.users.mapToDto(updatedUser);
+
+        return {
+            user: userDto,
+            ...token,
+        };
     }
 
     async register(body: IRegisterBody) {
@@ -67,7 +79,16 @@ export class AuthService {
         });
 
         const token = await this.signUserToken(createdUser);
-        return token;
+        const updatedUser = await this.dataServices.users.updateById(createdUser._id, {
+            lastRefreshToken: token.refreshToken,
+        });
+
+        const userDto = await this.dataResources.users.mapToDto(updatedUser);
+
+        return {
+            user: userDto,
+            ...token,
+        };
     }
 
     async forgotPassword(body: IForgotPasswordBody) {
@@ -110,11 +131,39 @@ export class AuthService {
         const hashedPassword = await hash(body.password);
         await this.dataServices.userTokens.deleteById(existedUserToken._id);
         const updatedUser = await this.dataServices.users.updateById(existedUserToken.userId, {
+            lastOnlineAt: moment().toISOString(),
             password: hashedPassword,
         });
 
         const token = await this.signUserToken(updatedUser);
-        return token;
+        const userDto = await this.dataResources.users.mapToDto(updatedUser);
+        return {
+            user: userDto,
+            ...token,
+        };
+    }
+
+    async refreshToken(userId: string, refreshToken: string) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new BadRequestException(`Token không hợp lệ.`);
+        }
+
+        if (existedUser.lastRefreshToken !== refreshToken) {
+            throw new BadRequestException(`Token không hợp lệ.`);
+        }
+
+        const token = await this.signUserToken(existedUser);
+        const updatedUser = await this.dataServices.users.updateById(existedUser._id, {
+            lastOnlineAt: moment().toISOString(),
+            lastRefreshToken: token.refreshToken,
+        });
+
+        const userDto = await this.dataResources.users.mapToDto(updatedUser);
+        return {
+            user: userDto,
+            ...token,
+        };
     }
 
     async signUserToken(user: User) {
@@ -140,6 +189,13 @@ export class AuthService {
             secret: this.configService.get<string>(ConfigKey.JWT_ACCESS_TOKEN_SECRET),
             expiresIn: this.configService.get<string>(ConfigKey.JWT_ACCESS_TOKEN_EXPIRES_TIME),
         });
-        return accessToken;
+        const refreshToken = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get<string>(ConfigKey.JWT_REFRESH_TOKEN_SECRET),
+            expiresIn: this.configService.get<string>(ConfigKey.JWT_REFRESH_TOKEN_EXPIRES_TIME),
+        });
+        return {
+            accessToken,
+            refreshToken,
+        };
     }
 }

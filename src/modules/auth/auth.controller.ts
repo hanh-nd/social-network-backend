@@ -1,5 +1,6 @@
-import { Body, Controller, InternalServerErrorException, Post } from '@nestjs/common';
+import { Body, Controller, InternalServerErrorException, Post, Req, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RefreshTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { TrimBodyPipe } from 'src/common/pipes';
 import { createWinstonLogger } from 'src/common/services/winston.service';
@@ -51,6 +52,18 @@ export class AuthController {
             return new SuccessResponse(token);
         } catch (error) {
             this.logger.error(`[AuthService][getNewPasswordFromUserToken] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/refresh-token')
+    @UseGuards(RefreshTokenGuard)
+    async refreshToken(@Req() req) {
+        try {
+            const token = await this.authService.refreshToken(req.loginUser.userId, req.refreshToken);
+            return new SuccessResponse(token);
+        } catch (error) {
+            this.logger.error(`[AuthService][refreshToken] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

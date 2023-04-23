@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import { TokenExpiredException } from '../exception/token-expired.exception';
 import { UserToken } from '../interfaces';
 
 export abstract class TokenGuard implements CanActivate {
@@ -13,7 +14,7 @@ export abstract class TokenGuard implements CanActivate {
             return true;
         } catch (e) {
             // return false or throw a specific error if desired
-            return false;
+            throw new TokenExpiredException();
         }
     }
 
