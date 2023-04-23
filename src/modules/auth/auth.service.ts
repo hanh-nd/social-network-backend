@@ -166,6 +166,20 @@ export class AuthService {
         };
     }
 
+    async logout(userId: string) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new BadRequestException(`Token không hợp lệ.`);
+        }
+
+        await this.dataServices.users.updateById(existedUser._id, {
+            lastOnlineAt: moment().toISOString(),
+            lastRefreshToken: null,
+        });
+
+        return true;
+    }
+
     async signUserToken(user: User) {
         const { roleId } = user;
         const role = await this.dataServices.roles.findById(roleId);
