@@ -45,13 +45,13 @@ export class User extends MongoBaseSchema {
     phone: string;
 
     @Prop({ required: false, type: Date })
-    birthday: Date;
+    birthday: string;
 
     @Prop({ required: false, default: true, type: Boolean })
     active: boolean;
 
     @Prop({ required: false, default: Date.now, type: Date })
-    lastOnlineAt: Date;
+    lastOnlineAt: string;
 
     @Prop({ required: false, type: AddressSchema })
     address: Address;
