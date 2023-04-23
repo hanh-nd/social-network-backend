@@ -6,6 +6,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DataServicesModule } from './common/repositories/data-services.module';
 import { FilesModule, MongoModule } from './common/services';
+import { WinstonModule } from './common/services/winston.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { SeedsModule } from './modules/seeder/seed.module';
 
 @Module({
     imports: [
@@ -15,7 +18,10 @@ import { FilesModule, MongoModule } from './common/services';
         }),
         DataServicesModule,
         MongoModule,
+        AuthModule,
         FilesModule,
+        WinstonModule,
+        SeedsModule,
     ],
     controllers: [AppController],
     providers: [AppService, JwtService],

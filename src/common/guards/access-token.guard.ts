@@ -7,15 +7,12 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AccessTokenGuard extends TokenGuard {
-  constructor(
-    private jwtService: JwtService,
-    private configService: ConfigService,
-  ) {
-    super();
-  }
-  protected verifyToken(token: string): UserToken {
-    return this.jwtService.verify(token, {
-      secret: this.configService.get<string>(ConfigKey.JWT_ACCESS_TOKEN_SECRET),
-    });
-  }
+    constructor(private jwtService: JwtService, private configService: ConfigService) {
+        super();
+    }
+    protected verifyToken(token: string): UserToken {
+        return this.jwtService.verify(token, {
+            secret: this.configService.get<string>(ConfigKey.JWT_ACCESS_TOKEN_SECRET),
+        });
+    }
 }

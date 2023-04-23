@@ -9,10 +9,7 @@ export class FilesService {
     private fileModel: MongoGridFS;
 
     constructor(@InjectConnection() private readonly connection: Connection) {
-        this.fileModel = new MongoGridFS(
-            this.connection.db as unknown as Db,
-            'fs',
-        );
+        this.fileModel = new MongoGridFS(this.connection.db as unknown as Db, 'fs');
     }
 
     async readStream(id: string): Promise<GridFSBucketReadStream> {

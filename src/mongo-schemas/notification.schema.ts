@@ -27,14 +27,14 @@ export class Notification extends MongoBaseSchema {
     @Prop({ required: true, type: UserSchema })
     to: User;
 
-    @Prop({ required: true, type: Types.ObjectId, alias: 'targetId' })
-    target_id: ObjectId;
+    @Prop({ required: true, type: Types.ObjectId })
+    targetId: ObjectId;
 
-    @Prop({ required: true, type: String, alias: 'targetType' })
-    target_type: string;
+    @Prop({ required: true, type: String })
+    targetType: string;
 
-    @Prop({ required: true, default: false, type: Boolean, alias: 'isRead' })
-    is_read: boolean;
+    @Prop({ required: true, default: false, type: Boolean })
+    isRead: boolean;
 }
 
 const BaseNotificationSchema = SchemaFactory.createForClass(Notification);

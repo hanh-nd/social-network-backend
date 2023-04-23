@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { Types, Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
 import { User, UserSchema } from './user.schema';
@@ -34,37 +34,40 @@ export class Post extends MongoBaseSchema {
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'commentIds',
+        ref: MongoCollection.USER,
     })
-    comment_ids: ObjectId[];
+    commentIds: ObjectId[];
 
     @Prop({
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'reactIds',
+        ref: MongoCollection.USER,
     })
-    react_ids: ObjectId[];
+    reactIds: ObjectId[];
 
     @Prop({
         required: true,
         default: [],
         type: [Types.ObjectId],
-        alias: 'sharedIds',
+        ref: MongoCollection.USER,
     })
-    shared_ids: ObjectId[];
+    sharedIds: ObjectId[];
 
-    @Prop({ required: false, type: Types.ObjectId, alias: 'postShared' })
-    post_shared: Post;
+    @Prop({
+        required: false,
+        type: Types.ObjectId,
+    })
+    postShared: Post;
 
-    @Prop({ required: false, type: UserSchema, alias: 'discussedIn' })
-    discussed_in: User;
+    @Prop({ required: false, type: UserSchema })
+    discussedIn: User;
 
-    @Prop({ required: false, type: [String], alias: 'pictureIds' })
-    picture_ids: string[];
+    @Prop({ required: false, type: [String] })
+    pictureIds: string[];
 
-    @Prop({ required: false, type: [String], alias: 'videoIds' })
-    video_ids: string[];
+    @Prop({ required: false, type: [String] })
+    videoIds: string[];
 
     @Prop({ required: true, default: 0, type: Number })
     point: number;
