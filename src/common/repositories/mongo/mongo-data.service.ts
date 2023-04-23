@@ -20,6 +20,8 @@ import {
     RoleDocument,
     User,
     UserDocument,
+    UserToken,
+    UserTokenDocument,
 } from 'src/mongo-schemas';
 import { IDataServices } from '../data.service';
 import { MongoGenericRepository } from './mongo-generic.repository';
@@ -35,6 +37,7 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     reactions: MongoGenericRepository<Reaction>;
     reports: MongoGenericRepository<Report>;
     roles: MongoGenericRepository<Role>;
+    userTokens: MongoGenericRepository<UserToken>;
 
     constructor(
         @InjectModel(User.name)
@@ -55,6 +58,8 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private reportModel: Model<ReportDocument>,
         @InjectModel(Role.name)
         private roleModel: Model<RoleDocument>,
+        @InjectModel(UserToken.name)
+        private userTokenModel: Model<UserTokenDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -67,5 +72,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.reactions = new MongoGenericRepository<Reaction>(this.reactionModel);
         this.reports = new MongoGenericRepository<Report>(this.reportModel);
         this.roles = new MongoGenericRepository<Role>(this.roleModel);
+        this.userTokens = new MongoGenericRepository<UserToken>(this.userTokenModel);
     }
 }

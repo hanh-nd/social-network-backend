@@ -8,4 +8,5 @@ export enum MongoCollection {
     NOTIFICATION = 'notifications',
     CHAT = 'chats',
     MESSAGE = 'messages',
+    USER_TOKEN = 'user_tokens',
 }

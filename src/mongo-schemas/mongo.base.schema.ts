@@ -2,11 +2,11 @@ import { Prop } from '@nestjs/mongoose';
 
 export class MongoBaseSchema {
     @Prop({ required: false, default: null, type: Date })
-    createdAt: Date;
+    createdAt: string;
 
     @Prop({ required: false, default: null, type: Date })
-    updatedAt: Date;
+    updatedAt: string;
 
     @Prop({ required: false, default: null, type: Date })
-    deletedAt?: Date;
+    deletedAt?: string;
 }

@@ -10,9 +10,15 @@ export abstract class IGenericRepository<T> {
 
     abstract bulkCreate(items: Partial<T>[]): Promise<T[]>;
 
-    abstract update(id: string, item: Partial<T>): Promise<void>;
+    abstract updateById(id: string | ObjectId, item: Partial<T>): Promise<T>;
 
-    abstract delete(id: string): Promise<void>;
+    abstract updateOne(where: object, item: Partial<T>): Promise<T>;
 
-    abstract bulkDelete(ids: string[]): Promise<void>;
+    abstract bulkUpdate(where: object, item: Partial<T>): Promise<void>;
+
+    abstract deleteById(id: string | ObjectId): Promise<void>;
+
+    abstract deleteOne(where: object): Promise<void>;
+
+    abstract bulkDelete(where: object): Promise<void>;
 }

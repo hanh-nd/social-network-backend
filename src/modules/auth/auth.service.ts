@@ -1,14 +1,23 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import * as moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { ConfigKey } from 'src/common/config';
-import { CommonMessage, RoleName } from 'src/common/constants';
+import { RoleName } from 'src/common/constants';
+import { DefaultInternalServerErrorException } from 'src/common/exception/default-internal-system-error.exception';
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
+import { generateRandomString } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { User } from 'src/mongo-schemas';
 import { compare, hash } from 'src/plugins/bcrypt';
-import { IJwtPayload, ILoginBody, IRegisterBody } from './auth.interface';
+import {
+    IForgotPasswordBody,
+    IGetNewPasswordFromUserToken,
+    IJwtPayload,
+    ILoginBody,
+    IRegisterBody,
+} from './auth.interface';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +35,7 @@ export class AuthService {
             throw new ForbiddenException('Tài khoản hoặc mật khẩu không chính xác.');
         }
 
-        const isCorrectPassword = compare(body.password, existedUser.password);
+        const isCorrectPassword = await compare(body.password, existedUser.password);
 
         if (!isCorrectPassword) {
             throw new ForbiddenException('Tài khoản hoặc mật khẩu không chính xác.');
@@ -49,7 +58,7 @@ export class AuthService {
             name: RoleName.USER,
         });
         if (!userRole) {
-            throw new Error(CommonMessage.AN_ERROR_OCCURRED);
+            throw new DefaultInternalServerErrorException();
         }
         const createdUser = await this.dataServices.users.create({
             ...body,
@@ -58,6 +67,53 @@ export class AuthService {
         });
 
         const token = await this.signUserToken(createdUser);
+        return token;
+    }
+
+    async forgotPassword(body: IForgotPasswordBody) {
+        const existedUser = await this.dataServices.users.findOne({
+            email: body.email,
+        });
+
+        if (!existedUser) {
+            throw new NotFoundException(`Không tìm thấy người dùng với địa chỉ email này.`);
+        }
+
+        const generatedUserToken = generateRandomString(32);
+        await this.dataServices.userTokens.bulkDelete({
+            userId: new ObjectId(existedUser._id),
+            expiredIn: {
+                $gt: moment().toISOString(),
+            },
+        });
+        await this.dataServices.userTokens.create({
+            userId: new ObjectId(existedUser._id),
+            token: generatedUserToken,
+            expiredIn: moment().add(1, 'days').toISOString(),
+        });
+
+        return true;
+    }
+
+    async getNewPasswordFromUserToken(body: IGetNewPasswordFromUserToken) {
+        const existedUserToken = await this.dataServices.userTokens.findOne({
+            token: body.token,
+            expiredIn: {
+                $gt: moment().toISOString(),
+            },
+        });
+
+        if (!existedUserToken) {
+            throw new BadRequestException(`Mã không hợp lệ.`);
+        }
+
+        const hashedPassword = await hash(body.password);
+        await this.dataServices.userTokens.deleteById(existedUserToken._id);
+        const updatedUser = await this.dataServices.users.updateById(existedUserToken.userId, {
+            password: hashedPassword,
+        });
+
+        const token = await this.signUserToken(updatedUser);
         return token;
     }
 
