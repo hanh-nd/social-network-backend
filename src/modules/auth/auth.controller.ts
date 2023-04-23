@@ -1,6 +1,7 @@
 import { Body, Controller, InternalServerErrorException, Post, Req, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RefreshTokenGuard } from 'src/common/guards';
+import { LoginUser } from 'src/common/decorators/login-user.decorator';
+import { AccessTokenGuard, RefreshTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { TrimBodyPipe } from 'src/common/pipes';
 import { createWinstonLogger } from 'src/common/services/winston.service';
@@ -60,10 +61,22 @@ export class AuthController {
     @UseGuards(RefreshTokenGuard)
     async refreshToken(@Req() req) {
         try {
-            const token = await this.authService.refreshToken(req.loginUser.userId, req.refreshToken);
+            const token = await this.authService.refreshToken(req.user.userId, req.user.refreshToken);
             return new SuccessResponse(token);
         } catch (error) {
             this.logger.error(`[AuthService][refreshToken] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/logout')
+    @UseGuards(AccessTokenGuard)
+    async logout(@LoginUser() loginUser) {
+        try {
+            const result = await this.authService.logout(loginUser.userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[AuthService][logout] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
