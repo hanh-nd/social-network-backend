@@ -1,10 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { Types } from 'mongoose';
+import { Types, Document } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
 import { User, UserSchema } from './user.schema';
 import { Post, PostSchema } from './post.schema';
+
+export type CommentDocument = Comment & Document;
 
 @Schema({
     timestamps: true,
@@ -20,13 +22,13 @@ import { Post, PostSchema } from './post.schema';
 export class Comment extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: UserSchema, alias: 'author' })
+    @Prop({ required: true, type: UserSchema })
     author: User;
 
-    @Prop({ required: true, type: PostSchema, alias: 'post' })
+    @Prop({ required: true, type: PostSchema })
     post: Post;
 
-    @Prop({ required: true, type: String, alias: 'content' })
+    @Prop({ required: true, type: String })
     content: string;
 
     @Prop({
@@ -43,7 +45,7 @@ export class Comment extends MongoBaseSchema {
     @Prop({ required: false, type: String, alias: 'videoId' })
     video_id: string;
 
-    @Prop({ required: true, default: 0, type: Number, alias: 'point' })
+    @Prop({ required: true, default: 0, type: Number })
     point: number;
 }
 

@@ -1,9 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { Types } from 'mongoose';
+import { Types, Document } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
 import { User, UserSchema } from './user.schema';
+
+export type ReactionDocument = Reaction & Document;
 
 @Schema({
     timestamps: true,
@@ -19,7 +21,7 @@ import { User, UserSchema } from './user.schema';
 export class Reaction extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: UserSchema, alias: 'author' })
+    @Prop({ required: true, type: UserSchema })
     author: User;
 
     @Prop({ required: true, type: Types.ObjectId, alias: 'targetId' })
@@ -28,7 +30,7 @@ export class Reaction extends MongoBaseSchema {
     @Prop({ required: true, type: String, alias: 'targetType' })
     target_type: string;
 
-    @Prop({ required: true, type: String, alias: 'type' })
+    @Prop({ required: true, type: String })
     type: string;
 }
 
