@@ -33,9 +33,8 @@ export class Message extends MongoBaseSchema {
         required: false,
         default: false,
         type: Boolean,
-        alias: 'isRecalled',
     })
-    is_recalled: string;
+    isRecalled: boolean;
 }
 
 const BaseMessageSchema = SchemaFactory.createForClass(Message);

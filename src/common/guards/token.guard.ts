@@ -3,9 +3,7 @@ import { Observable } from 'rxjs';
 import { UserToken } from '../interfaces';
 
 export abstract class TokenGuard implements CanActivate {
-    canActivate(
-        context: ExecutionContext,
-    ): boolean | Promise<boolean> | Observable<boolean> {
+    canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         const request = this.getRequest(context);
 
         try {
@@ -23,9 +21,7 @@ export abstract class TokenGuard implements CanActivate {
         return context.switchToHttp().getRequest();
     }
 
-    protected getToken(request: {
-        headers: Record<string, string | string[]>;
-    }): string {
+    protected getToken(request: { headers: Record<string, string | string[]> }): string {
         const authorization = request.headers['authorization'];
         if (!authorization || Array.isArray(authorization)) {
             throw new Error('Invalid Authorization Header');

@@ -23,8 +23,8 @@ export class Chat extends MongoBaseSchema {
     @Prop({ required: false, type: String })
     name: string;
 
-    @Prop({ required: false, type: String, alias: 'avatarId' })
-    avatar_id: string;
+    @Prop({ required: false, type: String })
+    avatarId: string;
 
     @Prop({ required: true, type: [UserSchema] })
     members: User[];

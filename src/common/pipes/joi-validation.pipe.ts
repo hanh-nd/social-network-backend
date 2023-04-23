@@ -1,9 +1,4 @@
-import {
-    BadRequestException,
-    Injectable,
-    PipeTransform,
-    Scope,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, PipeTransform, Scope } from '@nestjs/common';
 import { ObjectSchema, ValidationResult, ValidationError } from 'joi';
 
 @Injectable({ scope: Scope.REQUEST })

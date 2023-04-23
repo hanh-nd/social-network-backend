@@ -16,6 +16,8 @@ import {
     ReactionDocument,
     Report,
     ReportDocument,
+    Role,
+    RoleDocument,
     User,
     UserDocument,
 } from 'src/mongo-schemas';
@@ -23,9 +25,7 @@ import { IDataServices } from '../data.service';
 import { MongoGenericRepository } from './mongo-generic.repository';
 
 @Injectable()
-export class MongoDataServices
-    implements IDataServices, OnApplicationBootstrap
-{
+export class MongoDataServices implements IDataServices, OnApplicationBootstrap {
     users: MongoGenericRepository<User>;
     posts: MongoGenericRepository<Post>;
     comments: MongoGenericRepository<Comment>;
@@ -34,6 +34,7 @@ export class MongoDataServices
     notifications: MongoGenericRepository<Notification>;
     reactions: MongoGenericRepository<Reaction>;
     reports: MongoGenericRepository<Report>;
+    roles: MongoGenericRepository<Role>;
 
     constructor(
         @InjectModel(User.name)
@@ -52,20 +53,19 @@ export class MongoDataServices
         private reactionModel: Model<ReactionDocument>,
         @InjectModel(Report.name)
         private reportModel: Model<ReportDocument>,
+        @InjectModel(Role.name)
+        private roleModel: Model<RoleDocument>,
     ) {}
 
     onApplicationBootstrap() {
         this.users = new MongoGenericRepository<User>(this.userModel);
-        this.posts = new MongoGenericRepository<Post>(this.postModel);
+        this.posts = new MongoGenericRepository<Post>(this.postModel, ['postShared']);
         this.comments = new MongoGenericRepository<Comment>(this.commentModel);
         this.chats = new MongoGenericRepository<Chat>(this.chatModel);
         this.messages = new MongoGenericRepository<Message>(this.messageModel);
-        this.notifications = new MongoGenericRepository<Notification>(
-            this.notificationModel,
-        );
-        this.reactions = new MongoGenericRepository<Reaction>(
-            this.reactionModel,
-        );
+        this.notifications = new MongoGenericRepository<Notification>(this.notificationModel);
+        this.reactions = new MongoGenericRepository<Reaction>(this.reactionModel);
         this.reports = new MongoGenericRepository<Report>(this.reportModel);
+        this.roles = new MongoGenericRepository<Role>(this.roleModel);
     }
 }
