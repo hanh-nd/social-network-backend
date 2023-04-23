@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ObjectId } from 'mongodb';
 import { ConfigKey } from 'src/common/config';
-import { CommonMessage, RoleName } from 'src/common/constants';
+import { RoleName } from 'src/common/constants';
+import { DefaultInternalServerErrorException } from 'src/common/exception/default-internal-system-error.exception';
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { User } from 'src/mongo-schemas';
@@ -49,7 +50,7 @@ export class AuthService {
             name: RoleName.USER,
         });
         if (!userRole) {
-            throw new Error(CommonMessage.AN_ERROR_OCCURRED);
+            throw new DefaultInternalServerErrorException();
         }
         const createdUser = await this.dataServices.users.create({
             ...body,
