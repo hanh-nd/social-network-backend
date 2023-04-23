@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import mongoose from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { DataServicesModule } from './common/repositories/data-services.module';
 import { FilesModule, MongoModule } from './common/services';
 
 @Module({
@@ -12,6 +13,7 @@ import { FilesModule, MongoModule } from './common/services';
             envFilePath: '.env',
             isGlobal: true,
         }),
+        DataServicesModule,
         MongoModule,
         FilesModule,
     ],
