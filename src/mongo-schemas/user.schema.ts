@@ -85,6 +85,9 @@ export class User extends MongoBaseSchema {
         type: [Types.ObjectId],
     })
     blockedIds: ObjectId[];
+
+    @Prop({ required: false, type: String })
+    lastRefreshToken: string;
 }
 
 const BaseUserSchema = SchemaFactory.createForClass(User);
