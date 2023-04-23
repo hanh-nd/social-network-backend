@@ -1,18 +1,18 @@
 import { ObjectId } from 'mongodb';
 export abstract class IGenericRepository<T> {
-    abstract findAll(where?: object): Promise<T[]>;
+    abstract findAll(where: object, options?: unknown): Promise<T[]>;
 
-    abstract findOne(where?: object): Promise<T>;
+    abstract findOne(where: object, options?: unknown): Promise<T>;
 
-    abstract findById(id: string | ObjectId): Promise<T>;
+    abstract findById(id: string | ObjectId, options?: unknown): Promise<T>;
 
     abstract create(item: Partial<T>): Promise<T>;
 
     abstract bulkCreate(items: Partial<T>[]): Promise<T[]>;
 
-    abstract updateById(id: string | ObjectId, item: Partial<T>): Promise<T>;
+    abstract updateById(id: string | ObjectId, item: Partial<T>, options?: unknown): Promise<T>;
 
-    abstract updateOne(where: object, item: Partial<T>): Promise<T>;
+    abstract updateOne(where: object, item: Partial<T>, options?: unknown): Promise<T>;
 
     abstract bulkUpdate(where: object, item: Partial<T>): Promise<void>;
 
