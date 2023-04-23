@@ -44,29 +44,57 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return this._model.create(item);
     }
 
-    async update(id: string, item: Partial<T>): Promise<void> {
-        return this._model.findByIdAndUpdate(id, item);
-    }
-
-    async delete(id: string): Promise<void> {
-        return this.update(id, {
-            deletedAt: Date.now(),
-        } as unknown as Partial<T>);
-    }
-
     async bulkCreate(items: Partial<T>[]): Promise<T[]> {
         return this._model.insertMany(items);
     }
 
-    async bulkDelete(ids: string[]): Promise<void> {
-        await this._model.updateMany(
-            {
-                _id: ids.map((id) => new ObjectId(id)),
+    async updateById(id: string, item: Partial<T>): Promise<T> {
+        return this._model.findByIdAndUpdate(new ObjectId(id), item, {
+            new: true,
+        });
+    }
+
+    async updateOne(where: object, item: Partial<T>): Promise<T> {
+        return this._model.findOneAndUpdate(where, item, {
+            new: true,
+        });
+    }
+
+    async bulkUpdate(where: object, item: Partial<T>): Promise<void> {
+        await this._model.updateMany(where, item, {
+            new: true,
+        });
+        return;
+    }
+
+    async deleteById(id: string): Promise<void> {
+        await this.updateById(id, {
+            deletedAt: Date.now(),
+        } as unknown as Partial<T>);
+        return;
+    }
+
+    async deleteOne(where: object): Promise<void> {
+        Object.assign(where, {
+            deletedAt: {
+                $eq: null,
             },
-            {
-                deletedAt: Date.now(),
+        });
+        await this.updateOne(where, {
+            deletedAt: Date.now(),
+        } as unknown as Partial<T>);
+        return;
+    }
+
+    async bulkDelete(where: object): Promise<void> {
+        Object.assign(where, {
+            deletedAt: {
+                $eq: null,
             },
-        );
+        });
+        await this.bulkUpdate(where, {
+            deletedAt: Date.now(),
+        } as unknown as Partial<T>);
         return;
     }
 }

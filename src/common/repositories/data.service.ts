@@ -1,4 +1,4 @@
-import { Chat, Comment, Message, Notification, Post, Reaction, Report, User, Role } from 'src/mongo-schemas';
+import { Chat, Comment, Message, Notification, Post, Reaction, Report, Role, User, UserToken } from 'src/mongo-schemas';
 import { IGenericRepository } from './generic.repository';
 
 export abstract class IDataServices {
@@ -11,4 +11,5 @@ export abstract class IDataServices {
     abstract reactions: IGenericRepository<Reaction>;
     abstract reports: IGenericRepository<Report>;
     abstract roles: IGenericRepository<Role>;
+    abstract userTokens: IGenericRepository<UserToken>;
 }

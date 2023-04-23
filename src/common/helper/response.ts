@@ -9,8 +9,6 @@ export interface IErrorResponse {
     key?: string;
     errorCode: number;
     message?: string;
-    order?: number;
-    bookingId?: number;
 }
 
 export class SuccessResponse {
