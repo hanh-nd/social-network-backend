@@ -19,3 +19,7 @@ export interface IAddress {
     ward: string;
     detail?: string;
 }
+
+export interface IRemoveSubscriberBody {
+    toRemoveId: string;
+}
