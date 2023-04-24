@@ -83,4 +83,23 @@ export class UserService {
 
         return true;
     }
+
+    async getBlockedList(userId: string) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const blockedIds = existedUser.blockedIds;
+        const blockedList = await this.dataServices.users.findAll({
+            _id: {
+                $in: blockedIds,
+            },
+        });
+
+        return {
+            items: blockedList,
+            totalItems: blockedList.length,
+        };
+    }
 }
