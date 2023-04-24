@@ -9,7 +9,53 @@ services:
     ports:
       - 27018:27017
     volumes:
-      - social_network_data:/home/hanh/Desktop/hanh/Slides/20222/social-network-backend
-volumes:
-  social_network_data:
-    driver: local
+      - $PWD/cache:/mongo-data
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - $PWD/cache:/redis-data
+
+  elasticsearch:
+    image: elasticsearch:8.6.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+    volumes:
+      - $PWD/cache:/elasticsearch-data
+
+  kibana:
+    container_name: kb-container
+    image: docker.elastic.co/kibana/kibana:7.11.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    volumes:
+      - $PWD/cache:/kibana-data
+
+networks:
+  es-net:
+    driver: bridge
