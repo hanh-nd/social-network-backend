@@ -73,4 +73,16 @@ export class UserController {
             throw new InternalServerErrorException(error);
         }
     }
+
+    @Get('/blocked-list')
+    @UseGuards(AccessTokenGuard)
+    async getBlockedList(@LoginUser() loginUser) {
+        try {
+            const result = await this.userService.getBlockedList(loginUser.userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][getBlockedList] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
 }
