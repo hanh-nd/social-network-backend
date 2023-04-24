@@ -49,4 +49,16 @@ export class UserController {
             throw new InternalServerErrorException(error);
         }
     }
+
+    @Get('/subscribers')
+    @UseGuards(AccessTokenGuard)
+    async getSubscribers(@LoginUser() loginUser) {
+        try {
+            const result = await this.userService.getSubscribers(loginUser.userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][getSubscribers] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
 }

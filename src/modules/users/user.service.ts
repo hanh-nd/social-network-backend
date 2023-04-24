@@ -49,4 +49,23 @@ export class UserService {
 
         return true;
     }
+
+    async getSubscribers(userId: string) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const subscriberIds = existedUser.subscriberIds;
+        const subscribers = await this.dataServices.users.findAll({
+            _id: {
+                $in: subscriberIds,
+            },
+        });
+
+        return {
+            items: subscribers,
+            totalItems: subscribers.length,
+        };
+    }
 }
