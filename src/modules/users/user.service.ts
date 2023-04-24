@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { compare, hash } from 'src/plugins/bcrypt';
-import { IChangePasswordBody } from './user.interface';
+import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -35,6 +35,17 @@ export class UserService {
         await this.dataServices.users.updateById(existedUser._id, {
             password: hashedPassword,
         });
+
+        return true;
+    }
+
+    async updateProfile(userId: string, body: IUpdateProfileBody) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        await this.dataServices.users.updateById(userId, body);
 
         return true;
     }

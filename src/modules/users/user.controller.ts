@@ -5,7 +5,7 @@ import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { TrimBodyPipe } from 'src/common/pipes';
 import { createWinstonLogger } from 'src/common/services/winston.service';
-import { IChangePasswordBody } from './user.interface';
+import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
 import { UserService } from './user.service';
 
 @Controller('/users/')
@@ -34,6 +34,18 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[UserController][changeUserPassword] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Patch('/update-profile')
+    @UseGuards(AccessTokenGuard)
+    async updateProfile(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IUpdateProfileBody) {
+        try {
+            const result = await this.userService.updateProfile(loginUser.userId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][updateProfile] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
