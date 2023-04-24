@@ -14,7 +14,7 @@ export interface IRegisterBody {
         province: string;
         district: string;
         ward: string;
-        detail: string;
+        detail?: string;
     };
 }
 

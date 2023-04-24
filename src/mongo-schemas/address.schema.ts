@@ -21,7 +21,7 @@ export class Address {
     ward: string;
 
     @Prop({ required: false, type: String })
-    detail: string;
+    detail?: string;
 }
 const BaseAddressSchema = SchemaFactory.createForClass(Address);
 export const AddressSchema = BaseAddressSchema;
