@@ -68,4 +68,19 @@ export class UserService {
             totalItems: subscribers.length,
         };
     }
+
+    async removeSubscribers(userId: string, toRemoveId: string) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const subscriberIds = existedUser.subscriberIds;
+        const newSubscriberIds = subscriberIds.filter((subId) => subId.toString() !== toRemoveId);
+        await this.dataServices.users.updateById(existedUser._id, {
+            subscriberIds: newSubscriberIds,
+        });
+
+        return true;
+    }
 }

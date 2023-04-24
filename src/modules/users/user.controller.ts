@@ -1,11 +1,11 @@
-import { Body, Controller, Get, InternalServerErrorException, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Patch, Post, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { TrimBodyPipe } from 'src/common/pipes';
 import { createWinstonLogger } from 'src/common/services/winston.service';
-import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
+import { IChangePasswordBody, IRemoveSubscriberBody, IUpdateProfileBody } from './user.interface';
 import { UserService } from './user.service';
 
 @Controller('/users/')
@@ -58,6 +58,18 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[UserController][getSubscribers] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/subscribers/remove')
+    @UseGuards(AccessTokenGuard)
+    async removeSubscribers(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IRemoveSubscriberBody) {
+        try {
+            const result = await this.userService.removeSubscribers(loginUser.userId, body.toRemoveId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][removeSubscribers] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
