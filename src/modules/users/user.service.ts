@@ -102,4 +102,23 @@ export class UserService {
             totalItems: blockedList.length,
         };
     }
+
+    async getSubscribing(userId: string) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const subscribingIds = existedUser.subscribingIds;
+        const subscribing = await this.dataServices.users.findAll({
+            _id: {
+                $in: subscribingIds,
+            },
+        });
+
+        return {
+            items: subscribing,
+            totalItems: subscribing.length,
+        };
+    }
 }
