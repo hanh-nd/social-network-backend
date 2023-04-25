@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard, RefreshTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
+import { createWinstonLogger } from 'src/common/modules/winston';
 import { TrimBodyPipe } from 'src/common/pipes';
-import { createWinstonLogger } from 'src/common/services/winston.service';
 import { IForgotPasswordBody, IGetNewPasswordFromUserToken, ILoginBody, IRegisterBody } from './auth.interface';
 import { AuthService } from './auth.service';
 
