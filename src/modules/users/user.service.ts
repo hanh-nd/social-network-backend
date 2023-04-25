@@ -2,11 +2,16 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { compare, hash } from 'src/plugins/bcrypt';
+import { FileService } from '../files/file.service';
 import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
 
 @Injectable()
 export class UserService {
-    constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
+    constructor(
+        private dataServices: IDataServices,
+        private dataResources: IDataResources,
+        private fileService: FileService,
+    ) {}
 
     async getLoginUserProfile(userId: string) {
         const user = await this.dataServices.users.findById(userId, {
@@ -120,5 +125,11 @@ export class UserService {
             items: subscribing,
             totalItems: subscribing.length,
         };
+    }
+
+    async getUserFiles(userId: string) {
+        return await this.fileService.findAll({
+            userId,
+        });
     }
 }
