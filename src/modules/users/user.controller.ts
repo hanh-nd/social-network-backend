@@ -1,10 +1,10 @@
-import { Body, Controller, Get, InternalServerErrorException, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
+import { createWinstonLogger } from 'src/common/modules/winston';
 import { TrimBodyPipe } from 'src/common/pipes';
-import { createWinstonLogger } from 'src/common/services/winston.service';
 import { IChangePasswordBody, IRemoveSubscriberBody, IUpdateProfileBody } from './user.interface';
 import { UserService } from './user.service';
 
@@ -94,6 +94,18 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[UserController][getSubscribing] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/:id/files')
+    @UseGuards(AccessTokenGuard)
+    async getUserFiles(@Param('id') id: string) {
+        try {
+            const result = await this.userService.getUserFiles(id);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][getUserFiles] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

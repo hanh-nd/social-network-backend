@@ -4,7 +4,7 @@ import { WinstonModule as NestWinstonModule } from 'nest-winston';
 import { Module } from '@nestjs/common';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
-import { ConfigKey } from '../config';
+import { ConfigKey } from '../../config';
 const { label, combine, timestamp, printf } = winston.format;
 
 export function createWinstonLogger(moduleName: string, filename: string, configService: ConfigService) {
