@@ -10,7 +10,7 @@ export interface IUpdateProfileBody {
     birthday?: string;
     address?: IAddress;
     describe?: string;
-    privacy?: boolean;
+    private?: boolean;
 }
 
 export interface IAddress {

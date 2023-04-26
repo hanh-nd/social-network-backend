@@ -10,6 +10,7 @@ import { DataServicesModule } from './common/repositories/data-services.module';
 import { DataResourcesModule } from './common/resources/data-resources.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { FileModule } from './modules/files/file.module';
+import { PostModule } from './modules/posts/post.module';
 import { SeedsModule } from './modules/seeder/seed.module';
 import { UserModule } from './modules/users/user.module';
 
@@ -19,14 +20,15 @@ import { UserModule } from './modules/users/user.module';
             envFilePath: '.env',
             isGlobal: true,
         }),
+        MongoModule,
         DataServicesModule,
         DataResourcesModule,
-        MongoModule,
         AuthModule,
         FileModule,
         WinstonModule,
         SeedsModule,
         UserModule,
+        PostModule,
     ],
     controllers: [AppController],
     providers: [AppService, JwtService],
