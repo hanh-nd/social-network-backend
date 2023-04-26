@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import mongoose from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ElasticsearchModule } from './common/modules/elasticsearch';
 import { MongoModule } from './common/modules/mongo';
 import { WinstonModule } from './common/modules/winston';
 import { DataServicesModule } from './common/repositories/data-services.module';
@@ -23,6 +24,7 @@ import { UserModule } from './modules/users/user.module';
         MongoModule,
         DataServicesModule,
         DataResourcesModule,
+        ElasticsearchModule,
         AuthModule,
         FileModule,
         WinstonModule,
