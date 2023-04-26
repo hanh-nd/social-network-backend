@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
+import { Privacy } from 'src/common/constants';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
-import { User, UserSchema } from './user.schema';
+import { User } from './user.schema';
 
 export type PostDocument = Post & Document;
 
@@ -21,20 +22,20 @@ export type PostDocument = Post & Document;
 export class Post extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: UserSchema })
-    author: User;
+    @Prop({ required: true, type: Types.ObjectId, ref: User.name })
+    author: Partial<User>;
 
     @Prop({ required: true, type: String })
     content: string;
 
-    @Prop({ required: true, default: true, type: Boolean })
-    privacy: boolean;
+    @Prop({ required: true, default: Privacy.PUBLIC, type: Number })
+    privacy: number;
 
     @Prop({
         required: true,
         default: [],
         type: [Types.ObjectId],
-        ref: MongoCollection.USER,
+        ref: User.name,
     })
     commentIds: ObjectId[];
 
@@ -42,7 +43,7 @@ export class Post extends MongoBaseSchema {
         required: true,
         default: [],
         type: [Types.ObjectId],
-        ref: MongoCollection.USER,
+        ref: User.name,
     })
     reactIds: ObjectId[];
 
@@ -50,7 +51,7 @@ export class Post extends MongoBaseSchema {
         required: true,
         default: [],
         type: [Types.ObjectId],
-        ref: MongoCollection.USER,
+        ref: User.name,
     })
     sharedIds: ObjectId[];
 
@@ -60,16 +61,16 @@ export class Post extends MongoBaseSchema {
     })
     postShared: Post;
 
-    @Prop({ required: false, type: UserSchema })
-    discussedIn: User;
+    @Prop({ required: false, type: Types.ObjectId, ref: User.name })
+    discussedIn: Partial<User>;
 
-    @Prop({ required: false, type: [String] })
-    pictureIds: string[];
+    @Prop({ required: false, type: [Types.ObjectId] })
+    pictureIds: ObjectId[];
 
-    @Prop({ required: false, type: [String] })
-    videoIds: string[];
+    @Prop({ required: false, type: [Types.ObjectId] })
+    videoIds: ObjectId[];
 
-    @Prop({ required: true, default: 0, type: Number })
+    @Prop({ required: true, default: 0, type: Number, index: true })
     point: number;
 }
 

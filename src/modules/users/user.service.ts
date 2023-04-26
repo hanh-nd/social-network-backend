@@ -45,11 +45,6 @@ export class UserService {
     }
 
     async updateProfile(userId: string, body: IUpdateProfileBody) {
-        const existedUser = await this.dataServices.users.findById(userId);
-        if (!existedUser) {
-            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
-        }
-
         await this.dataServices.users.updateById(userId, body);
 
         return true;

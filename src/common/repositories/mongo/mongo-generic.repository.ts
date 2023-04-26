@@ -1,4 +1,3 @@
-import { get } from 'lodash';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 import { IGenericRepository } from '../generic.repository';
@@ -24,6 +23,18 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
         if (options.select) {
             chain = chain.select(options.select);
+        }
+
+        if (options.sort) {
+            chain = chain.sort(options.sort);
+        }
+
+        if (options.skip) {
+            chain = chain.skip(options.skip);
+        }
+
+        if (options.limit) {
+            chain = chain.limit(options.limit);
         }
 
         return chain.exec();
