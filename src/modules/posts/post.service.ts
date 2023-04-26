@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Privacy } from 'src/common/constants';
+import { ElasticsearchIndex, Privacy } from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
+import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Post } from 'src/mongo-schemas';
@@ -13,6 +14,7 @@ export class PostService {
         private dataService: IDataServices,
         private dataResource: IDataResources,
         private fileService: FileService,
+        private elasticsearchService: ElasticsearchService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
@@ -44,6 +46,10 @@ export class PostService {
         }
 
         const createdPost = await this.dataService.posts.create(createPostBody);
+        this.elasticsearchService.index<Post>(ElasticsearchIndex.POST, {
+            _id: createdPost._id,
+            content: createdPost.content,
+        });
         return createdPost._id;
     }
 
@@ -94,6 +100,18 @@ export class PostService {
         }
 
         await this.dataService.posts.updateById(existedPost._id, toUpdateBody);
+
+        if (content) {
+            this.elasticsearchService.update<Post>(
+                ElasticsearchIndex.POST,
+                {
+                    match: {
+                        _id: existedPost._id,
+                    },
+                },
+                { _id: existedPost._id, content },
+            );
+        }
         return true;
     }
 

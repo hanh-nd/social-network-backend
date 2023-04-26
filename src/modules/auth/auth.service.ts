@@ -4,10 +4,11 @@ import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { ConfigKey } from 'src/common/config';
-import { RoleName } from 'src/common/constants';
+import { ElasticsearchIndex, RoleName } from 'src/common/constants';
 import { DefaultInternalServerErrorException } from 'src/common/exception/default-internal-system-error.exception';
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
 import { generateRandomString } from 'src/common/helper';
+import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { User } from 'src/mongo-schemas';
@@ -27,6 +28,7 @@ export class AuthService {
         private jwtService: JwtService,
         private dataServices: IDataServices,
         private dataResources: IDataResources,
+        private elasticsearchService: ElasticsearchService,
     ) {}
 
     async login(body: ILoginBody) {
@@ -77,7 +79,11 @@ export class AuthService {
             password: hashedPassword,
             roleId: new ObjectId(userRole._id),
         });
-
+        this.elasticsearchService.index<User>(ElasticsearchIndex.USER, {
+            _id: createdUser._id,
+            username: createdUser.username,
+            fullName: createdUser.fullName,
+        });
         const token = await this.signUserToken(createdUser);
         const updatedUser = await this.dataServices.users.updateById(createdUser._id, {
             lastRefreshToken: token.refreshToken,
