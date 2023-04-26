@@ -1,7 +1,7 @@
 import { Prop } from '@nestjs/mongoose';
 
 export class MongoBaseSchema {
-    @Prop({ required: false, default: null, type: Date })
+    @Prop({ required: false, default: null, type: Date, index: true })
     createdAt: string;
 
     @Prop({ required: false, default: null, type: Date })

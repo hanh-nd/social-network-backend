@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
+import * as _ from 'lodash';
 import { IGridFSObject, MongoGridFS } from 'mongo-gridfs';
+import { ObjectId } from 'mongodb';
 import { Db, GridFSBucketReadStream } from 'mongodb';
 import { Connection } from 'mongoose';
+import { toObjectIds } from 'src/common/helper';
 
 @Injectable()
 export class FileService {
@@ -25,7 +28,7 @@ export class FileService {
 
     async findAll(query = {}): Promise<IGridFSObject[]> {
         const where = this.buildWhereQuery(query);
-        console.log(where);
+        console.log({ where: JSON.stringify(where) });
         return await this.fileModel.find(where);
     }
 
@@ -34,10 +37,14 @@ export class FileService {
     }
 
     private buildWhereQuery(query: any = {}) {
-        const { userId } = query;
+        const { userId, ids } = query;
         const where: any = {};
         if (userId) {
             where['metadata.userId'] = userId;
+        }
+
+        if (_.isArray(ids)) {
+            where._id = new ObjectId('6447f5b1d8dbfc231901d018');
         }
         return where;
     }

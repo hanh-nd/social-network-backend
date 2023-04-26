@@ -95,3 +95,9 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
 export const CommonMessage = {
     AN_ERROR_OCCURRED: 'Có lỗi xảy ra, vui lòng thử lại.',
 };
+
+export const Privacy = {
+    PUBLIC: 1,
+    SUBSCRIBED: 2,
+    PRIVATE: 3,
+};
