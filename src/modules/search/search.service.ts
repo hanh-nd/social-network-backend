@@ -26,8 +26,6 @@ export class SearchService {
 
     async searchPost(query: ISearchQuery) {
         const { keyword, size = 10 } = query;
-        const isIndexExists = await this.elasticsearchService.exists(ElasticsearchIndex.POST);
-        if (!isIndexExists) return [];
 
         const postSearchResult = await this.elasticsearchService.search<Post>(
             ElasticsearchIndex.POST,
@@ -54,8 +52,6 @@ export class SearchService {
 
     async searchUser(query: ISearchQuery) {
         const { keyword, size = 10 } = query;
-        const isIndexExists = await this.elasticsearchService.exists(ElasticsearchIndex.USER);
-        if (!isIndexExists) return [];
 
         const userSearchResult = await this.elasticsearchService.search<User>(
             ElasticsearchIndex.USER,
