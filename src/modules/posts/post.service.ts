@@ -1,11 +1,13 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { ElasticsearchIndex, Privacy } from 'src/common/constants';
-import { toObjectId, toObjectIds } from 'src/common/helper';
+import { DEFAULT_PAGE_VALUE, ElasticsearchIndex, Privacy } from 'src/common/constants';
+import { toObjectIds } from 'src/common/helper';
+import { ICommonGetListQuery } from 'src/common/interfaces';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Post } from 'src/mongo-schemas';
+import { Post, User } from 'src/mongo-schemas';
 import { FileService } from '../files/file.service';
+import { DEFAULT_PAGE_LIMIT } from './../../common/constants';
 import { ICreatePostBody, IUpdatePostBody } from './post.interface';
 
 @Injectable()
@@ -58,7 +60,7 @@ export class PostService {
     async getUserPosts(userId: string) {
         const posts = await this.dataService.posts.findAll(
             {
-                author: toObjectId(userId),
+                author: userId,
                 discussedIn: null,
             },
             {
@@ -68,6 +70,81 @@ export class PostService {
         );
         const postDtos = await this.dataResource.posts.mapToDtoList(posts);
         return postDtos;
+    }
+
+    async getNewsFeed(userId: string, query: ICommonGetListQuery) {
+        const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
+        const skip = (page - 1) * +limit;
+        const loginUser = await this.dataService.users.findById(userId);
+        if (!loginUser) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện tác vụ này.`);
+        }
+
+        const { items: subscribedItems, totalItems: totalSubscribedItems } = await this.getSubscribedPosts(
+            loginUser,
+            skip,
+            limit,
+        );
+        if (subscribedItems.length < +limit) {
+            const pastPages = Math.ceil(totalSubscribedItems / +limit);
+            const newSkip = pastPages * +limit - totalSubscribedItems + (page - pastPages - 1) * +limit;
+            const posts = await this.getSuggestedPosts(loginUser, newSkip, limit);
+            return [...subscribedItems, ...posts];
+        }
+        return subscribedItems;
+    }
+
+    async getSubscribedPosts(user: User, skip: number, limit: number) {
+        const result = await this.dataService.posts.findAndCountAll(
+            {
+                $or: [
+                    {
+                        privacy: {
+                            $in: [Privacy.SUBSCRIBED, Privacy.PUBLIC],
+                        },
+                        author: {
+                            $in: user.subscribingIds,
+                        },
+                    },
+                    {
+                        author: user._id,
+                    },
+                ],
+            },
+            {
+                sort: [
+                    ['point', -1],
+                    ['createdAt', -1],
+                ],
+                skip: skip,
+                limit: +limit,
+            },
+        );
+        return result;
+    }
+
+    async getSuggestedPosts(user: User, skip: number, limit: number) {
+        if (skip < 0) {
+            skip = 0;
+            limit = limit + skip;
+        }
+        const posts = await this.dataService.posts.findAll(
+            {
+                privacy: Privacy.PUBLIC,
+                author: {
+                    $nin: [...user.subscribingIds, user._id],
+                },
+            },
+            {
+                sort: [
+                    ['point', -1],
+                    ['createdAt', -1],
+                ],
+                skip: skip,
+                limit: +limit,
+            },
+        );
+        return posts;
     }
 
     async getDetail(id: string) {
@@ -86,8 +163,8 @@ export class PostService {
         const { content, privacy, pictureIds, videoIds } = body;
         const existedPost = await this.dataService.posts.findOne(
             {
-                author: toObjectId(userId),
-                _id: toObjectId(postId),
+                author: userId,
+                _id: postId,
             },
             {
                 populate: 'author',
@@ -120,8 +197,8 @@ export class PostService {
 
     async deleteUserPost(userId: string, postId: string) {
         const existedPost = await this.dataService.posts.findOne({
-            author: toObjectId(userId),
-            _id: toObjectId(postId),
+            author: userId,
+            _id: postId,
         });
         if (!existedPost) {
             throw new NotFoundException(`Không tìm thấy bài viết này.`);

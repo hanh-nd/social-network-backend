@@ -12,10 +12,10 @@ export function generateRandomString(length: number = 16) {
     return result;
 }
 
-export function toObjectId(id: string) {
+export function toObjectId(id: string | ObjectId) {
     return new ObjectId(id);
 }
 
-export function toObjectIds(ids: string[]) {
+export function toObjectIds(ids: (string | ObjectId)[]) {
     return ids.map((id) => new ObjectId(id));
 }

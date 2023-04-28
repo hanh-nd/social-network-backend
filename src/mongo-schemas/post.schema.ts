@@ -23,7 +23,7 @@ export class Post extends MongoBaseSchema {
     _id: string;
     id?: string;
 
-    @Prop({ required: true, type: Types.ObjectId, ref: User.name })
+    @Prop({ required: true, type: Types.ObjectId, ref: User.name, index: true })
     author: Partial<User>;
 
     @Prop({ required: true, type: String })
