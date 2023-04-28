@@ -14,6 +14,7 @@ import { FileModule } from './modules/files/file.module';
 import { PostModule } from './modules/posts/post.module';
 import { SeedsModule } from './modules/seeder/seed.module';
 import { UserModule } from './modules/users/user.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { UserModule } from './modules/users/user.module';
         SeedsModule,
         UserModule,
         PostModule,
+        SearchModule,
     ],
     controllers: [AppController],
     providers: [AppService, JwtService],

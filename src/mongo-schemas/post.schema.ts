@@ -21,6 +21,7 @@ export type PostDocument = Post & Document;
 })
 export class Post extends MongoBaseSchema {
     _id: string;
+    id?: string;
 
     @Prop({ required: true, type: Types.ObjectId, ref: User.name })
     author: Partial<User>;
