@@ -18,6 +18,8 @@ import {
     ReportDocument,
     Role,
     RoleDocument,
+    SubscribeRequest,
+    SubscribeRequestDocument,
     User,
     UserDocument,
     UserToken,
@@ -38,6 +40,7 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     reports: MongoGenericRepository<ReportDocument>;
     roles: MongoGenericRepository<RoleDocument>;
     userTokens: MongoGenericRepository<UserTokenDocument>;
+    subscribeRequests: MongoGenericRepository<SubscribeRequestDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -60,6 +63,8 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private roleModel: Model<RoleDocument>,
         @InjectModel(UserToken.name)
         private userTokenModel: Model<UserTokenDocument>,
+        @InjectModel(SubscribeRequest.name)
+        private subscribeRequestModel: Model<SubscribeRequestDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -73,5 +78,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.reports = new MongoGenericRepository<ReportDocument>(this.reportModel);
         this.roles = new MongoGenericRepository<RoleDocument>(this.roleModel);
         this.userTokens = new MongoGenericRepository<UserTokenDocument>(this.userTokenModel);
+        this.subscribeRequests = new MongoGenericRepository<SubscribeRequestDocument>(this.subscribeRequestModel);
     }
 }
