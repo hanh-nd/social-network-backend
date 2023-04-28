@@ -56,21 +56,11 @@ export class UserService {
 
         await this.dataServices.users.updateById(userId, body);
 
-        if (body.fullName) {
-            this.elasticsearchService.update<User>(
-                ElasticsearchIndex.USER,
-                {
-                    match: {
-                        id: existedUser._id,
-                    },
-                },
-                {
-                    id: existedUser._id,
-                    username: existedUser.username,
-                    fullName: existedUser.fullName,
-                },
-            );
-        }
+        this.elasticsearchService.updateById<User>(ElasticsearchIndex.USER, existedUser._id, {
+            id: existedUser._id,
+            username: existedUser.username,
+            fullName: body.fullName ?? existedUser.fullName,
+        });
 
         return true;
     }

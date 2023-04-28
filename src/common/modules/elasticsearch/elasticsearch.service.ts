@@ -27,6 +27,18 @@ export class ElasticsearchService {
         return hits.map((item) => item._source);
     }
 
+    async updateById<T, K = Partial<T>>(index: string, id: string, newBody: K) {
+        return this.update(
+            index,
+            {
+                match: {
+                    id,
+                },
+            },
+            newBody,
+        );
+    }
+
     async update<T, K = Partial<T>>(index: string, query: QueryDslQueryContainer, newBody: K) {
         const script = Object.entries(newBody).reduce((result, [key, value]) => {
             return `${result} ctx._source.${key}='${value}';`;
@@ -42,7 +54,7 @@ export class ElasticsearchService {
         return this.elService.indices.exists({ index });
     }
 
-    async delete(index: string, id: string) {
+    async deleteById(index: string, id: string) {
         await this.elService.deleteByQuery({
             index,
             query: {
