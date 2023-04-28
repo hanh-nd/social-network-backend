@@ -7,6 +7,7 @@ import {
     ReactionDocument,
     ReportDocument,
     RoleDocument,
+    SubscribeRequestDocument,
     UserDocument,
     UserTokenDocument,
 } from 'src/mongo-schemas';
@@ -23,4 +24,5 @@ export abstract class IDataServices {
     abstract reports: IGenericRepository<ReportDocument>;
     abstract roles: IGenericRepository<RoleDocument>;
     abstract userTokens: IGenericRepository<UserTokenDocument>;
+    abstract subscribeRequests: IGenericRepository<SubscribeRequestDocument>;
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, InternalServerErrorException, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Param, Patch, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
@@ -18,7 +18,7 @@ export class UserController {
     @UseGuards(AccessTokenGuard)
     async getLoginUserProfile(@LoginUser() loginUser) {
         try {
-            const user = await this.userService.getLoginUserProfile(loginUser.userId);
+            const user = await this.userService.getUserProfile(loginUser.userId);
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[UserController][getLoginUserProfile] ${error.stack || JSON.stringify(error)}`);
@@ -62,7 +62,7 @@ export class UserController {
         }
     }
 
-    @Post('/subscribers/remove')
+    @Patch('/subscribers/remove')
     @UseGuards(AccessTokenGuard)
     async removeSubscribers(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IRemoveSubscriberBody) {
         try {
@@ -106,6 +106,42 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[UserController][getUserFiles] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/:id')
+    @UseGuards(AccessTokenGuard)
+    async getUserInformation(@Param('id') id: string) {
+        try {
+            const user = await this.userService.getUserProfile(id);
+            return new SuccessResponse(user);
+        } catch (error) {
+            this.logger.error(`[UserController][getUserInformation] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Patch('/:id/subscribe')
+    @UseGuards(AccessTokenGuard)
+    async subscribeOrUnsubscribeUser(@LoginUser() loginUser, @Param('id') targetUserId: string) {
+        try {
+            const result = await this.userService.subscribeOrUnsubscribeUser(loginUser.userId, targetUserId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][subscribeOrUnsubscribeUser] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Patch('/:id/block')
+    @UseGuards(AccessTokenGuard)
+    async blockOrUnblockUser(@LoginUser() loginUser, @Param('id') targetUserId: string) {
+        try {
+            const result = await this.userService.blockOrUnblockUser(loginUser.userId, targetUserId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[UserController][blockOrUnblockUser] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

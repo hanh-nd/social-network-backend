@@ -36,21 +36,23 @@ export class SearchService {
             ElasticsearchIndex.POST,
             {
                 bool: {
-                    must_not: {
-                        terms: {
-                            id: user.blockedIds,
+                    must_not: [
+                        {
+                            terms: {
+                                id: user.blockedIds,
+                            },
                         },
-                    },
+                        {
+                            match: {
+                                privacy: Privacy.PRIVATE,
+                            },
+                        },
+                    ],
                     must: [
                         {
                             multi_match: {
                                 query: keyword,
                                 fields: ['content^5', 'author'],
-                            },
-                        },
-                        {
-                            match: {
-                                privacy: Privacy.PUBLIC,
                             },
                         },
                     ],
@@ -61,10 +63,22 @@ export class SearchService {
             },
         );
         const postSearchIds = postSearchResult.map((result) => result.id);
-        const posts = await this.dataServices.posts.findAll({
-            _id: toObjectIds(postSearchIds),
+        const posts = await this.dataServices.posts.findAll(
+            {
+                _id: toObjectIds(postSearchIds),
+            },
+            {
+                populate: ['author'],
+            },
+        );
+        const postsFilterByPrivacy = posts.filter((post) => {
+            if (post.privacy === Privacy.PRIVATE) return false;
+            if (post.privacy === Privacy.PUBLIC) return true;
+            const postAuthorSubscribingIds = post.author.subscribingIds;
+            const isLoginUserSubscribedAUthor = postAuthorSubscribingIds.map((id) => `${id}`).includes(`${userId}`);
+            return isLoginUserSubscribedAUthor;
         });
-        const postDtos = await this.dataResources.posts.mapToDtoList(posts);
+        const postDtos = await this.dataResources.posts.mapToDtoList(postsFilterByPrivacy);
         return {
             item: postDtos,
             totalItem: postDtos.length,

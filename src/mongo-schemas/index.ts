@@ -7,6 +7,7 @@ export * from './notification.schema';
 export * from './post.schema';
 export * from './reaction.schema';
 export * from './report.schema';
-export * from './user.schema';
 export * from './role.schema';
+export * from './subscribe-request.schema';
 export * from './user-token.schema';
+export * from './user.schema';
