@@ -9,6 +9,20 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         this._model = model;
     }
 
+    async findAndCountAll(
+        where = {},
+        options: any = {},
+    ): Promise<{
+        items: T[];
+        totalItems: number;
+    }> {
+        const [items, totalItems] = await Promise.all([this.findAll(where, options), this.count(where)]);
+        return {
+            items,
+            totalItems,
+        };
+    }
+
     async findAll(where = {}, options: any = {}): Promise<T[]> {
         Object.assign(where, {
             deletedAt: {
@@ -38,6 +52,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         }
 
         return chain.exec();
+    }
+
+    async count(where = {}): Promise<number> {
+        Object.assign(where, {
+            deletedAt: {
+                $eq: null,
+            },
+        });
+        return this._model.count(where).exec();
     }
 
     async findOne(where?: object, options: any = {}): Promise<T | null> {

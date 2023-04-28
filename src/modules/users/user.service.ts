@@ -178,7 +178,6 @@ export class UserService {
 
         const loginUserSubscribingIds = loginUser.subscribingIds;
         const isUserSubscribingTargetUser = loginUserSubscribingIds.map((id) => `${id}`).includes(`${targetUserId}`);
-        console.log({ isUserSubscribingTargetUser });
         if (isUserSubscribingTargetUser) {
             return await this.unsubscribeUser(loginUser, targetUser);
         } else {
