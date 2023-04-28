@@ -46,8 +46,8 @@ export class PostService {
         }
 
         const createdPost = await this.dataService.posts.create(createPostBody);
-        this.elasticsearchService.index<Post>(ElasticsearchIndex.POST, {
-            _id: createdPost._id,
+        await this.elasticsearchService.index<Post>(ElasticsearchIndex.POST, {
+            id: createdPost._id,
             content: createdPost.content,
         });
         return createdPost._id;

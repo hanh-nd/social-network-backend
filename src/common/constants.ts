@@ -103,6 +103,6 @@ export const Privacy = {
 };
 
 export enum ElasticsearchIndex {
-    USER = 'USER',
-    POST = 'POST',
+    USER = 'user',
+    POST = 'post',
 }

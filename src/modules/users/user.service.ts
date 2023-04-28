@@ -61,11 +61,11 @@ export class UserService {
                 ElasticsearchIndex.USER,
                 {
                     match: {
-                        _id: existedUser._id,
+                        id: existedUser._id,
                     },
                 },
                 {
-                    _id: existedUser._id,
+                    id: existedUser._id,
                     username: existedUser.username,
                     fullName: existedUser.fullName,
                 },

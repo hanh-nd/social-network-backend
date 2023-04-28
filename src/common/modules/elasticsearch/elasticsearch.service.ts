@@ -1,7 +1,6 @@
-import { QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
+import { QueryDslQueryContainer, SearchRequest } from '@elastic/elasticsearch/lib/api/types';
 import { Injectable } from '@nestjs/common';
 import { ElasticsearchService as ELService } from '@nestjs/elasticsearch';
-import { ElasticsearchSearchResult } from './elasticsearch.interface';
 
 @Injectable()
 export class ElasticsearchService {
@@ -14,13 +13,12 @@ export class ElasticsearchService {
         });
     }
 
-    async search<T, K = Partial<T>>(index: string, query: QueryDslQueryContainer) {
-        const { body } = (await this.elService.search<ElasticsearchSearchResult<K>>({
+    async search<T, K = Partial<T>>(index: string, query: QueryDslQueryContainer, options?: Partial<SearchRequest>) {
+        const body = await this.elService.search<K>({
             index,
-            body: {
-                query,
-            },
-        })) as unknown as { body: ElasticsearchSearchResult<K> };
+            query,
+            ...options,
+        });
         const hits = body.hits.hits;
         return hits.map((item) => item._source);
     }
@@ -34,5 +32,9 @@ export class ElasticsearchService {
             query,
             script: script,
         });
+    }
+
+    async exists(index: string) {
+        return this.elService.indices.exists({ index });
     }
 }
