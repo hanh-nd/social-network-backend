@@ -14,6 +14,10 @@ export class ElasticsearchService {
     }
 
     async search<T, K = Partial<T>>(index: string, query: QueryDslQueryContainer, options?: Partial<SearchRequest>) {
+        const isIndexExists = await this.exists(index);
+        if (!isIndexExists) {
+            return [];
+        }
         const body = await this.elService.search<K>({
             index,
             query,
@@ -36,5 +40,16 @@ export class ElasticsearchService {
 
     async exists(index: string) {
         return this.elService.indices.exists({ index });
+    }
+
+    async delete(index: string, id: string) {
+        await this.elService.deleteByQuery({
+            index,
+            query: {
+                match: {
+                    id,
+                },
+            },
+        });
     }
 }

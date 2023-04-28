@@ -124,6 +124,7 @@ export class PostService {
             throw new NotFoundException(`Không tìm thấy bài viết này.`);
         }
         await this.dataService.posts.deleteById(existedPost._id);
+        await this.elasticsearchService.delete(ElasticsearchIndex.POST, existedPost._id);
         return true;
     }
 }
