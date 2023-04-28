@@ -106,3 +106,9 @@ export enum ElasticsearchIndex {
     USER = 'user',
     POST = 'post',
 }
+
+export const SubscribeRequestStatus = {
+    PENDING: 1,
+    ACCEPTED: 2,
+    REJECTED: 3,
+};
