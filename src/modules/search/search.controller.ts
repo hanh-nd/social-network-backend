@@ -1,5 +1,7 @@
-import { Controller, Get, InternalServerErrorException, Query } from '@nestjs/common';
+import { Controller, Get, InternalServerErrorException, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { LoginUser } from 'src/common/decorators/login-user.decorator';
+import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { ISearchQuery } from './search.interface';
@@ -12,9 +14,10 @@ export class SearchController {
     private readonly logger = createWinstonLogger(SearchController.name, 'search', this.configService);
 
     @Get('/')
-    async search(@Query() searchQuery: ISearchQuery) {
+    @UseGuards(AccessTokenGuard)
+    async search(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
-            const result = await this.searchService.search(searchQuery);
+            const result = await this.searchService.search(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[SearchController][search] ${error.stack || JSON.stringify(error)}`);
@@ -23,9 +26,10 @@ export class SearchController {
     }
 
     @Get('/posts')
-    async searchPosts(@Query() searchQuery: ISearchQuery) {
+    @UseGuards(AccessTokenGuard)
+    async searchPosts(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
-            const result = await this.searchService.searchPost(searchQuery);
+            const result = await this.searchService.searchPost(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[SearchController][searchPosts] ${error.stack || JSON.stringify(error)}`);
@@ -34,9 +38,10 @@ export class SearchController {
     }
 
     @Get('/users')
-    async searchUsers(@Query() searchQuery: ISearchQuery) {
+    @UseGuards(AccessTokenGuard)
+    async searchUsers(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
-            const result = await this.searchService.searchUser(searchQuery);
+            const result = await this.searchService.searchUser(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[SearchController][searchUsers] ${error.stack || JSON.stringify(error)}`);
