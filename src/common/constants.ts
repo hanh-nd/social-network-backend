@@ -101,3 +101,8 @@ export const Privacy = {
     SUBSCRIBED: 2,
     PRIVATE: 3,
 };
+
+export enum ElasticsearchIndex {
+    USER = 'user',
+    POST = 'post',
+}

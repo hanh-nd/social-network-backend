@@ -7,6 +7,7 @@ export interface IUpdateProfileBody {
     avatarId?: string;
     coverId?: string;
     phone?: string;
+    fullName?: string;
     birthday?: string;
     address?: IAddress;
     describe?: string;

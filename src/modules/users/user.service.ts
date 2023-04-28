@@ -1,6 +1,9 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ElasticsearchIndex } from 'src/common/constants';
+import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
+import { User } from 'src/mongo-schemas';
 import { compare, hash } from 'src/plugins/bcrypt';
 import { FileService } from '../files/file.service';
 import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
@@ -11,6 +14,7 @@ export class UserService {
         private dataServices: IDataServices,
         private dataResources: IDataResources,
         private fileService: FileService,
+        private elasticsearchService: ElasticsearchService,
     ) {}
 
     async getLoginUserProfile(userId: string) {
@@ -45,7 +49,28 @@ export class UserService {
     }
 
     async updateProfile(userId: string, body: IUpdateProfileBody) {
+        const existedUser = await this.dataServices.users.findById(userId);
+        if (!existedUser) {
+            throw new NotFoundException(`Không tìm thấy user này.`);
+        }
+
         await this.dataServices.users.updateById(userId, body);
+
+        if (body.fullName) {
+            this.elasticsearchService.update<User>(
+                ElasticsearchIndex.USER,
+                {
+                    match: {
+                        id: existedUser._id,
+                    },
+                },
+                {
+                    id: existedUser._id,
+                    username: existedUser.username,
+                    fullName: existedUser.fullName,
+                },
+            );
+        }
 
         return true;
     }

@@ -19,6 +19,7 @@ export type UserDocument = User & Document;
 })
 export class User extends MongoBaseSchema {
     _id: string;
+    id?: string;
 
     @Prop({ required: true, unique: true, type: String })
     username: string;
