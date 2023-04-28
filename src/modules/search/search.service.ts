@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ElasticsearchIndex } from 'src/common/constants';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ElasticsearchIndex, Privacy } from 'src/common/constants';
 import { toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
@@ -14,9 +14,9 @@ export class SearchService {
         private elasticsearchService: ElasticsearchService,
     ) {}
 
-    async search(query: ISearchQuery) {
-        const postSearchResult = await this.searchPost(query);
-        const userSearchResult = await this.searchUser(query);
+    async search(userId: string, query: ISearchQuery) {
+        const postSearchResult = await this.searchPost(userId, query);
+        const userSearchResult = await this.searchUser(userId, query);
 
         return {
             posts: postSearchResult,
@@ -24,15 +24,36 @@ export class SearchService {
         };
     }
 
-    async searchPost(query: ISearchQuery) {
+    async searchPost(userId: string, query: ISearchQuery) {
         const { keyword, size = 10 } = query;
+
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`Không tìm thấy user này.`);
+        }
 
         const postSearchResult = await this.elasticsearchService.search<Post>(
             ElasticsearchIndex.POST,
             {
-                multi_match: {
-                    query: keyword,
-                    fields: ['content'],
+                bool: {
+                    must_not: {
+                        terms: {
+                            id: user.blockedIds,
+                        },
+                    },
+                    must: [
+                        {
+                            multi_match: {
+                                query: keyword,
+                                fields: ['content^5', 'author'],
+                            },
+                        },
+                        {
+                            match: {
+                                privacy: Privacy.PUBLIC,
+                            },
+                        },
+                    ],
                 },
             },
             {
@@ -50,15 +71,28 @@ export class SearchService {
         };
     }
 
-    async searchUser(query: ISearchQuery) {
+    async searchUser(userId: string, query: ISearchQuery) {
         const { keyword, size = 10 } = query;
+
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`Không tìm thấy user này.`);
+        }
 
         const userSearchResult = await this.elasticsearchService.search<User>(
             ElasticsearchIndex.USER,
             {
-                multi_match: {
-                    query: keyword,
-                    fields: ['fullName'],
+                bool: {
+                    must_not: {
+                        terms: {
+                            id: user.blockedIds,
+                        },
+                    },
+                    must: {
+                        match: {
+                            fullName: keyword,
+                        },
+                    },
                 },
             },
             {
