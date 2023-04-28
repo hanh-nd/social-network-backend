@@ -7,12 +7,14 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
+import { ICommonGetListQuery } from 'src/common/interfaces';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { TrimBodyPipe } from 'src/common/pipes';
 import { ICreatePostBody, IUpdatePostBody } from './post.interface';
@@ -32,6 +34,18 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[PostController][createNewPost] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/news-feed')
+    @UseGuards(AccessTokenGuard)
+    async getNewsFeed(@LoginUser() loginUser, @Query() query: ICommonGetListQuery) {
+        try {
+            const result = await this.postService.getNewsFeed(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[PostController][getNewsFeed] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
