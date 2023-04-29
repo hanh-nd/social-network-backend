@@ -18,6 +18,7 @@ import { createWinstonLogger } from 'src/common/modules/winston';
 import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
 import { ICreateCommentBody, IGetCommentListQuery } from '../comments/comment.interface';
 import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reaction.interface';
+import { ICreateReportBody } from '../reports/report.interface';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 import { PostService } from './post.service';
 
@@ -232,6 +233,38 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[reactOrUndoReactPostComment] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/:postId/report')
+    @UseGuards(AccessTokenGuard)
+    async reportPost(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Body(new TrimBodyPipe()) body: ICreateReportBody,
+    ) {
+        try {
+            const result = await this.postService.reportPost(loginUser.userId, postId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[reportPost] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/:postId/share')
+    @UseGuards(AccessTokenGuard)
+    async sharePost(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Body(new TrimBodyPipe()) body: ICreatePostBody,
+    ) {
+        try {
+            const result = await this.postService.sharePost(loginUser.userId, postId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[sharePost] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

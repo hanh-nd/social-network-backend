@@ -6,11 +6,19 @@ import { DataResourcesModule } from 'src/common/resources/data-resources.module'
 import { CommentModule } from '../comments/comment.module';
 import { FileService } from '../files/file.service';
 import { ReactionModule } from '../reactions/reaction.module';
+import { ReportModule } from '../reports/report.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 
 @Module({
-    imports: [DataServicesModule, DataResourcesModule, ElasticsearchModule, CommentModule, ReactionModule],
+    imports: [
+        DataServicesModule,
+        DataResourcesModule,
+        ElasticsearchModule,
+        CommentModule,
+        ReactionModule,
+        ReportModule,
+    ],
     controllers: [PostController],
     providers: [JwtService, PostService, FileService],
 })
