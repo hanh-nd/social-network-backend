@@ -81,11 +81,7 @@ export class UserService {
         });
 
         const subscriberDtos = await this.dataResources.users.mapToDtoList(subscribers);
-
-        return {
-            items: subscriberDtos,
-            totalItems: subscribers.length,
-        };
+        return subscriberDtos;
     }
 
     async removeSubscribers(loginUserId: string, targetUserId: string) {
@@ -99,20 +95,7 @@ export class UserService {
         const loginUser = users.find((u) => u._id == loginUserId);
         const targetUser = users.find((u) => u._id == targetUserId);
 
-        const loginUserSubscriberIds = loginUser.subscriberIds;
-        _.remove(loginUserSubscriberIds, (id) => `${id}` == targetUser._id);
-        const targetUserSubscribingIds = targetUser.subscribingIds;
-        _.remove(targetUserSubscribingIds, (id) => `${id}` == loginUser._id);
-
-        await Promise.all([
-            this.dataServices.users.updateById(loginUser._id, {
-                subscriberIds: loginUserSubscriberIds,
-            }),
-            this.dataServices.users.updateById(targetUser._id, {
-                subscribingIds: targetUserSubscribingIds,
-            }),
-        ]);
-
+        await this.unsubscribeTargetUser(targetUser, loginUser);
         return true;
     }
 
@@ -128,11 +111,8 @@ export class UserService {
                 $in: blockedIds,
             },
         });
-
-        return {
-            items: blockedList,
-            totalItems: blockedList.length,
-        };
+        const blockedDtos = await this.dataResources.users.mapToDtoList(blockedList);
+        return blockedDtos;
     }
 
     async getSubscribing(userId: string) {
@@ -147,11 +127,8 @@ export class UserService {
                 $in: subscribingIds,
             },
         });
-
-        return {
-            items: subscribing,
-            totalItems: subscribing.length,
-        };
+        const subscribingDtos = await this.dataResources.users.mapToDtoList(subscribing);
+        return subscribingDtos;
     }
 
     async getUserFiles(userId: string) {
@@ -179,7 +156,7 @@ export class UserService {
         const loginUserSubscribingIds = loginUser.subscribingIds;
         const isUserSubscribingTargetUser = loginUserSubscribingIds.map((id) => `${id}`).includes(`${targetUserId}`);
         if (isUserSubscribingTargetUser) {
-            return await this.unsubscribeUser(loginUser, targetUser);
+            return await this.unsubscribeTargetUser(loginUser, targetUser);
         } else {
             return await this.subscribeUser(loginUser, targetUser);
         }
@@ -195,11 +172,6 @@ export class UserService {
         return true;
     }
 
-    private async unsubscribeUser(loginUser: User, targetUser: User) {
-        await this.updateUserSubscribingAndTargetUserSubscriberOnUnsubscribe(loginUser, targetUser);
-        return true;
-    }
-
     private async subscribePublicUser(loginUser: User, targetUser: User) {
         // target user is public. no need to wait for target user to accept
         // create subscribe request with status accepted
@@ -210,7 +182,7 @@ export class UserService {
         });
         // TODO: Send notification to target user;
 
-        await this.updateUserSubscribingAndTargetUserSubscriberOnRequestAccepted(loginUser, targetUser);
+        await this.subscribeTargetUser(loginUser, targetUser);
         return true;
     }
 
@@ -226,7 +198,7 @@ export class UserService {
         return true;
     }
 
-    private async updateUserSubscribingAndTargetUserSubscriberOnRequestAccepted(loginUser: User, targetUser: User) {
+    private async subscribeTargetUser(loginUser: User, targetUser: User) {
         const loginUserSubscribingIds = loginUser.subscribingIds;
         loginUserSubscribingIds.push(toObjectId(targetUser._id));
         const targetUserSubscriberIds = targetUser.subscriberIds;
@@ -244,7 +216,7 @@ export class UserService {
         return true;
     }
 
-    private async updateUserSubscribingAndTargetUserSubscriberOnUnsubscribe(loginUser: User, targetUser: User) {
+    private async unsubscribeTargetUser(loginUser: User, targetUser: User) {
         const loginUserSubscribingIds = loginUser.subscribingIds;
         _.remove(loginUserSubscribingIds, (id) => `${id}` == targetUser._id);
         const targetUserSubscriberIds = targetUser.subscriberIds;
@@ -296,10 +268,7 @@ export class UserService {
             .includes(`${loginUser._id}`);
         if (isTargetUserSubscribingLoginUser) {
             // unsubscribe
-            _.remove(targetUserSubscribingIds, (id) => `${id}` == loginUser._id);
-            await this.dataServices.users.updateById(targetUser._id, {
-                subscribingIds: targetUserSubscribingIds,
-            });
+            await this.unsubscribeTargetUser(targetUser, loginUser);
         }
     }
 

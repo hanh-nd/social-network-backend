@@ -1,3 +1,5 @@
+import { ICommonGetListQuery } from 'src/common/interfaces';
+
 export interface ICreatePostBody {
     content: string;
     privacy?: number;
@@ -12,3 +14,5 @@ export interface IUpdatePostBody {
     pictureIds?: string[];
     videoIds?: string[];
 }
+
+export interface IGetPostListQuery extends ICommonGetListQuery {}

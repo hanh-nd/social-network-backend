@@ -1,4 +1,7 @@
-export abstract class IGenericResource<T> {
-    abstract mapToDto(item: T): Promise<object>;
-    abstract mapToDtoList(items: T[]): Promise<object[]>;
+export abstract class IGenericResource<T, K = T> {
+    abstract mapToDto(item: T, addition?: K): Promise<object>;
+
+    async mapToDtoList(items: T[], addition?: K): Promise<object[]> {
+        return await Promise.all(items.map((item) => this.mapToDto(item, addition)));
+    }
 }
