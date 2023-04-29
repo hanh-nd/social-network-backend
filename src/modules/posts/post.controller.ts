@@ -253,6 +253,23 @@ export class PostController {
         }
     }
 
+    @Post('/:postId/comments/:commentId/report')
+    @UseGuards(AccessTokenGuard)
+    async reportPostComment(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Param('commentId') commentId: string,
+        @Body(new TrimBodyPipe()) body: ICreateReportBody,
+    ) {
+        try {
+            const result = await this.postService.reportPostComment(loginUser.userId, postId, commentId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[reportPostComment] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
     @Post('/:postId/share')
     @UseGuards(AccessTokenGuard)
     async sharePost(
