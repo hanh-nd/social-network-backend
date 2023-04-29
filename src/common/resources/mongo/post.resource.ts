@@ -12,6 +12,21 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
             post.discussedIn = _.pick(post.discussedIn, ['_id', 'username', 'avatarId', 'fullName']);
         }
 
+        if (_.isObject(post.postShared)) {
+            post.postShared = _.pick(post.postShared, [
+                '_id',
+                'author',
+                'content',
+                'privacy',
+                'pictureIds',
+                'videoIds',
+            ]);
+
+            if (_.isObject(post.postShared?.author)) {
+                post.postShared.author = _.pick(post.postShared.author, ['_id', 'username', 'avatarId', 'fullName']);
+            }
+        }
+
         const postDto = Object.assign({}, post.toObject(), {
             numberOfComments: post.commentIds.length,
             numberOfReacts: post.reactIds.length,
@@ -27,6 +42,7 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
         delete postDto.reactIds;
         delete postDto.sharedIds;
         delete postDto.point;
+        delete postDto.isDeletedBySystem;
 
         return postDto;
     }

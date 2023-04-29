@@ -60,7 +60,7 @@ export class Post extends MongoBaseSchema {
         required: false,
         type: Types.ObjectId,
     })
-    postShared: Post;
+    postShared: Partial<Post>;
 
     @Prop({ required: false, type: Types.ObjectId, ref: User.name })
     discussedIn: Partial<User>;
@@ -73,6 +73,9 @@ export class Post extends MongoBaseSchema {
 
     @Prop({ required: true, default: 0, type: Number, index: true })
     point: number;
+
+    @Prop({ required: false, default: false, type: Boolean })
+    isDeletedBySystem: boolean;
 }
 
 const BasePostSchema = SchemaFactory.createForClass(Post);

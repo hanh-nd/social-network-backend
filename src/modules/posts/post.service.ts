@@ -12,6 +12,8 @@ import {
     Privacy,
     ReactionTargetType,
     ReactionTypePoint,
+    ReportTargetType,
+    SHARE_POST_POINT,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
@@ -23,6 +25,8 @@ import { CommentService } from '../comments/comment.service';
 import { FileService } from '../files/file.service';
 import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reaction.interface';
 import { ReactionService } from '../reactions/reaction.service';
+import { ICreateReportBody } from '../reports/report.interface';
+import { ReportService } from '../reports/report.service';
 import { DEFAULT_PAGE_LIMIT } from './../../common/constants';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 
@@ -35,10 +39,11 @@ export class PostService {
         private elasticsearchService: ElasticsearchService,
         private commentService: CommentService,
         private reactionService: ReactionService,
+        private reportService: ReportService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
-        const { content, privacy = Privacy.PUBLIC, discussedInId, pictureIds = [], videoIds = [] } = body;
+        const { content, privacy = Privacy.PUBLIC, discussedInId, pictureIds = [], videoIds = [], postSharedId } = body;
 
         const author = await this.dataServices.users.findById(userId);
         if (!author) {
@@ -52,6 +57,7 @@ export class PostService {
             commentIds: [],
             reactIds: [],
             sharedIds: [],
+            postShared: toObjectId(postSharedId) as unknown,
             pictureIds: toObjectIds(pictureIds),
             videoIds: toObjectIds(videoIds),
             point: 0,
@@ -87,7 +93,13 @@ export class PostService {
             },
             {
                 sort: [['createdAt', 'desc']],
-                populate: ['author'],
+                populate: [
+                    'author',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                ],
             },
         );
         const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
@@ -179,7 +191,14 @@ export class PostService {
         }
 
         const post = await this.dataServices.posts.findById(postId, {
-            populate: ['author', 'discussedIn'],
+            populate: [
+                'author',
+                'discussedIn',
+                {
+                    path: 'postShared',
+                    populate: ['author'],
+                },
+            ],
         });
         if (!post) {
             throw new NotFoundException(`Không tìm thấy bài viết này.`);
@@ -226,15 +245,27 @@ export class PostService {
     }
 
     async deleteUserPost(userId: string, postId: string) {
-        const existedPost = await this.dataServices.posts.findOne({
-            author: userId,
-            _id: postId,
-        });
+        const existedPost = await this.dataServices.posts.findOne(
+            {
+                author: userId,
+                _id: postId,
+            },
+            {
+                populate: ['postShared'],
+            },
+        );
         if (!existedPost) {
             throw new NotFoundException(`Không tìm thấy bài viết này.`);
         }
         await this.dataServices.posts.deleteById(existedPost._id);
         await this.elasticsearchService.deleteById(ElasticsearchIndex.POST, existedPost._id);
+        if (existedPost.postShared) {
+            const postSharedShareIds = existedPost.postShared.sharedIds;
+            _.remove(postSharedShareIds, (id) => `${id}` == existedPost._id);
+            await this.dataServices.posts.updateById(existedPost.postShared._id, {
+                shareIds: postSharedShareIds,
+            });
+        }
         return true;
     }
 
@@ -460,5 +491,53 @@ export class PostService {
             await this.reactComment(user, comment, body);
         }
         return true;
+    }
+
+    async reportPost(userId: string, postId: string, body: ICreateReportBody) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
+        if (!post) {
+            throw new BadGatewayException(`Không tìm thấy bài viết này.`);
+        }
+
+        const createdReportId = await this.reportService.create(user, ReportTargetType.POST, post, body);
+        return createdReportId;
+    }
+
+    async sharePost(userId: string, postId: string, body: ICreatePostBody) {
+        const { content } = body;
+        const post = await this.dataServices.posts.findById(postId);
+        if (!post) {
+            throw new BadRequestException(`Không tìm thấy bài viết này.`);
+        }
+        const createdPostId = await this.createNewPost(userId, {
+            content,
+            postSharedId: postId,
+        });
+
+        const postShareIds = post.sharedIds;
+        post.sharedIds.push(toObjectId(createdPostId));
+
+        const toUpdatePostBody = {
+            shareIds: postShareIds,
+        };
+
+        if (`${post.author}` != userId) {
+            // not a self share, then plus point to post
+            Object.assign(toUpdatePostBody, {
+                $inc: {
+                    point: SHARE_POST_POINT,
+                },
+            });
+        }
+        await this.dataServices.posts.updateById(post._id, toUpdatePostBody);
+
+        return createdPostId;
     }
 }

@@ -1,10 +1,11 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { CommentDocument, PostDocument, ReactionDocument, UserDocument } from 'src/mongo-schemas';
+import { CommentDocument, PostDocument, ReactionDocument, ReportDocument, UserDocument } from 'src/mongo-schemas';
 import { IDataResources } from '../data.resource';
 import { IGenericResource } from '../generic.resource';
 import { CommentResource } from './comment.resource';
 import { PostResource } from './post.resource';
 import { ReactionResource } from './reaction.resource';
+import { ReportResource } from './report.resource';
 import { UserResource } from './user.resource';
 
 @Injectable()
@@ -13,11 +14,13 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
     posts: IGenericResource<PostDocument, UserDocument>;
     comments: IGenericResource<CommentDocument>;
     reactions: IGenericResource<ReactionDocument>;
+    reports: IGenericResource<ReportDocument>;
 
     onApplicationBootstrap() {
         this.users = new UserResource();
         this.posts = new PostResource();
         this.comments = new CommentResource();
         this.reactions = new ReactionResource();
+        this.reports = new ReportResource();
     }
 }

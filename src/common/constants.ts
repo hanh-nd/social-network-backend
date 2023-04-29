@@ -133,3 +133,19 @@ export const ReactionTargetType = {
     POST: 'Post',
     COMMENT: 'Comment',
 };
+
+export enum ReportAction {
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    RESOLVED = 'RESOLVED',
+    REJECTED = 'REJECTED',
+}
+
+export const ReportTargetType = {
+    POST: 'Post',
+    COMMENT: 'Comment',
+    MESSAGE: 'Message',
+};
+
+export const SHARE_POST_POINT = 5;
+export const REPORT_POST_POST = 10;
