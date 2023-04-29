@@ -38,7 +38,7 @@ export class ReactionService {
             targetType: targetType,
         });
         if (existedReaction) {
-            throw new BadRequestException(`Bạn đã tương tác với bài viết này trước đó.`);
+            throw new BadRequestException(`Bạn đã tương tác trước đó.`);
         }
 
         const { type } = body;
