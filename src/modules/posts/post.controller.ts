@@ -14,10 +14,10 @@ import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
-import { ICommonGetListQuery } from 'src/common/interfaces';
 import { createWinstonLogger } from 'src/common/modules/winston';
-import { TrimBodyPipe } from 'src/common/pipes';
-import { ICreatePostBody, IUpdatePostBody } from './post.interface';
+import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
+import { ICreateCommentBody, IGetCommentListQuery } from '../comments/comment.interface';
+import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 import { PostService } from './post.service';
 
 @Controller('/posts')
@@ -40,7 +40,7 @@ export class PostController {
 
     @Get('/news-feed')
     @UseGuards(AccessTokenGuard)
-    async getNewsFeed(@LoginUser() loginUser, @Query() query: ICommonGetListQuery) {
+    async getNewsFeed(@LoginUser() loginUser, @Query() query: IGetPostListQuery) {
         try {
             const result = await this.postService.getNewsFeed(loginUser.userId, query);
             return new SuccessResponse(result);
@@ -64,9 +64,9 @@ export class PostController {
 
     @Get('/:id')
     @UseGuards(AccessTokenGuard)
-    async getPostDetail(@Param('id') id: string) {
+    async getPostDetail(@LoginUser() loginUser, @Param('id') postId: string) {
         try {
-            const result = await this.postService.getDetail(id);
+            const result = await this.postService.getDetail(loginUser.userId, postId);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[PostController][getPostDetail] ${error.stack || JSON.stringify(error)}`);
@@ -98,6 +98,70 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[PostController][deletePost] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/:postId/comments')
+    @UseGuards(AccessTokenGuard)
+    async getPostComments(
+        @Param('postId') postId: string,
+        @Query(new RemoveEmptyQueryPipe()) query: IGetCommentListQuery,
+    ) {
+        try {
+            const result = await this.postService.getPostComment(postId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[PostController][getPostComments] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/:postId/comments')
+    @UseGuards(AccessTokenGuard)
+    async createPostComment(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Body(new TrimBodyPipe()) body: ICreateCommentBody,
+    ) {
+        try {
+            const result = await this.postService.createPostComment(loginUser.userId, postId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[PostController][createPostComment] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Patch('/:postId/comments/:commentId')
+    @UseGuards(AccessTokenGuard)
+    async updatePostComment(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Param('commentId') commentId: string,
+        @Body(new TrimBodyPipe()) body: IUpdatePostBody,
+    ) {
+        try {
+            const result = await this.postService.updatePostComment(loginUser.userId, postId, commentId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[PostController][updatePostComment] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Delete('/:postId/comments/:commentId')
+    @UseGuards(AccessTokenGuard)
+    async deletePostComment(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Param('commentId') commentId: string,
+    ) {
+        try {
+            const result = await this.postService.deletePostComment(loginUser.userId, postId, commentId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[PostController][deletePostComment] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
