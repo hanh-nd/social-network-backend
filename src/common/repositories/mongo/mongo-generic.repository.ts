@@ -1,5 +1,5 @@
-import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
+import { toObjectId } from 'src/common/helper';
 import { IGenericRepository } from '../generic.repository';
 
 export class MongoGenericRepository<T> implements IGenericRepository<T> {
@@ -90,7 +90,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     async findById(id: string, options = {}): Promise<T | null> {
         return this.findOne(
             {
-                _id: new ObjectId(id),
+                _id: toObjectId(id),
             },
             options,
         );
@@ -105,7 +105,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
 
     async updateById(id: string, item: Partial<T>, options: any = {}): Promise<T> {
-        let chain = this._model.findByIdAndUpdate(new ObjectId(id), item, {
+        let chain = this._model.findByIdAndUpdate(toObjectId(id), item, {
             new: true,
         });
 
