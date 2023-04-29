@@ -13,6 +13,7 @@ export function generateRandomString(length: number = 16) {
 }
 
 export function toObjectId(id: string | ObjectId) {
+    if (!id) return undefined;
     return new ObjectId(id);
 }
 

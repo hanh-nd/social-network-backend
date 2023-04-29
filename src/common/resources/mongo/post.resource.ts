@@ -1,19 +1,15 @@
 import * as _ from 'lodash';
-import { PostDocument } from 'src/mongo-schemas';
+import { PostDocument, User, UserDocument } from 'src/mongo-schemas';
 import { IGenericResource } from '../generic.resource';
 
-export class PostResource implements IGenericResource<PostDocument> {
-    async mapToDtoList(posts: PostDocument[]): Promise<object[]> {
-        return await Promise.all(posts.map((p) => this.mapToDto(p)));
-    }
-
-    async mapToDto(post: PostDocument): Promise<object> {
+export class PostResource extends IGenericResource<PostDocument, UserDocument> {
+    async mapToDto(post: PostDocument, user?: User): Promise<object> {
         if (_.isObject(post.author)) {
-            post.author = _.pick(post.author, ['_id', 'username', 'fullName']);
+            post.author = _.pick(post.author, ['_id', 'username', 'avatarId', 'fullName']);
         }
 
         if (_.isObject(post.discussedIn)) {
-            post.discussedIn = _.pick(post.discussedIn, ['_id', 'username', 'fullName']);
+            post.discussedIn = _.pick(post.discussedIn, ['_id', 'username', 'avatarId', 'fullName']);
         }
 
         const postDto = Object.assign({}, post.toObject(), {
@@ -22,9 +18,15 @@ export class PostResource implements IGenericResource<PostDocument> {
             numberOfShares: post.sharedIds.length,
         });
 
+        if (user) {
+            const isReacted = post.reactIds.map((id) => `${id}`).includes(`${user._id}`);
+            postDto.isReacted = isReacted;
+        }
+
         delete postDto.commentIds;
         delete postDto.reactIds;
         delete postDto.sharedIds;
+        delete postDto.point;
 
         return postDto;
     }

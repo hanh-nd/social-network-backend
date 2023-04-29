@@ -78,7 +78,7 @@ export class SearchService {
             const isLoginUserSubscribedAUthor = postAuthorSubscribingIds.map((id) => `${id}`).includes(`${userId}`);
             return isLoginUserSubscribedAUthor;
         });
-        const postDtos = await this.dataResources.posts.mapToDtoList(postsFilterByPrivacy);
+        const postDtos = await this.dataResources.posts.mapToDtoList(postsFilterByPrivacy, user);
         return {
             item: postDtos,
             totalItem: postDtos.length,
