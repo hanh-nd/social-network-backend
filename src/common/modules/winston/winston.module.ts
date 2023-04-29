@@ -7,7 +7,7 @@ import 'winston-daily-rotate-file';
 import { ConfigKey } from '../../config';
 const { label, combine, timestamp, printf } = winston.format;
 
-export function createWinstonLogger(moduleName: string, filename: string, configService: ConfigService) {
+export function createWinstonLogger(moduleName: string, configService: ConfigService) {
     const format = printf(({ level, message, timestamp, service }) => {
         return `[${timestamp}] ${level.toUpperCase()} (${service}): ${message}`;
     });
@@ -20,7 +20,7 @@ export function createWinstonLogger(moduleName: string, filename: string, config
                 level: configService.get(ConfigKey.LOG_LEVEL),
             }),
             new winston.transports.DailyRotateFile({
-                filename: `${configService.get(ConfigKey.LOG_ROOT_FOLDER)}/${filename}-%DATE%.log`,
+                filename: `${configService.get(ConfigKey.LOG_ROOT_FOLDER)}/%DATE%.log`,
                 datePattern: 'YYYY-MM-DD',
                 zippedArchive: true,
                 maxSize: '20m',

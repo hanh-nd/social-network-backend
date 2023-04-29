@@ -56,25 +56,25 @@ export enum HttpStatus {
     SERVICE_UNAVAILABLE = 503,
 }
 
-export const RoleName = {
-    USER: 'User',
-    MODERATOR: 'Moderator',
-    ADMIN: 'Admin',
-};
+export enum RoleName {
+    USER = 'User',
+    MODERATOR = 'Moderator',
+    ADMIN = 'Admin',
+}
 
-export const PermissionName = {
-    CREATE_POST: 'CREATE_POST',
-    UPDATE_POST: 'UPDATE_POST',
-    DELETE_POST: 'DELETE_POST',
+export enum PermissionName {
+    CREATE_POST = 'CREATE_POST',
+    UPDATE_POST = 'UPDATE_POST',
+    DELETE_POST = 'DELETE_POST',
 
-    UPDATE_PROFILE: 'UPDATE_PROFILE',
-    CHANGE_PASSWORD: 'CHANGE_PASSWORD',
+    UPDATE_PROFILE = 'UPDATE_PROFILE',
+    CHANGE_PASSWORD = 'CHANGE_PASSWORD',
 
-    MOD_POST: 'MOD_POST',
-    MO_REPORT: 'MOD_REPORT',
+    MOD_POST = 'MOD_POST',
+    MO_REPORT = 'MOD_REPORT',
 
-    ADMIN_USER: 'ADMIN_USER',
-};
+    ADMIN_USER = 'ADMIN_USER',
+}
 
 export const DEFAULT_USER_PERMISSIONS = [
     PermissionName.UPDATE_PROFILE,
@@ -96,19 +96,40 @@ export const CommonMessage = {
     AN_ERROR_OCCURRED: 'Có lỗi xảy ra, vui lòng thử lại.',
 };
 
-export const Privacy = {
-    PUBLIC: 1,
-    SUBSCRIBED: 2,
-    PRIVATE: 3,
-};
+export enum Privacy {
+    PUBLIC = 1,
+    SUBSCRIBED = 2,
+    PRIVATE = 3,
+}
 
 export enum ElasticsearchIndex {
     USER = 'user',
     POST = 'post',
 }
 
-export const SubscribeRequestStatus = {
-    PENDING: 1,
-    ACCEPTED: 2,
-    REJECTED: 3,
+export enum SubscribeRequestStatus {
+    PENDING = 1,
+    ACCEPTED = 2,
+    REJECTED = 3,
+}
+
+export enum ReactionType {
+    LIKE = 'LIKE',
+    EMPATHIZE = 'EMPATHIZE',
+    CELEBRATE = 'CELEBRATE',
+    LOVE = 'LOVE',
+    ANGRY = 'ANGRY',
+}
+
+export const ReactionTypePoint = {
+    [ReactionType.LIKE]: 1,
+    [ReactionType.EMPATHIZE]: 2,
+    [ReactionType.CELEBRATE]: 3,
+    [ReactionType.LOVE]: 5,
+    [ReactionType.ANGRY]: -2,
+};
+
+export const ReactionTargetType = {
+    POST: 'Post',
+    COMMENT: 'Comment',
 };
