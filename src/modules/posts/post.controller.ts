@@ -197,4 +197,42 @@ export class PostController {
             throw new InternalServerErrorException(error);
         }
     }
+
+    @Get('/:postId/comments/:commentId/reactions')
+    @UseGuards(AccessTokenGuard)
+    async getPostCommentReactions(
+        @Param('postId') postId: string,
+        @Param('commentId') commentId: string,
+        @Query(new RemoveEmptyQueryPipe()) query: IGetReactionListQuery,
+    ) {
+        try {
+            const result = await this.postService.getPostCommentReactions(postId, commentId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getPostCommentReactions] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Post('/:postId/comments/:commentId/react')
+    @UseGuards(AccessTokenGuard)
+    async reactOrUndoReactPostComment(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Param('commentId') commentId: string,
+        @Body(new TrimBodyPipe()) body: ICreateReactionBody,
+    ) {
+        try {
+            const result = await this.postService.reactOrUndoReactPostComment(
+                loginUser.userId,
+                postId,
+                commentId,
+                body,
+            );
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[reactOrUndoReactPostComment] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
 }
