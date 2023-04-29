@@ -510,6 +510,29 @@ export class PostService {
         return createdReportId;
     }
 
+    async reportPostComment(userId: string, postId: string, commentId: string, body: ICreateReportBody) {
+        const [user, post, comment] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+            this.dataServices.comments.findById(commentId),
+        ]);
+
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
+        if (!post) {
+            throw new BadGatewayException(`Không tìm thấy bài viết này.`);
+        }
+
+        if (!comment) {
+            throw new BadGatewayException(`Không tìm thấy bình luận.`);
+        }
+
+        const createdReportId = await this.reportService.create(user, ReportTargetType.COMMENT, comment, body);
+        return createdReportId;
+    }
+
     async sharePost(userId: string, postId: string, body: ICreatePostBody) {
         const { content } = body;
         const post = await this.dataServices.posts.findById(postId);
