@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { UpdateQuery } from 'mongoose';
 export abstract class IGenericRepository<T> {
     abstract findAndCountAll(
         where: object,
@@ -10,7 +11,7 @@ export abstract class IGenericRepository<T> {
 
     abstract findAll(where: object, options?: unknown): Promise<T[]>;
 
-    abstract count(where: object): Promise<number>;
+    abstract count(where: object, options?: unknown): Promise<number>;
 
     abstract findOne(where: object, options?: unknown): Promise<T>;
 
@@ -20,11 +21,11 @@ export abstract class IGenericRepository<T> {
 
     abstract bulkCreate(items: Partial<T>[]): Promise<T[]>;
 
-    abstract updateById(id: string | ObjectId, item: Partial<T>, options?: unknown): Promise<T>;
+    abstract updateById(id: string | ObjectId, item: UpdateQuery<T>, options?: unknown): Promise<T>;
 
-    abstract updateOne(where: object, item: Partial<T>, options?: unknown): Promise<T>;
+    abstract updateOne(where: object, item: UpdateQuery<T>, options?: unknown): Promise<T>;
 
-    abstract bulkUpdate(where: object, item: Partial<T>): Promise<void>;
+    abstract bulkUpdate(where: object, item: UpdateQuery<T>): Promise<void>;
 
     abstract deleteById(id: string | ObjectId): Promise<void>;
 

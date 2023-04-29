@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 @Controller('/')
 export class AuthController {
     constructor(private configService: ConfigService, private authService: AuthService) {}
-    private readonly logger = createWinstonLogger(AuthController.name, 'auth', this.configService);
+    private readonly logger = createWinstonLogger(AuthController.name, this.configService);
 
     @Post('/login')
     async login(@Body(new TrimBodyPipe()) body: ILoginBody) {
@@ -19,7 +19,7 @@ export class AuthController {
             const token = await this.authService.login(body);
             return new SuccessResponse(token);
         } catch (error) {
-            this.logger.error(`[AuthService][login] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[login] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -30,7 +30,7 @@ export class AuthController {
             const token = await this.authService.register(body);
             return new SuccessResponse(token);
         } catch (error) {
-            this.logger.error(`[AuthService][register] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[register] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -41,7 +41,7 @@ export class AuthController {
             const result = await this.authService.forgotPassword(body);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[AuthService][forgotPassword] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[forgotPassword] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -52,7 +52,7 @@ export class AuthController {
             const token = await this.authService.getNewPasswordFromUserToken(body);
             return new SuccessResponse(token);
         } catch (error) {
-            this.logger.error(`[AuthService][getNewPasswordFromUserToken] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getNewPasswordFromUserToken] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -64,7 +64,7 @@ export class AuthController {
             const token = await this.authService.refreshToken(req.user.userId, req.user.refreshToken);
             return new SuccessResponse(token);
         } catch (error) {
-            this.logger.error(`[AuthService][refreshToken] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[refreshToken] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -76,7 +76,7 @@ export class AuthController {
             const result = await this.authService.logout(loginUser.userId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[AuthService][logout] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[logout] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

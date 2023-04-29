@@ -11,7 +11,7 @@ import { SearchService } from './search.service';
 export class SearchController {
     constructor(private configService: ConfigService, private searchService: SearchService) {}
 
-    private readonly logger = createWinstonLogger(SearchController.name, 'search', this.configService);
+    private readonly logger = createWinstonLogger(SearchController.name, this.configService);
 
     @Get('/')
     @UseGuards(AccessTokenGuard)
@@ -20,7 +20,7 @@ export class SearchController {
             const result = await this.searchService.search(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[SearchController][search] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[search] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -32,7 +32,7 @@ export class SearchController {
             const result = await this.searchService.searchPost(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[SearchController][searchPosts] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[searchPosts] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -44,7 +44,7 @@ export class SearchController {
             const result = await this.searchService.searchUser(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[SearchController][searchUsers] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[searchUsers] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

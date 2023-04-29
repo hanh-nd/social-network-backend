@@ -12,7 +12,7 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(private configService: ConfigService, private userService: UserService) {}
 
-    private readonly logger = createWinstonLogger(UserController.name, 'users', this.configService);
+    private readonly logger = createWinstonLogger(UserController.name, this.configService);
 
     @Get('/me')
     @UseGuards(AccessTokenGuard)
@@ -21,7 +21,7 @@ export class UserController {
             const user = await this.userService.getUserProfile(loginUser.userId);
             return new SuccessResponse(user);
         } catch (error) {
-            this.logger.error(`[UserController][getLoginUserProfile] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getLoginUserProfile] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -33,7 +33,7 @@ export class UserController {
             const result = await this.userService.changeUserPassword(loginUser.userId, body);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][changeUserPassword] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[changeUserPassword] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -45,7 +45,7 @@ export class UserController {
             const result = await this.userService.updateProfile(loginUser.userId, body);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][updateProfile] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[updateProfile] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -57,7 +57,7 @@ export class UserController {
             const result = await this.userService.getSubscribers(loginUser.userId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][getSubscribers] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getSubscribers] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -69,7 +69,7 @@ export class UserController {
             const result = await this.userService.removeSubscribers(loginUser.userId, body.toRemoveId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][removeSubscribers] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[removeSubscribers] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -81,7 +81,7 @@ export class UserController {
             const result = await this.userService.getBlockedList(loginUser.userId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][getBlockedList] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getBlockedList] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -93,7 +93,7 @@ export class UserController {
             const result = await this.userService.getSubscribing(loginUser.userId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][getSubscribing] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getSubscribing] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -105,7 +105,7 @@ export class UserController {
             const result = await this.userService.getUserFiles(id);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][getUserFiles] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getUserFiles] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -117,7 +117,7 @@ export class UserController {
             const user = await this.userService.getUserProfile(id);
             return new SuccessResponse(user);
         } catch (error) {
-            this.logger.error(`[UserController][getUserInformation] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -129,7 +129,7 @@ export class UserController {
             const result = await this.userService.subscribeOrUnsubscribeUser(loginUser.userId, targetUserId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][subscribeOrUnsubscribeUser] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[subscribeOrUnsubscribeUser] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -141,7 +141,7 @@ export class UserController {
             const result = await this.userService.blockOrUnblockUser(loginUser.userId, targetUserId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[UserController][blockOrUnblockUser] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[blockOrUnblockUser] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
