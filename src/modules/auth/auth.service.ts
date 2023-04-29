@@ -2,12 +2,11 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
-import { ObjectId } from 'mongodb';
 import { ConfigKey } from 'src/common/config';
 import { ElasticsearchIndex, RoleName } from 'src/common/constants';
 import { DefaultInternalServerErrorException } from 'src/common/exception/default-internal-system-error.exception';
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
-import { generateRandomString } from 'src/common/helper';
+import { generateRandomString, toObjectId } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -77,7 +76,7 @@ export class AuthService {
         const createdUser = await this.dataServices.users.create({
             ...body,
             password: hashedPassword,
-            roleId: new ObjectId(userRole._id),
+            roleId: toObjectId(userRole._id),
         });
         await this.elasticsearchService.index<User>(ElasticsearchIndex.USER, {
             id: createdUser._id,
@@ -108,13 +107,13 @@ export class AuthService {
 
         const generatedUserToken = generateRandomString(32);
         await this.dataServices.userTokens.bulkDelete({
-            userId: new ObjectId(existedUser._id),
+            userId: toObjectId(existedUser._id),
             expiredIn: {
                 $gt: moment().toISOString(),
             },
         });
         await this.dataServices.userTokens.create({
-            userId: new ObjectId(existedUser._id),
+            userId: toObjectId(existedUser._id),
             token: generatedUserToken,
             expiredIn: moment().add(1, 'days').toISOString(),
         });
