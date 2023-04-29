@@ -21,7 +21,7 @@ import { FileService } from './file.service';
 export class FileController {
     constructor(private configService: ConfigService, private fileService: FileService) {}
 
-    private readonly logger = createWinstonLogger(FileController.name, 'files', this.configService);
+    private readonly logger = createWinstonLogger(FileController.name, this.configService);
 
     @Post('/upload')
     @UseGuards(AccessTokenGuard)
@@ -47,7 +47,7 @@ export class FileController {
             );
             return new SuccessResponse({ item: result, totalItems: result.length });
         } catch (error) {
-            this.logger.error(`[FileController][readStream] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[readStream] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
@@ -59,7 +59,7 @@ export class FileController {
             const fileStream = await this.fileService.readStream(id);
             return fileStream.pipe(res);
         } catch (error) {
-            this.logger.error(`[FileController][readStream] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[readStream] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }

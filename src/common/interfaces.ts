@@ -1,3 +1,4 @@
+import { Comment, Post } from 'src/mongo-schemas';
 import { OrderBy, OrderDirection } from './constants';
 
 export interface ICommonGetListQuery {
@@ -17,3 +18,5 @@ export interface UserToken {
 export interface RequestWithUser extends Request {
     user: UserToken;
 }
+
+export type ReactionTarget = Post | Comment;

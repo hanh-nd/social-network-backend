@@ -6,8 +6,14 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import * as _ from 'lodash';
-import { DEFAULT_PAGE_VALUE, ElasticsearchIndex, Privacy } from 'src/common/constants';
-import { toObjectIds } from 'src/common/helper';
+import {
+    DEFAULT_PAGE_VALUE,
+    ElasticsearchIndex,
+    Privacy,
+    ReactionTargetType,
+    ReactionTypePoint,
+} from 'src/common/constants';
+import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -15,6 +21,8 @@ import { Post, User } from 'src/mongo-schemas';
 import { ICreateCommentBody, IGetCommentListQuery, IUpdateCommentBody } from '../comments/comment.interface';
 import { CommentService } from '../comments/comment.service';
 import { FileService } from '../files/file.service';
+import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reaction.interface';
+import { ReactionService } from '../reactions/reaction.service';
 import { DEFAULT_PAGE_LIMIT } from './../../common/constants';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 
@@ -26,6 +34,7 @@ export class PostService {
         private fileService: FileService,
         private elasticsearchService: ElasticsearchService,
         private commentService: CommentService,
+        private reactionService: ReactionService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
@@ -292,6 +301,74 @@ export class PostService {
         await this.dataServices.posts.updateById(post._id, {
             commentIds: postCommentIds,
         });
+        return true;
+    }
+
+    async getPostReactions(postId: string, query: IGetReactionListQuery) {
+        const post = await this.dataServices.posts.findById(postId);
+        if (!post) {
+            throw new BadGatewayException(`Không tìm thấy bài viết này.`);
+        }
+
+        const reactions = await this.reactionService.getReactions(ReactionTargetType.POST, post, query);
+        return reactions;
+    }
+
+    async reactOrUndoReactPost(userId: string, postId: string, body: ICreateReactionBody) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
+        const post = await this.dataServices.posts.findById(postId);
+        if (!post) {
+            throw new BadGatewayException(`Không tìm thấy bài viết này.`);
+        }
+        const postReactIds = post.reactIds;
+        const isUserReacted = postReactIds.map((id) => `${id}`).includes(`${user._id}`);
+        if (isUserReacted) {
+            await this.undoReactPost(user, post, body);
+        } else {
+            await this.reactPost(user, post, body);
+        }
+
+        return true;
+    }
+
+    async reactPost(user: User, post: Post, body: ICreateReactionBody) {
+        // Insert into reaction collection
+        const toIncreasePoint = await this.reactionService.react(user, ReactionTargetType.POST, post, body);
+
+        const postReactIds = post.reactIds;
+        postReactIds.push(toObjectId(user._id));
+
+        await this.dataServices.posts.updateById(post._id, {
+            reactIds: postReactIds,
+            $inc: {
+                point: toIncreasePoint,
+            },
+        });
+
+        return true;
+    }
+
+    async undoReactPost(user: User, post: Post, body: ICreateReactionBody) {
+        // Delete all document in reaction collection with author is user and target is post
+        const toDecreasePoint = await this.reactionService.undoReact(user, ReactionTargetType.POST, post);
+
+        const postReactIds = post.reactIds;
+        _.remove(postReactIds, (id) => `${id}` == user._id);
+
+        await this.dataServices.posts.updateById(post._id, {
+            reactIds: postReactIds,
+            $inc: {
+                point: -toDecreasePoint,
+            },
+        });
+
+        if (ReactionTypePoint[body.type] !== toDecreasePoint) {
+            await this.reactPost(user, post, body);
+        }
         return true;
     }
 }
