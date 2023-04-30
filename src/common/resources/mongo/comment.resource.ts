@@ -4,16 +4,18 @@ import { IGenericResource } from '../generic.resource';
 
 export class CommentResource extends IGenericResource<CommentDocument> {
     async mapToDto(comment: CommentDocument): Promise<object> {
-        if (_.isObject(comment.author)) {
-            comment.author = _.pick(comment.author, ['_id', 'username', 'avatarId', 'fullName']);
+        const commentDto = _.cloneDeep(comment.toObject());
+
+        if (_.isObject(commentDto.author)) {
+            commentDto.author = _.pick(commentDto.author, ['_id', 'username', 'avatarId', 'fullName']);
         }
 
-        if (_.isObject(comment.post)) {
-            comment.post = _.pick(comment.post, ['_id']);
+        if (_.isObject(commentDto.post)) {
+            commentDto.post = _.pick(commentDto.post, ['_id']);
         }
 
-        const commentDto = Object.assign({}, comment.toObject(), {
-            numberOfReactions: comment.reactIds.length,
+        Object.assign(commentDto, {
+            numberOfReactions: commentDto.reactIds.length,
         });
 
         delete commentDto.reactIds;

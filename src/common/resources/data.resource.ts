@@ -1,4 +1,11 @@
-import { CommentDocument, PostDocument, ReactionDocument, ReportDocument, UserDocument } from 'src/mongo-schemas';
+import {
+    CommentDocument,
+    NotificationDocument,
+    PostDocument,
+    ReactionDocument,
+    ReportDocument,
+    UserDocument,
+} from 'src/mongo-schemas';
 import { IGenericResource } from './generic.resource';
 
 export abstract class IDataResources {
@@ -7,4 +14,5 @@ export abstract class IDataResources {
     abstract comments: IGenericResource<CommentDocument>;
     abstract reactions: IGenericResource<ReactionDocument>;
     abstract reports: IGenericResource<ReportDocument>;
+    abstract notifications: IGenericResource<NotificationDocument>;
 }
