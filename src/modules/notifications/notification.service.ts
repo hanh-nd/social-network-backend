@@ -1,15 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE } from 'src/common/constants';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, SocketEvent } from 'src/common/constants';
 import { toObjectId } from 'src/common/helper';
 import { NotificationTarget } from 'src/common/interfaces';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Notification, User } from 'src/mongo-schemas';
+import { SocketGateway } from '../gateway/socket.gateway';
 import { IGetNotificationListQuery } from './notification.interface';
 
 @Injectable()
 export class NotificationService {
-    constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
+    constructor(
+        private dataServices: IDataServices,
+        private dataResources: IDataResources,
+        private socketGateway: SocketGateway,
+    ) {}
 
     async getList(userId: string, query: IGetNotificationListQuery) {
         const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;

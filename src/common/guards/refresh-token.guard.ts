@@ -1,10 +1,10 @@
-import { ConfigKey } from 'src/common/config';
 import { ExecutionContext, Injectable } from '@nestjs/common';
-import { UserToken } from '../interfaces';
-import { TokenGuard } from './token.guard';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
+import { ConfigKey } from 'src/common/config';
+import { IJwtPayload } from 'src/modules/auth/auth.interface';
+import { TokenGuard } from './token.guard';
 
 @Injectable()
 export class RefreshTokenGuard extends TokenGuard {
@@ -26,8 +26,8 @@ export class RefreshTokenGuard extends TokenGuard {
             return false;
         }
     }
-    protected verifyToken(token: string): UserToken {
-        return this.jwtService.verify(token, {
+    protected verifyToken(token: string): IJwtPayload {
+        return this.jwtService.verify<IJwtPayload>(token, {
             secret: this.configService.get<string>(ConfigKey.JWT_REFRESH_TOKEN_SECRET),
         });
     }

@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import { IJwtPayload } from 'src/modules/auth/auth.interface';
 import { TokenExpiredException } from '../exception/token-expired.exception';
-import { UserToken } from '../interfaces';
 
 export abstract class TokenGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
@@ -37,5 +37,5 @@ export abstract class TokenGuard implements CanActivate {
         return token;
     }
 
-    protected abstract verifyToken(token: string): UserToken;
+    protected abstract verifyToken(token: string): IJwtPayload;
 }

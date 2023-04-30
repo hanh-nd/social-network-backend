@@ -11,10 +11,11 @@ import { DataServicesModule } from './common/repositories/data-services.module';
 import { DataResourcesModule } from './common/resources/data-resources.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { FileModule } from './modules/files/file.module';
+import { SocketModule } from './modules/gateway/socket.module';
 import { PostModule } from './modules/posts/post.module';
+import { SearchModule } from './modules/search/search.module';
 import { SeedsModule } from './modules/seeder/seed.module';
 import { UserModule } from './modules/users/user.module';
-import { SearchModule } from './modules/search/search.module';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { SearchModule } from './modules/search/search.module';
         UserModule,
         PostModule,
         SearchModule,
+        SocketModule,
     ],
     controllers: [AppController],
     providers: [AppService, JwtService],
