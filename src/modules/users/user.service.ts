@@ -1,6 +1,6 @@
 import { BadGatewayException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import * as _ from 'lodash';
-import { ElasticsearchIndex, SubscribeRequestStatus } from 'src/common/constants';
+import { ElasticsearchIndex, SocketEvent, SubscribeRequestStatus } from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
@@ -8,6 +8,7 @@ import { IDataResources } from 'src/common/resources/data.resource';
 import { User } from 'src/mongo-schemas';
 import { compare, hash } from 'src/plugins/bcrypt';
 import { FileService } from '../files/file.service';
+import { SocketGateway } from '../gateway/socket.gateway';
 import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class UserService {
         private dataResources: IDataResources,
         private fileService: FileService,
         private elasticsearchService: ElasticsearchService,
+        private socketGateway: SocketGateway,
     ) {}
 
     async getUserProfile(userId: string) {

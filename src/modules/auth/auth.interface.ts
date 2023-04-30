@@ -23,6 +23,7 @@ export interface IJwtPayload {
     username: string;
     role: string;
     permissions: string[];
+    refreshToken?: string;
 }
 
 export interface IForgotPasswordBody {
