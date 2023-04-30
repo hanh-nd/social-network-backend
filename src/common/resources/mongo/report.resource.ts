@@ -4,11 +4,12 @@ import { IGenericResource } from '../generic.resource';
 
 export class ReportResource extends IGenericResource<ReportDocument> {
     async mapToDto(report: ReportDocument): Promise<object> {
-        if (_.isObject(report.author)) {
-            report.author = _.pick(report.author, ['_id', 'username', 'avatarId', 'fullName']);
+        const reportDto = _.cloneDeep(report.toObject());
+
+        if (_.isObject(reportDto.author)) {
+            reportDto.author = _.pick(reportDto.author, ['_id', 'username', 'avatarId', 'fullName']);
         }
 
-        const reportDto = Object.assign({}, report.toObject());
         return reportDto;
     }
 }

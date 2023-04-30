@@ -149,3 +149,15 @@ export const ReportTargetType = {
 
 export const SHARE_POST_POINT = 5;
 export const REPORT_POST_POST = 10;
+
+export const NotificationTargetType = {
+    POST: 'Post',
+    COMMENT: 'Comment',
+    MESSAGE: 'Message',
+};
+
+export const NotificationAction = {
+    REACT: 'REACT',
+    COMMENT: 'COMMENT',
+    SHARE: 'SHARE',
+};

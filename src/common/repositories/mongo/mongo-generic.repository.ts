@@ -27,12 +27,19 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         };
     }
 
-    async findAll(where = {}, options: any = {}): Promise<T[]> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+    async findAll(where: any = {}, options: any = {}): Promise<T[]> {
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
+        if (options.ignoreSoftDelete) {
+            delete where.deletedAt;
+        }
         let chain = this._model.find(where);
 
         if (options.populate) {
@@ -58,23 +65,37 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return chain.exec();
     }
 
-    async count(where = {}, options: any = {}): Promise<number> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+    async count(where: any = {}, options: any = {}): Promise<number> {
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
+        if (options.ignoreSoftDelete) {
+            delete where.deletedAt;
+        }
         let chain = this._model.count(where);
 
         return chain.exec();
     }
 
-    async findOne(where?: object, options: any = {}): Promise<T | null> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+    async findOne(where?: any, options: any = {}): Promise<T | null> {
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
+        if (options.ignoreSoftDelete) {
+            delete where.deletedAt;
+        }
         let chain = this._model.findOne(where);
 
         if (options.populate) {
@@ -157,11 +178,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
 
     async deleteOne(where: object): Promise<void> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
         await this.updateOne(where, {
             deletedAt: Date.now(),
         } as unknown as Partial<T>);
@@ -169,11 +194,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
 
     async bulkDelete(where: object): Promise<void> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
         await this.bulkUpdate(where, {
             deletedAt: Date.now(),
         } as unknown as Partial<T>);
