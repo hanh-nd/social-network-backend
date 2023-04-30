@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { ConfigKey } from './common/config';
+import { RedisIoAdapter } from './modules/gateway/redis-io.adapter';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -27,6 +28,9 @@ async function bootstrap() {
     app.setGlobalPrefix(configService.get(ConfigKey.BASE_PATH));
     // use winston for logger
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+    // use redis adapter
+    const redisIoAdapter = new RedisIoAdapter(app);
+    app.useWebSocketAdapter(redisIoAdapter);
     await app.listen(configService.get(ConfigKey.PORT));
 }
 bootstrap();

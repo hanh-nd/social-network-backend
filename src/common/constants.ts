@@ -161,3 +161,9 @@ export const NotificationAction = {
     COMMENT: 'COMMENT',
     SHARE: 'SHARE',
 };
+
+export const SocketEvent = {
+    USER_REACT: 'USER_REACT',
+    USER_SUBSCRIBE_PUBLIC: 'USER_SUBSCRIBE_PUBLIC',
+    USER_SUBSCRIBE_PRIVATE: 'USER_SUBSCRIBE_PRIVATE',
+};
