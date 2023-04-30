@@ -9,6 +9,8 @@ import * as _ from 'lodash';
 import {
     DEFAULT_PAGE_VALUE,
     ElasticsearchIndex,
+    NotificationAction,
+    NotificationTargetType,
     Privacy,
     ReactionTargetType,
     ReactionTypePoint,
@@ -23,6 +25,7 @@ import { Comment, Post, User } from 'src/mongo-schemas';
 import { ICreateCommentBody, IGetCommentListQuery, IUpdateCommentBody } from '../comments/comment.interface';
 import { CommentService } from '../comments/comment.service';
 import { FileService } from '../files/file.service';
+import { NotificationService } from '../notifications/notification.service';
 import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reaction.interface';
 import { ReactionService } from '../reactions/reaction.service';
 import { ICreateReportBody } from '../reports/report.interface';
@@ -40,6 +43,7 @@ export class PostService {
         private commentService: CommentService,
         private reactionService: ReactionService,
         private reportService: ReportService,
+        private notificationService: NotificationService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
@@ -298,6 +302,15 @@ export class PostService {
             commentIds: postCommentIds,
         });
 
+        // send notification
+        await this.notificationService.create(
+            user,
+            post.author,
+            NotificationTargetType.POST,
+            post,
+            NotificationAction.COMMENT,
+        );
+
         return createdCommentId;
     }
 
@@ -353,7 +366,7 @@ export class PostService {
     async reactOrUndoReactPost(userId: string, postId: string, body: ICreateReactionBody) {
         const [user, post] = await Promise.all([
             this.dataServices.users.findById(userId),
-            this.dataServices.posts.findById(postId),
+            this.dataServices.posts.findById(postId, { populate: ['author'] }),
         ]);
         if (!user) {
             throw new BadGatewayException(`Không tìm thấy người dùng.`);
@@ -386,6 +399,15 @@ export class PostService {
                 point: toIncreasePoint,
             },
         });
+
+        // send notification
+        await this.notificationService.create(
+            user,
+            post.author,
+            NotificationTargetType.POST,
+            post,
+            NotificationAction.REACT,
+        );
 
         return true;
     }
@@ -471,6 +493,15 @@ export class PostService {
                 point: toIncreasePoint,
             },
         });
+
+        // send notification
+        await this.notificationService.create(
+            user,
+            comment.author,
+            NotificationTargetType.COMMENT,
+            comment,
+            NotificationAction.REACT,
+        );
     }
 
     private async undoReactComment(user: User, comment: Comment, body: ICreateReactionBody) {
@@ -535,7 +566,15 @@ export class PostService {
 
     async sharePost(userId: string, postId: string, body: ICreatePostBody) {
         const { content } = body;
-        const post = await this.dataServices.posts.findById(postId);
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
         if (!post) {
             throw new BadRequestException(`Không tìm thấy bài viết này.`);
         }
@@ -560,6 +599,15 @@ export class PostService {
             });
         }
         await this.dataServices.posts.updateById(post._id, toUpdatePostBody);
+
+        // send notification
+        await this.notificationService.create(
+            user,
+            post.author,
+            NotificationTargetType.POST,
+            post,
+            NotificationAction.SHARE,
+        );
 
         return createdPostId;
     }

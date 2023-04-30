@@ -21,3 +21,4 @@ export interface RequestWithUser extends Request {
 
 export type ReactionTarget = Post | Comment;
 export type ReportTarget = Post | Comment | Message;
+export type NotificationTarget = Post | Comment | Message;
