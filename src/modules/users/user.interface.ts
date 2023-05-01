@@ -1,3 +1,5 @@
+import { ICommonGetListQuery } from 'src/common/interfaces';
+
 export interface IChangePasswordBody {
     oldPassword: string;
     password: string;
@@ -24,3 +26,5 @@ export interface IAddress {
 export interface IRemoveSubscriberBody {
     toRemoveId: string;
 }
+
+export interface IGetUserListQuery extends ICommonGetListQuery {}

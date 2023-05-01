@@ -1,11 +1,15 @@
-import { Body, Controller, Get, InternalServerErrorException, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
-import { TrimBodyPipe } from 'src/common/pipes';
-import { IChangePasswordBody, IRemoveSubscriberBody, IUpdateProfileBody } from './user.interface';
+import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
+import {
+    IGetSubscribeRequestListQuery,
+    IUpdateSubscribeRequestBody,
+} from '../subscribe-requests/subscribe-request.interface';
+import { IChangePasswordBody, IGetUserListQuery, IRemoveSubscriberBody, IUpdateProfileBody } from './user.interface';
 import { UserService } from './user.service';
 
 @Controller('/users/')
@@ -142,6 +146,46 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[blockOrUnblockUser] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/subscribe-requests')
+    @UseGuards(AccessTokenGuard)
+    async getSubscribeRequests(@LoginUser() loginUser, @Query() query: IGetSubscribeRequestListQuery) {
+        try {
+            const result = await this.userService.getSubscribeRequests(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getSubscribeRequests] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Patch('/subscribe-requests/:subscribeRequestId')
+    @UseGuards(AccessTokenGuard)
+    async updateSubscribeRequest(
+        @LoginUser() loginUser,
+        @Param('subscribeRequestId') subscribeRequestId: string,
+        @Body(new TrimBodyPipe()) body: IUpdateSubscribeRequestBody,
+    ) {
+        try {
+            const result = await this.userService.updateSubscribeRequest(loginUser.userId, subscribeRequestId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[updateSubscribeRequest] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/suggestions')
+    @UseGuards(AccessTokenGuard)
+    async getUserSuggestions(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetUserListQuery) {
+        try {
+            const result = await this.userService.getUserSuggestions(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[updateSubscribeRequest] ${error.stack || JSON.stringify(error)}`);
             throw new InternalServerErrorException(error);
         }
     }
