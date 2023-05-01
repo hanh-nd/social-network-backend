@@ -145,6 +145,7 @@ export const ReportTargetType = {
     POST: 'Post',
     COMMENT: 'Comment',
     MESSAGE: 'Message',
+    USER: 'User',
 };
 
 export const SHARE_POST_POINT = 5;
@@ -154,12 +155,14 @@ export const NotificationTargetType = {
     POST: 'Post',
     COMMENT: 'Comment',
     MESSAGE: 'Message',
+    USER: 'User',
 };
 
 export const NotificationAction = {
     REACT: 'REACT',
     COMMENT: 'COMMENT',
     SHARE: 'SHARE',
+    ACCEPT_SUBSCRIBE_REQUEST: 'ACCEPT_SUBSCRIBE_REQUEST',
 };
 
 export const SocketEvent = {
