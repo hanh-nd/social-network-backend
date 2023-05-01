@@ -1,6 +1,17 @@
-import { BadGatewayException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadGatewayException,
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import * as _ from 'lodash';
-import { ElasticsearchIndex, SocketEvent, SubscribeRequestStatus } from 'src/common/constants';
+import {
+    DEFAULT_PAGE_LIMIT,
+    DEFAULT_PAGE_VALUE,
+    ElasticsearchIndex,
+    SubscribeRequestStatus,
+} from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
@@ -9,7 +20,13 @@ import { User } from 'src/mongo-schemas';
 import { compare, hash } from 'src/plugins/bcrypt';
 import { FileService } from '../files/file.service';
 import { SocketGateway } from '../gateway/socket.gateway';
-import { IChangePasswordBody, IUpdateProfileBody } from './user.interface';
+import { NotificationService } from '../notifications/notification.service';
+import {
+    IGetSubscribeRequestListQuery,
+    IUpdateSubscribeRequestBody,
+} from '../subscribe-requests/subscribe-request.interface';
+import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
+import { IChangePasswordBody, IGetUserListQuery, IUpdateProfileBody } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -19,6 +36,8 @@ export class UserService {
         private fileService: FileService,
         private elasticsearchService: ElasticsearchService,
         private socketGateway: SocketGateway,
+        private subscribeRequestService: SubscribeRequestService,
+        private notificationService: NotificationService,
     ) {}
 
     async getUserProfile(userId: string) {
@@ -177,11 +196,11 @@ export class UserService {
     private async subscribePublicUser(loginUser: User, targetUser: User) {
         // target user is public. no need to wait for target user to accept
         // create subscribe request with status accepted
-        const createdSubscribeRequest = await this.dataServices.subscribeRequests.create({
-            sender: loginUser._id as unknown as User,
-            receiver: loginUser._id as unknown as User,
-            status: SubscribeRequestStatus.ACCEPTED,
-        });
+        const createdSubscribeRequestId = await this.subscribeRequestService.create(
+            loginUser,
+            targetUser,
+            SubscribeRequestStatus.ACCEPTED,
+        );
         // TODO: Send notification to target user;
 
         await this.subscribeTargetUser(loginUser, targetUser);
@@ -190,11 +209,11 @@ export class UserService {
 
     private async subscribePrivateUser(loginUser: User, targetUser: User) {
         // target user is private. have to wait for target user to accept
-        const createdSubscribeRequest = await this.dataServices.subscribeRequests.create({
-            sender: loginUser._id as unknown as User,
-            receiver: loginUser._id as unknown as User,
-            status: SubscribeRequestStatus.PENDING,
-        });
+        const createdSubscribeRequestId = await this.subscribeRequestService.create(
+            loginUser,
+            targetUser,
+            SubscribeRequestStatus.PENDING,
+        );
         // TODO: Send notification to target user;
 
         return true;
@@ -280,5 +299,67 @@ export class UserService {
         await this.dataServices.users.updateById(loginUser._id, {
             blockedIds: loginUserBlockIds,
         });
+    }
+
+    async getSubscribeRequests(userId: string, query: IGetSubscribeRequestListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new BadRequestException(`Không tìm thấy người dùng này.`);
+        }
+
+        const subscribeRequests = await this.subscribeRequestService.getSubscribeRequests(user, query);
+        return subscribeRequests;
+    }
+
+    async updateSubscribeRequest(userId: string, subscribeRequestId: string, body: IUpdateSubscribeRequestBody) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new BadRequestException(`Không tìm thấy người dùng này.`);
+        }
+
+        const updatedSubscribeRequest = await this.subscribeRequestService.updateSubscribeRequest(
+            user,
+            subscribeRequestId,
+            body,
+        );
+        if (updatedSubscribeRequest.status === SubscribeRequestStatus.ACCEPTED) {
+            // update user's, target user's subscribeIds;
+            const { sender, receiver } = updatedSubscribeRequest;
+            await this.subscribeTargetUser(sender as User, receiver as User);
+
+            // TODO: Send notification to target user;
+        }
+
+        return true;
+    }
+
+    async getUserSuggestions(userId: string, query: IGetUserListQuery) {
+        const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
+        const skip = (+page - 1) * +limit;
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new BadRequestException(`Không tìm thấy người dùng này.`);
+        }
+
+        const POINT_RANGE = 100;
+        const userPointMinValue = user.point - POINT_RANGE;
+        const userPointMaxValue = user.point + POINT_RANGE;
+
+        const suggestions = await this.dataServices.users.findAll(
+            {
+                point: {
+                    $gte: userPointMinValue,
+                    $lte: userPointMaxValue,
+                },
+            },
+            {
+                skip: skip,
+                limit: +limit,
+                sort: [['point', -1]],
+            },
+        );
+
+        const suggestionDtos = await this.dataResources.users.mapToDtoList(suggestions);
+        return suggestionDtos;
     }
 }
