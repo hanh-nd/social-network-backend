@@ -25,7 +25,7 @@ export class NotificationController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getUserNotification] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -37,7 +37,7 @@ export class NotificationController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[markOrUndoMarkAsRead] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -49,7 +49,7 @@ export class NotificationController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[deleteNotification] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 }

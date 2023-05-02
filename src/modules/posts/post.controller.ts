@@ -36,7 +36,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[createNewPost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -48,7 +48,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getNewsFeed] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -60,7 +60,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[createNewPost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -72,7 +72,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostDetail] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -88,7 +88,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updatePost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -100,7 +100,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[deletePost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -115,7 +115,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostComments] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -131,7 +131,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[createPostComment] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -148,7 +148,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updatePostComment] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -164,7 +164,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[deletePostComment] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -179,7 +179,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostReactions] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -195,7 +195,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[reactOrUndoReactPost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -211,7 +211,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostCommentReactions] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -233,7 +233,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[reactOrUndoReactPostComment] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -249,7 +249,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[reportPost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -266,7 +266,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[reportPostComment] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -282,7 +282,7 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[sharePost] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 }

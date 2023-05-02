@@ -12,15 +12,7 @@ async function bootstrap() {
     const origin = configService.get(ConfigKey.CORS_WHITELIST)?.split(',');
     const corsOptions: CorsOptions = {
         origin: origin,
-        allowedHeaders: [
-            'Content-Type',
-            'Authorization',
-            'Language',
-            'X-Timezone',
-            'X-Timezone-Name',
-            'hotelId',
-            'idToken',
-        ],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Language', 'X-Timezone', 'X-Timezone-Name'],
         optionsSuccessStatus: 200,
         methods: ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
     };

@@ -21,7 +21,7 @@ export class SearchController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[search] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -33,7 +33,7 @@ export class SearchController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[searchPosts] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -45,7 +45,7 @@ export class SearchController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[searchUsers] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 }
