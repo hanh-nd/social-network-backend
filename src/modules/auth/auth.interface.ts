@@ -9,7 +9,7 @@ export interface IRegisterBody {
     fullName: string;
     email: string;
     phone?: string;
-    birthday?: string;
+    birthday?: Date;
     address?: {
         province: string;
         district: string;

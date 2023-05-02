@@ -26,7 +26,7 @@ export class UserController {
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[getLoginUserProfile] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -38,7 +38,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[changeUserPassword] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -50,7 +50,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updateProfile] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -62,7 +62,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getSubscribers] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -74,7 +74,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[removeSubscribers] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -86,7 +86,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getBlockedList] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -98,7 +98,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getSubscribing] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -110,7 +110,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getUserFiles] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -122,7 +122,7 @@ export class UserController {
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -134,7 +134,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[subscribeOrUnsubscribeUser] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -146,7 +146,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[blockOrUnblockUser] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -158,7 +158,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getSubscribeRequests] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -174,7 +174,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updateSubscribeRequest] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -186,7 +186,7 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updateSubscribeRequest] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 }

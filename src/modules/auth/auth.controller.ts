@@ -20,7 +20,7 @@ export class AuthController {
             return new SuccessResponse(token);
         } catch (error) {
             this.logger.error(`[login] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -31,7 +31,7 @@ export class AuthController {
             return new SuccessResponse(token);
         } catch (error) {
             this.logger.error(`[register] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -42,7 +42,7 @@ export class AuthController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[forgotPassword] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -53,7 +53,7 @@ export class AuthController {
             return new SuccessResponse(token);
         } catch (error) {
             this.logger.error(`[getNewPasswordFromUserToken] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -65,7 +65,7 @@ export class AuthController {
             return new SuccessResponse(token);
         } catch (error) {
             this.logger.error(`[refreshToken] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -77,7 +77,7 @@ export class AuthController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[logout] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 }

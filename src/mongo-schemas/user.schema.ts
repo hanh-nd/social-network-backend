@@ -46,7 +46,7 @@ export class User extends MongoBaseSchema {
     phone: string;
 
     @Prop({ required: false, type: Date })
-    birthday: string;
+    birthday: Date;
 
     @Prop({ required: false, default: true, type: Boolean })
     active: boolean;
