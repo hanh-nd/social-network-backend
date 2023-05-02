@@ -1,14 +1,4 @@
-import {
-    Controller,
-    Get,
-    InternalServerErrorException,
-    Param,
-    Post,
-    Res,
-    UploadedFiles,
-    UseGuards,
-    UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Get, Param, Post, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as _ from 'lodash';
@@ -45,10 +35,10 @@ export class FileController {
                     'contentType',
                 ),
             );
-            return new SuccessResponse({ item: result, totalItems: result.length });
+            return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[readStream] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 
@@ -60,7 +50,7 @@ export class FileController {
             return fileStream.pipe(res);
         } catch (error) {
             this.logger.error(`[readStream] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            throw error;
         }
     }
 }
