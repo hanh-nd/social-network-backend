@@ -1,10 +1,11 @@
-import { Body, Controller, Get, InternalServerErrorException, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
+import { IGetPostListQuery } from '../posts/post.interface';
 import {
     IGetSubscribeRequestListQuery,
     IUpdateSubscribeRequestBody,
@@ -186,6 +187,18 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updateSubscribeRequest] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id/posts')
+    @UseGuards(AccessTokenGuard)
+    async getUserPosts(@Param('id') userId, @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery) {
+        try {
+            const result = await this.userService.getUserPosts(userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserPosts] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
