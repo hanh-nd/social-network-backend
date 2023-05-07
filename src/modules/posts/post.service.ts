@@ -153,6 +153,7 @@ export class PostService {
                 ],
             },
             {
+                populate: ['author'],
                 sort: [
                     ['point', -1],
                     ['createdAt', -1],
@@ -177,6 +178,7 @@ export class PostService {
                 },
             },
             {
+                populate: ['author'],
                 sort: [
                     ['point', -1],
                     ['createdAt', -1],

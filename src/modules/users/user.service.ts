@@ -27,6 +27,7 @@ import {
 } from '../subscribe-requests/subscribe-request.interface';
 import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
 import { IChangePasswordBody, IGetUserListQuery, IUpdateProfileBody } from './user.interface';
+import { IGetPostListQuery } from '../posts/post.interface';
 
 @Injectable()
 export class UserService {
@@ -361,5 +362,34 @@ export class UserService {
 
         const suggestionDtos = await this.dataResources.users.mapToDtoList(suggestions);
         return suggestionDtos;
+    }
+
+    async getUserPosts(userId: string, query: IGetPostListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
+        }
+        const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
+        const skip = (page - 1) * +limit;
+        const posts = await this.dataServices.posts.findAll(
+            {
+                author: user._id,
+                discussedIn: null,
+            },
+            {
+                sort: [['createdAt', 'desc']],
+                populate: [
+                    'author',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                ],
+                skip: skip,
+                limit: +limit,
+            },
+        );
+        const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
+        return postDtos;
     }
 }
