@@ -153,7 +153,13 @@ export class PostService {
                 ],
             },
             {
-                populate: ['author'],
+                populate: [
+                    'author',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                ],
                 sort: [
                     ['point', -1],
                     ['createdAt', -1],
@@ -178,7 +184,13 @@ export class PostService {
                 },
             },
             {
-                populate: ['author'],
+                populate: [
+                    'author',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                ],
                 sort: [
                     ['point', -1],
                     ['createdAt', -1],
@@ -218,7 +230,7 @@ export class PostService {
         const { content, privacy, pictureIds, videoIds } = body;
         const existedPost = await this.dataServices.posts.findOne(
             {
-                author: userId,
+                author: toObjectId(userId),
                 _id: postId,
             },
             {
@@ -253,7 +265,7 @@ export class PostService {
     async deleteUserPost(userId: string, postId: string) {
         const existedPost = await this.dataServices.posts.findOne(
             {
-                author: userId,
+                author: toObjectId(userId),
                 _id: postId,
             },
             {
