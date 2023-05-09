@@ -59,6 +59,7 @@ export class Post extends MongoBaseSchema {
     @Prop({
         required: false,
         type: Types.ObjectId,
+        ref: Post.name,
     })
     postShared: Partial<Post>;
 
