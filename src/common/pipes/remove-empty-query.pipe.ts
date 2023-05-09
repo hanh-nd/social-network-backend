@@ -41,10 +41,7 @@ export class RemoveEmptyQueryPipe implements PipeTransform {
                         }
 
                         // remove string contain only space characters
-                        else if (
-                            typeof property === 'string' &&
-                            !trim(property as string)
-                        ) {
+                        else if (typeof property === 'string' && !trim(property as string)) {
                             return false;
                         }
                         return true;
