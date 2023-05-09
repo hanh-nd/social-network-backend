@@ -17,6 +17,8 @@ import {
     ReportSchema,
     Role,
     RoleSchema,
+    UserToken,
+    UserTokenSchema,
 } from 'src/mongo-schemas';
 import { User, UserSchema } from 'src/mongo-schemas/user.schema';
 import { IDataServices } from '../data.service';
@@ -33,6 +35,7 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: Reaction.name, schema: ReactionSchema }]),
         MongooseModule.forFeature([{ name: Report.name, schema: ReportSchema }]),
         MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
+        MongooseModule.forFeature([{ name: UserToken.name, schema: UserTokenSchema }]),
     ],
     providers: [
         {

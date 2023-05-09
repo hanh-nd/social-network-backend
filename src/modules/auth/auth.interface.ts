@@ -7,9 +7,9 @@ export interface IRegisterBody {
     username: string;
     password: string;
     fullName: string;
-    email?: string;
+    email: string;
     phone?: string;
-    birthday?: Date;
+    birthday?: string;
     address?: {
         province: string;
         district: string;
@@ -23,4 +23,13 @@ export interface IJwtPayload {
     username: string;
     role: string;
     permissions: string[];
+}
+
+export interface IForgotPasswordBody {
+    email: string;
+}
+
+export interface IGetNewPasswordFromUserToken {
+    token: string;
+    password: string;
 }

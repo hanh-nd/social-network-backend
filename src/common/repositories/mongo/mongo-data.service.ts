@@ -20,21 +20,24 @@ import {
     RoleDocument,
     User,
     UserDocument,
+    UserToken,
+    UserTokenDocument,
 } from 'src/mongo-schemas';
 import { IDataServices } from '../data.service';
 import { MongoGenericRepository } from './mongo-generic.repository';
 
 @Injectable()
 export class MongoDataServices implements IDataServices, OnApplicationBootstrap {
-    users: MongoGenericRepository<User>;
-    posts: MongoGenericRepository<Post>;
-    comments: MongoGenericRepository<Comment>;
-    chats: MongoGenericRepository<Chat>;
-    messages: MongoGenericRepository<Message>;
-    notifications: MongoGenericRepository<Notification>;
-    reactions: MongoGenericRepository<Reaction>;
-    reports: MongoGenericRepository<Report>;
-    roles: MongoGenericRepository<Role>;
+    users: MongoGenericRepository<UserDocument>;
+    posts: MongoGenericRepository<PostDocument>;
+    comments: MongoGenericRepository<CommentDocument>;
+    chats: MongoGenericRepository<ChatDocument>;
+    messages: MongoGenericRepository<MessageDocument>;
+    notifications: MongoGenericRepository<NotificationDocument>;
+    reactions: MongoGenericRepository<ReactionDocument>;
+    reports: MongoGenericRepository<ReportDocument>;
+    roles: MongoGenericRepository<RoleDocument>;
+    userTokens: MongoGenericRepository<UserTokenDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -55,17 +58,20 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private reportModel: Model<ReportDocument>,
         @InjectModel(Role.name)
         private roleModel: Model<RoleDocument>,
+        @InjectModel(UserToken.name)
+        private userTokenModel: Model<UserTokenDocument>,
     ) {}
 
     onApplicationBootstrap() {
-        this.users = new MongoGenericRepository<User>(this.userModel);
-        this.posts = new MongoGenericRepository<Post>(this.postModel, ['postShared']);
-        this.comments = new MongoGenericRepository<Comment>(this.commentModel);
-        this.chats = new MongoGenericRepository<Chat>(this.chatModel);
-        this.messages = new MongoGenericRepository<Message>(this.messageModel);
-        this.notifications = new MongoGenericRepository<Notification>(this.notificationModel);
-        this.reactions = new MongoGenericRepository<Reaction>(this.reactionModel);
-        this.reports = new MongoGenericRepository<Report>(this.reportModel);
-        this.roles = new MongoGenericRepository<Role>(this.roleModel);
+        this.users = new MongoGenericRepository<UserDocument>(this.userModel);
+        this.posts = new MongoGenericRepository<PostDocument>(this.postModel);
+        this.comments = new MongoGenericRepository<CommentDocument>(this.commentModel);
+        this.chats = new MongoGenericRepository<ChatDocument>(this.chatModel);
+        this.messages = new MongoGenericRepository<MessageDocument>(this.messageModel);
+        this.notifications = new MongoGenericRepository<NotificationDocument>(this.notificationModel);
+        this.reactions = new MongoGenericRepository<ReactionDocument>(this.reactionModel);
+        this.reports = new MongoGenericRepository<ReportDocument>(this.reportModel);
+        this.roles = new MongoGenericRepository<RoleDocument>(this.roleModel);
+        this.userTokens = new MongoGenericRepository<UserTokenDocument>(this.userTokenModel);
     }
 }
