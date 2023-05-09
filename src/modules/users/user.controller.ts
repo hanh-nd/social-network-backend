@@ -55,11 +55,11 @@ export class UserController {
         }
     }
 
-    @Get('/subscribers')
+    @Get('/:id/subscribers')
     @UseGuards(AccessTokenGuard)
-    async getSubscribers(@LoginUser() loginUser) {
+    async getSubscribers(@Param('id') userId: string) {
         try {
-            const result = await this.userService.getSubscribers(loginUser.userId);
+            const result = await this.userService.getSubscribers(userId);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getSubscribers] ${error.stack || JSON.stringify(error)}`);
@@ -91,11 +91,11 @@ export class UserController {
         }
     }
 
-    @Get('/subscribing')
+    @Get(':id/subscribing')
     @UseGuards(AccessTokenGuard)
-    async getSubscribing(@LoginUser() loginUser) {
+    async getSubscribing(@Param('id') userId) {
         try {
-            const result = await this.userService.getSubscribing(loginUser.userId);
+            const result = await this.userService.getSubscribing(userId);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getSubscribing] ${error.stack || JSON.stringify(error)}`);

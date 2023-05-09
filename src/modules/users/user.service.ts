@@ -21,13 +21,13 @@ import { compare, hash } from 'src/plugins/bcrypt';
 import { FileService } from '../files/file.service';
 import { SocketGateway } from '../gateway/socket.gateway';
 import { NotificationService } from '../notifications/notification.service';
+import { IGetPostListQuery } from '../posts/post.interface';
 import {
     IGetSubscribeRequestListQuery,
     IUpdateSubscribeRequestBody,
 } from '../subscribe-requests/subscribe-request.interface';
 import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
 import { IChangePasswordBody, IGetUserListQuery, IUpdateProfileBody } from './user.interface';
-import { IGetPostListQuery } from '../posts/post.interface';
 
 @Injectable()
 export class UserService {
@@ -114,8 +114,8 @@ export class UserService {
             throw new NotFoundException(`Không tìm thấy người dùng.`);
         }
 
-        const loginUser = users.find((u) => u._id == loginUserId);
-        const targetUser = users.find((u) => u._id == targetUserId);
+        const loginUser = users.find((u) => `${u._id}` == loginUserId);
+        const targetUser = users.find((u) => `${u._id}` == targetUserId);
 
         await this.unsubscribeTargetUser(targetUser, loginUser);
         return true;
@@ -167,8 +167,8 @@ export class UserService {
             throw new NotFoundException(`Không tìm thấy người dùng.`);
         }
 
-        const loginUser = users.find((u) => u._id == loginUserId);
-        const targetUser = users.find((u) => u._id == targetUserId);
+        const loginUser = users.find((u) => `${u._id}` == loginUserId);
+        const targetUser = users.find((u) => `${u._id}` == targetUserId);
         const targetUserBlockIds = targetUser.blockedIds;
         const isUserBlockedByTargetUser = targetUserBlockIds.map((id) => `${id}`).includes(`${loginUser._id}`);
         if (isUserBlockedByTargetUser) {
@@ -264,8 +264,8 @@ export class UserService {
             throw new NotFoundException(`Không tìm thấy người dùng.`);
         }
 
-        const loginUser = users.find((u) => u._id === loginUserId);
-        const targetUser = users.find((u) => u._id === targetUserId);
+        const loginUser = users.find((u) => `${u._id}` === loginUserId);
+        const targetUser = users.find((u) => `${u._id}` === targetUserId);
         const loginUserBlockIds = loginUser.blockedIds;
         const isTargetUserBlockedByLoginUser = loginUserBlockIds.map((id) => `${id}`).includes(`${targetUser._id}`);
         if (isTargetUserBlockedByLoginUser) {
@@ -291,6 +291,14 @@ export class UserService {
         if (isTargetUserSubscribingLoginUser) {
             // unsubscribe
             await this.unsubscribeTargetUser(targetUser, loginUser);
+        }
+        const targetUserSubscriberIds = targetUser.subscriberIds;
+        const isLoginUserSubscribingTargetUser = targetUserSubscriberIds
+            .map((id) => `${id}`)
+            .includes(`${loginUser._id}`);
+        if (isLoginUserSubscribingTargetUser) {
+            // unsubscribe
+            await this.unsubscribeTargetUser(loginUser, targetUser);
         }
     }
 

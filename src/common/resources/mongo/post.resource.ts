@@ -22,6 +22,9 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
                 'privacy',
                 'pictureIds',
                 'videoIds',
+                'createdAt',
+                'updatedAt',
+                'deletedAt',
             ]);
 
             if (_.isObject(postDto.postShared?.author)) {
