@@ -285,4 +285,20 @@ export class PostController {
             throw error;
         }
     }
+
+    @Get('/:postId/shares')
+    @UseGuards(AccessTokenGuard)
+    async getSharePosts(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery,
+    ) {
+        try {
+            const result = await this.postService.getSharePosts(loginUser.userId, postId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getSharePosts] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
 }
