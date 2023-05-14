@@ -10,4 +10,8 @@ export enum MongoCollection {
     MESSAGE = 'messages',
     USER_TOKEN = 'user_tokens',
     SUBSCRIBE_REQUEST = 'subscribe_requests',
+    GROUP = 'groups',
+    JOIN_REQUEST = 'join_requests',
+    GROUP_POSTS = 'group_posts',
+    TAGS = 'tags',
 }
