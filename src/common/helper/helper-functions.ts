@@ -20,3 +20,7 @@ export function toObjectId(id: string | ObjectId) {
 export function toObjectIds(ids: (string | ObjectId)[]) {
     return ids.map((id) => new ObjectId(id));
 }
+
+export function toStringArray(ids: ObjectId[]) {
+    return ids.map((id) => `${id}`);
+}

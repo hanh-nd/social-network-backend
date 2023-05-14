@@ -625,4 +625,41 @@ export class PostService {
 
         return createdPostId;
     }
+
+    async getSharePosts(userId: string, postId: string, query: IGetPostListQuery) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
+        if (!post) {
+            throw new BadRequestException(`Không tìm thấy bài viết này.`);
+        }
+
+        const posts = await this.dataServices.posts.findAll(
+            {
+                postShared: post._id,
+                author: {
+                    $nin: toObjectIds(user.blockedIds),
+                },
+            },
+            {
+                sort: [['createdAt', 'desc']],
+                populate: [
+                    'author',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                ],
+            },
+        );
+
+        const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
+        return postDtos;
+    }
 }
