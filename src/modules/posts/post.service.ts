@@ -18,6 +18,7 @@ import {
     SHARE_POST_POINT,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
+import { ChatGPTService } from 'src/common/modules/chatgpt/chatgpt.service';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -44,6 +45,7 @@ export class PostService {
         private reactionService: ReactionService,
         private reportService: ReportService,
         private notificationService: NotificationService,
+        private chatGPTService: ChatGPTService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
