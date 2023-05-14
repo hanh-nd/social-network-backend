@@ -19,7 +19,7 @@ export class ReactionService {
         const reactions = await this.dataServices.reactions.findAll(
             {
                 targetType: targetType,
-                targetId: target._id,
+                target: target._id,
             },
             {
                 populate: ['author', 'target'],

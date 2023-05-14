@@ -23,7 +23,7 @@ export class UserController {
     @UseGuards(AccessTokenGuard)
     async getLoginUserProfile(@LoginUser() loginUser) {
         try {
-            const user = await this.userService.getUserProfile(loginUser.userId);
+            const user = await this.userService.getUserProfile(loginUser.userId, loginUser.userId);
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[getLoginUserProfile] ${error.stack || JSON.stringify(error)}`);
@@ -117,9 +117,9 @@ export class UserController {
 
     @Get('/:id')
     @UseGuards(AccessTokenGuard)
-    async getUserInformation(@Param('id') id: string) {
+    async getUserInformation(@LoginUser() loginUser, @Param('id') id: string) {
         try {
-            const user = await this.userService.getUserProfile(id);
+            const user = await this.userService.getUserProfile(loginUser.userId, id);
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);

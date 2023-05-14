@@ -41,16 +41,25 @@ export class UserService {
         private notificationService: NotificationService,
     ) {}
 
-    async getUserProfile(userId: string) {
-        const user = await this.dataServices.users.findById(userId, {
-            select: ['-password', '-blockedIds'],
-        });
+    async getUserProfile(loginUserId: string, userId: string) {
+        const [loginUser, user] = await Promise.all([
+            this.dataServices.users.findById(loginUserId, {
+                select: ['-password', '-blockedIds'],
+            }),
+            this.dataServices.users.findById(userId, {
+                select: ['-password', '-blockedIds'],
+            }),
+        ]);
+
+        if (!loginUser) {
+            throw new NotFoundException('Bạn không có quyền thực hiên thao tác này.');
+        }
 
         if (!user) {
             throw new NotFoundException('Không tìm thấy người dùng này.');
         }
 
-        const userDto = await this.dataResources.users.mapToDto(user);
+        const userDto = await this.dataResources.users.mapToDto(user, loginUser);
         return userDto;
     }
 
