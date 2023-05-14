@@ -13,6 +13,9 @@ import { DataResourcesModule } from './common/resources/data-resources.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { FileModule } from './modules/files/file.module';
 import { SocketModule } from './modules/gateway/socket.module';
+import { GroupPostModule } from './modules/group-posts/group-post.module';
+import { GroupModule } from './modules/groups/group.module';
+import { JoinRequestModule } from './modules/join-requests/join-request.module';
 import { PostModule } from './modules/posts/post.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeedsModule } from './modules/seeder/seed.module';
@@ -37,6 +40,9 @@ import { UserModule } from './modules/users/user.module';
         SearchModule,
         SocketModule,
         ChatGPTModule,
+        GroupModule,
+        GroupPostModule,
+        JoinRequestModule,
     ],
     controllers: [AppController],
     providers: [AppService, JwtService],

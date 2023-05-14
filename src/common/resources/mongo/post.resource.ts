@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { toStringArray } from 'src/common/helper';
 import { PostDocument, User, UserDocument } from 'src/mongo-schemas';
 import { IGenericResource } from '../generic.resource';
 
@@ -7,7 +8,7 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
         const postDto = _.cloneDeep(post.toObject());
 
         if (_.isObject(postDto.author)) {
-            postDto.author = _.pick(postDto.author, ['_id', 'username', 'avatarId', 'fullName']);
+            postDto.author = _.pick(postDto.author, ['_id', 'username', 'avatarId', 'fullName', 'subscriberIds']);
         }
 
         if (_.isObject(postDto.discussedIn)) {
@@ -46,6 +47,8 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
         if (user) {
             const isReacted = postDto.reactIds.map((id) => `${id}`).includes(`${user._id}`);
             postDto.isReacted = isReacted;
+            const isSubscribing = toStringArray(postDto.author.subscriberIds).includes(`${user._id}`);
+            postDto.author.isSubscribing = isSubscribing;
         }
 
         delete postDto.commentIds;
