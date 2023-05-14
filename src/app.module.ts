@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import mongoose from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ChatGPTModule } from './common/modules/chatgpt/chatgpt.module';
 import { ElasticsearchModule } from './common/modules/elasticsearch';
 import { MongoModule } from './common/modules/mongo';
 import { WinstonModule } from './common/modules/winston';
@@ -35,6 +36,7 @@ import { UserModule } from './modules/users/user.module';
         PostModule,
         SearchModule,
         SocketModule,
+        ChatGPTModule,
     ],
     controllers: [AppController],
     providers: [AppService, JwtService],
