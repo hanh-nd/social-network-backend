@@ -1,4 +1,4 @@
-import { Controller, Get, InternalServerErrorException, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
@@ -45,6 +45,18 @@ export class SearchController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[searchUsers] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/groups')
+    @UseGuards(AccessTokenGuard)
+    async searchGroups(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
+        try {
+            const result = await this.searchService.searchGroup(loginUser.userId, searchQuery);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[searchGroups] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

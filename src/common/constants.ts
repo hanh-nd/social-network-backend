@@ -105,6 +105,7 @@ export enum Privacy {
 export enum ElasticsearchIndex {
     USER = 'user',
     POST = 'post',
+    GROUP = 'group',
 }
 
 export enum SubscribeRequestStatus {

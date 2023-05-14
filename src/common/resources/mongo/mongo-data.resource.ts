@@ -20,7 +20,7 @@ import { UserResource } from './user.resource';
 export class MongoDataResources implements IDataResources, OnApplicationBootstrap {
     users: IGenericResource<UserDocument>;
     posts: IGenericResource<PostDocument, UserDocument>;
-    comments: IGenericResource<CommentDocument>;
+    comments: IGenericResource<CommentDocument, UserDocument>;
     reactions: IGenericResource<ReactionDocument>;
     reports: IGenericResource<ReportDocument>;
     notifications: IGenericResource<NotificationDocument>;

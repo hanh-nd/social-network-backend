@@ -1,6 +1,9 @@
 import {
     ChatDocument,
     CommentDocument,
+    GroupDocument,
+    GroupPostDocument,
+    JoinRequestDocument,
     MessageDocument,
     NotificationDocument,
     PostDocument,
@@ -8,6 +11,7 @@ import {
     ReportDocument,
     RoleDocument,
     SubscribeRequestDocument,
+    TagDocument,
     UserDocument,
     UserTokenDocument,
 } from 'src/mongo-schemas';
@@ -25,4 +29,8 @@ export abstract class IDataServices {
     abstract roles: IGenericRepository<RoleDocument>;
     abstract userTokens: IGenericRepository<UserTokenDocument>;
     abstract subscribeRequests: IGenericRepository<SubscribeRequestDocument>;
+    abstract groups: IGenericRepository<GroupDocument>;
+    abstract joinRequests: IGenericRepository<JoinRequestDocument>;
+    abstract groupPosts: IGenericRepository<GroupPostDocument>;
+    abstract tags: IGenericRepository<TagDocument>;
 }

@@ -4,7 +4,7 @@ import { toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Post, User } from 'src/mongo-schemas';
+import { Group, Post, User } from 'src/mongo-schemas';
 import { ISearchQuery } from './search.interface';
 @Injectable()
 export class SearchService {
@@ -17,10 +17,12 @@ export class SearchService {
     async search(userId: string, query: ISearchQuery) {
         const postSearchResult = await this.searchPost(userId, query);
         const userSearchResult = await this.searchUser(userId, query);
+        const groupSearchResult = await this.searchGroup(userId, query);
 
         return {
             posts: postSearchResult,
             users: userSearchResult,
+            groups: groupSearchResult,
         };
     }
 
@@ -116,5 +118,41 @@ export class SearchService {
         });
         const userDtos = await this.dataResources.users.mapToDtoList(users, user);
         return userDtos;
+    }
+
+    async searchGroup(userId: string, query: ISearchQuery) {
+        const { keyword, size = 10 } = query;
+
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`Không tìm thấy user này.`);
+        }
+
+        const groupSearchResult = await this.elasticsearchService.search<Group>(
+            ElasticsearchIndex.GROUP,
+            {
+                bool: {
+                    must_not: {
+                        terms: {
+                            blockIds: `${user._id}`,
+                        },
+                    },
+                    must: {
+                        match: {
+                            name: keyword,
+                        },
+                    },
+                },
+            },
+            {
+                size,
+            },
+        );
+        const groupSearchIds = groupSearchResult.map((result) => result.id);
+        const groups = await this.dataServices.groups.findAll({
+            _id: toObjectIds(groupSearchIds),
+        });
+
+        return groups;
     }
 }

@@ -6,6 +6,12 @@ import {
     ChatDocument,
     Comment,
     CommentDocument,
+    Group,
+    GroupDocument,
+    GroupPost,
+    GroupPostDocument,
+    JoinRequest,
+    JoinRequestDocument,
     Message,
     MessageDocument,
     Notification,
@@ -20,6 +26,8 @@ import {
     RoleDocument,
     SubscribeRequest,
     SubscribeRequestDocument,
+    Tag,
+    TagDocument,
     User,
     UserDocument,
     UserToken,
@@ -41,6 +49,10 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     roles: MongoGenericRepository<RoleDocument>;
     userTokens: MongoGenericRepository<UserTokenDocument>;
     subscribeRequests: MongoGenericRepository<SubscribeRequestDocument>;
+    groups: MongoGenericRepository<GroupDocument>;
+    groupPosts: MongoGenericRepository<GroupPostDocument>;
+    joinRequests: MongoGenericRepository<JoinRequestDocument>;
+    tags: MongoGenericRepository<TagDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -65,6 +77,14 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private userTokenModel: Model<UserTokenDocument>,
         @InjectModel(SubscribeRequest.name)
         private subscribeRequestModel: Model<SubscribeRequestDocument>,
+        @InjectModel(Group.name)
+        private groupModel: Model<GroupDocument>,
+        @InjectModel(JoinRequest.name)
+        private joinRequestModel: Model<JoinRequestDocument>,
+        @InjectModel(GroupPost.name)
+        private groupPostModel: Model<GroupPostDocument>,
+        @InjectModel(Tag.name)
+        private tagModel: Model<TagDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -79,5 +99,9 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.roles = new MongoGenericRepository<RoleDocument>(this.roleModel);
         this.userTokens = new MongoGenericRepository<UserTokenDocument>(this.userTokenModel);
         this.subscribeRequests = new MongoGenericRepository<SubscribeRequestDocument>(this.subscribeRequestModel);
+        this.groups = new MongoGenericRepository<GroupDocument>(this.groupModel);
+        this.joinRequests = new MongoGenericRepository<JoinRequestDocument>(this.joinRequestModel);
+        this.groupPosts = new MongoGenericRepository<GroupPostDocument>(this.groupPostModel);
+        this.tags = new MongoGenericRepository<TagDocument>(this.tagModel);
     }
 }
