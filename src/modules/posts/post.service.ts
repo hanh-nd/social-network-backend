@@ -49,7 +49,15 @@ export class PostService {
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
-        const { content, privacy = Privacy.PUBLIC, discussedInId, pictureIds = [], videoIds = [], postSharedId } = body;
+        const {
+            content,
+            privacy = Privacy.PUBLIC,
+            discussedInId,
+            pictureIds = [],
+            videoIds = [],
+            postSharedId,
+            postedInGroupId,
+        } = body;
 
         const author = await this.dataServices.users.findById(userId);
         if (!author) {
@@ -74,7 +82,15 @@ export class PostService {
             if (!discussedInUser) {
                 throw new BadRequestException(`Không tồn tại tường người dùng.`);
             }
-            createPostBody.discussedIn = discussedInUser._id;
+            createPostBody.discussedIn = toObjectId(discussedInUser._id) as unknown;
+        }
+
+        if (postedInGroupId) {
+            const group = await this.dataServices.groups.findById(postedInGroupId);
+            if (!group) {
+                throw new BadRequestException(`Không tồn tại nhóm này.`);
+            }
+            createPostBody.postedInGroup = toObjectId(group._id) as unknown;
         }
 
         const createdPost = await this.dataServices.posts.create(createPostBody);
@@ -96,6 +112,7 @@ export class PostService {
             {
                 author: user._id,
                 discussedIn: null,
+                postedInGroup: null,
             },
             {
                 sort: [['createdAt', 'desc']],

@@ -383,6 +383,7 @@ export class UserService {
             {
                 author: user._id,
                 discussedIn: null,
+                postedInGroup: null,
             },
             {
                 sort: [['createdAt', 'desc']],

@@ -4,6 +4,7 @@ export interface ICreatePostBody {
     content: string;
     privacy?: number;
     discussedInId?: string;
+    postedInGroupId?: string;
     postSharedId?: string;
     pictureIds?: string[];
     videoIds?: string[];

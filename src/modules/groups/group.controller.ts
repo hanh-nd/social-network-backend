@@ -10,6 +10,7 @@ import { IUpdateJoinRequestBody } from '../join-requests/join-request.interface'
 import {
     ICreateNewGroupBody,
     ICreatePostInGroupBody,
+    IGetGroupListQuery,
     IGetJoinRequestListQuery,
     IUpdateGroupBody,
 } from './group.interface';
@@ -169,18 +170,6 @@ export class GroupController {
         }
     }
 
-    @Get('/:id')
-    @UseGuards(AccessTokenGuard)
-    async getDetail(@LoginUser() loginUser, @Param('id') groupId: string) {
-        try {
-            const result = await this.groupService.getDetail(loginUser.userId, groupId);
-            return new SuccessResponse(result);
-        } catch (error) {
-            this.logger.error(`[getDetail] ${error.stack || JSON.stringify(error)}`);
-            throw error;
-        }
-    }
-
     @Get('/:id/members')
     @UseGuards(AccessTokenGuard)
     async getMembers(@LoginUser() loginUser, @Param('id') groupId: string) {
@@ -257,6 +246,54 @@ export class GroupController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[deletePost] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/my-groups')
+    @UseGuards(AccessTokenGuard)
+    async getUserCreatedGroups(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetGroupListQuery) {
+        try {
+            const result = await this.groupService.getUserCreatedGroups(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserCreatedGroups] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/')
+    @UseGuards(AccessTokenGuard)
+    async getUserJoinedGroups(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetGroupListQuery) {
+        try {
+            const result = await this.groupService.getUserJoinedGroups(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserJoinedGroups] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/group-posts')
+    @UseGuards(AccessTokenGuard)
+    async getGroupFeed(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetGroupPostListQuery) {
+        try {
+            const result = await this.groupService.getGroupFeed(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getGroupFeed] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id')
+    @UseGuards(AccessTokenGuard)
+    async getDetail(@LoginUser() loginUser, @Param('id') groupId: string) {
+        try {
+            const result = await this.groupService.getDetail(loginUser.userId, groupId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getDetail] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
