@@ -20,6 +20,7 @@ import { IGetPostListQuery } from '../posts/post.interface';
 import {
     ICreateNewGroupBody,
     ICreatePostInGroupBody,
+    IGetGroupListQuery,
     IGetJoinRequestListQuery,
     IUpdateGroupBody,
 } from './group.interface';
@@ -46,7 +47,7 @@ export class GroupService {
             name,
             administrators: [
                 {
-                    user: toObjectId(user._id) as unknown,
+                    user: user._id as unknown,
                     isOwner: true,
                 },
             ],
@@ -58,6 +59,12 @@ export class GroupService {
         };
 
         const createdGroup = await this.dataServices.groups.create(createNewGroupBody);
+        const { groupIds } = user;
+        groupIds.push(toObjectId(createdGroup._id));
+        await this.dataServices.users.updateById(user._id, {
+            groupIds,
+        });
+
         await this.elasticsearchService.index<Group>(ElasticsearchIndex.GROUP, {
             id: createdGroup._id,
             name: createdGroup.name,
@@ -164,6 +171,14 @@ export class GroupService {
             status: SubscribeRequestStatus.PENDING,
         });
 
+        const { groupIds } = targetUser;
+        if (toStringArray(groupIds).includes(`${group._id}`)) {
+            _.remove(groupIds, (id) => `${id}` == group._id);
+            await this.dataServices.users.updateById(targetUser._id, {
+                groupIds: toObjectIds(groupIds),
+            });
+        }
+
         await this.elasticsearchService.updateById<Group>(ElasticsearchIndex.GROUP, group._id, {
             id: group._id,
             name: group.name,
@@ -214,6 +229,12 @@ export class GroupService {
         _.remove(memberIds, (id) => `${id}` == targetUser._id);
         await this.dataServices.groups.updateById(group._id, {
             memberIds,
+        });
+
+        const { groupIds } = targetUser;
+        _.remove(groupIds, (id) => `${id}` == group._id);
+        await this.dataServices.users.updateById(targetUser._id, {
+            groupIds: toObjectIds(groupIds),
         });
 
         return true;
@@ -285,6 +306,13 @@ export class GroupService {
             memberIds,
         });
 
+        const senderUser = await this.dataServices.users.findById(`${data.sender}`);
+        const { groupIds } = senderUser;
+        groupIds.push(toObjectId(group._id));
+        await this.dataServices.users.updateById(senderUser._id, {
+            groupIds: toObjectIds(groupIds),
+        });
+
         return true;
     }
 
@@ -351,8 +379,8 @@ export class GroupService {
             throw new ForbiddenException(`Không tìm thấy bài viết này.`);
         }
 
-        const { pinnedPostIds } = group;
-        if (toStringArray(pinnedPostIds).includes(`${groupPost._id}`)) {
+        const { pinnedPosts } = group;
+        if (toStringArray(pinnedPosts).includes(`${groupPost._id}`)) {
             await this.unpinGroupPost(user, group, groupPost);
         } else {
             await this.pinGroupPost(user, group, groupPost);
@@ -362,20 +390,20 @@ export class GroupService {
     }
 
     private async pinGroupPost(user: User, group: Group, groupPost: GroupPost) {
-        const { pinnedPostIds = [] } = group;
-        pinnedPostIds.push(toObjectId(`${groupPost._id}`));
+        const { pinnedPosts = [] } = group;
+        pinnedPosts.push(toObjectId(`${groupPost._id}`));
 
         await this.dataServices.groups.updateById(group._id, {
-            pinnedPostIds,
+            pinnedPosts,
         });
     }
 
     private async unpinGroupPost(user: User, group: Group, groupPost: GroupPost) {
-        const { pinnedPostIds = [] } = group;
-        _.remove(pinnedPostIds, (id) => `${id}` == groupPost._id);
+        const { pinnedPosts = [] } = group;
+        _.remove(pinnedPosts, (id) => `${id}` == groupPost._id);
 
         await this.dataServices.groups.updateById(group._id, {
-            pinnedPostIds,
+            pinnedPosts,
         });
     }
 
@@ -393,7 +421,7 @@ export class GroupService {
                 populate: [
                     'administrators.user',
                     {
-                        path: 'pinnedPostIds',
+                        path: 'pinnedPosts',
                         populate: [
                             {
                                 path: 'post',
@@ -586,5 +614,65 @@ export class GroupService {
         ]);
 
         return true;
+    }
+
+    async getUserJoinedGroups(userId: string, query: IGetGroupListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
+        const skip = (+page - 1) * +limit;
+
+        const { groupIds = [] } = user;
+        const groups = await this.dataServices.groups.findAll(
+            {
+                _id: groupIds,
+            },
+            {
+                skip: skip,
+                limit: +limit,
+            },
+        );
+
+        return groups;
+    }
+
+    async getUserCreatedGroups(userId: string, query: IGetGroupListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
+        const skip = (+page - 1) * +limit;
+
+        const groups = await this.dataServices.groups.findAll(
+            {
+                'administrator.user': user._id,
+            },
+            {
+                skip: skip,
+                limit: +limit,
+            },
+        );
+
+        return groups;
+    }
+
+    async getGroupFeed(userId: string, query: IGetPostListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này..`);
+        }
+
+        const groupPosts = await this.groupPostService.getGroupPosts({} as Group, {
+            ...query,
+            status: SubscribeRequestStatus.ACCEPTED,
+            groupIds: user.groupIds,
+        });
+
+        return groupPosts;
     }
 }

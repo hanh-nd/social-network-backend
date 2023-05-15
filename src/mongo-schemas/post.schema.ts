@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
 import { Privacy } from 'src/common/constants';
 import { MongoCollection } from './constant';
+import { Group } from './group.schema';
 import { MongoBaseSchema } from './mongo.base.schema';
 import { Tag } from './tag.schema';
 import { User } from './user.schema';
@@ -66,6 +67,9 @@ export class Post extends MongoBaseSchema {
 
     @Prop({ required: false, type: Types.ObjectId, ref: User.name })
     discussedIn: Partial<User>;
+
+    @Prop({ required: false, type: Types.ObjectId, ref: Group.name })
+    postedInGroup: Partial<Group>;
 
     @Prop({ required: false, type: [Types.ObjectId] })
     pictureIds: ObjectId[];

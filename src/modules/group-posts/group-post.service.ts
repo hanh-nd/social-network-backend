@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, SubscribeRequestStatus } from 'src/common/constants';
-import { toObjectId, toStringArray } from 'src/common/helper';
+import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Group, GroupPost, User } from 'src/mongo-schemas';
@@ -30,6 +30,7 @@ export class GroupPostService {
                         path: 'post',
                         populate: ['author'],
                     },
+                    'group',
                 ],
                 sort: [['updatedAt', -1]],
                 skip,
@@ -43,16 +44,23 @@ export class GroupPostService {
     private async buildWhereQuery(query: IGetGroupPostListQuery) {
         const where: any = {};
 
-        const { status } = query;
+        const { status, groupIds } = query;
         if (status) {
             where.status = status;
+        }
+
+        if (groupIds) {
+            where.group = toObjectIds(groupIds);
         }
 
         return where;
     }
 
     async create(user: User, group: Group, body: ICreateGroupPostBody) {
-        const createdPost = await this.postService.createNewPost(user._id, body);
+        const createdPost = await this.postService.createNewPost(user._id, {
+            ...body,
+            postedInGroupId: group._id,
+        });
         const { status } = body;
         const toCreateBody: Partial<GroupPost> = {
             author: toObjectId(user._id) as unknown,
