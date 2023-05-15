@@ -17,6 +17,8 @@ export interface IUpdateGroupBody {
     coverId?: string;
 }
 
+export interface IGetGroupListQuery extends ICommonGetListQuery {}
+
 export interface IGetJoinRequestListQuery extends ICommonGetListQuery {}
 
 export interface ICreatePostInGroupBody extends ICreateGroupPostBody {}

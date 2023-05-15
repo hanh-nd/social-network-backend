@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
+import { User } from '.';
 import { Administrator, AdministratorSchema } from './administrator.schema';
 import { MongoCollection } from './constant';
-import { GroupPost } from './group-post.schema';
 import { MongoBaseSchema } from './mongo.base.schema';
-import { User } from './user.schema';
 
 export type GroupDocument = Group & Document;
 
@@ -42,13 +41,13 @@ export class Group extends MongoBaseSchema {
     @Prop({ type: Types.ObjectId, required: false })
     coverId: ObjectId;
 
-    @Prop({ type: [Types.ObjectId], default: [], ref: User.name })
+    @Prop({ type: [Types.ObjectId], default: [], ref: 'User' })
     memberIds: ObjectId[];
 
     @Prop({ type: [Types.ObjectId], default: [], ref: 'GroupPost' })
-    pinnedPostIds: ObjectId[];
+    pinnedPosts: ObjectId[];
 
-    @Prop({ type: [Types.ObjectId], default: [], ref: User.name })
+    @Prop({ type: [Types.ObjectId], default: [], ref: 'User' })
     blockIds: ObjectId[];
 }
 
