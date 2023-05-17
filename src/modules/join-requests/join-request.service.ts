@@ -4,7 +4,7 @@ import { toObjectId, toStringArray } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Group, JoinRequest, User } from 'src/mongo-schemas';
-import { ICreateJoinRequestBody, IUpdateJoinRequestBody } from './join-request.interface';
+import { ICreateJoinRequestBody, IGetJoinRequestQuery, IUpdateJoinRequestBody } from './join-request.interface';
 
 @Injectable()
 export class JoinRequestService {
@@ -19,6 +19,16 @@ export class JoinRequestService {
 
         const createdJoinRequest = await this.dataServices.joinRequests.create(toCreateBody);
         return createdJoinRequest;
+    }
+
+    async findByUser(user: User, query: IGetJoinRequestQuery) {
+        const { status } = query;
+        const joinRequest = await this.dataServices.joinRequests.findOne({
+            sender: user._id,
+            status,
+        });
+
+        return joinRequest;
     }
 
     async update(group: Group, joinRequestId: string, body: IUpdateJoinRequestBody) {

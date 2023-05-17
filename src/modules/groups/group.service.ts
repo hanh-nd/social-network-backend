@@ -436,7 +436,16 @@ export class GroupService {
             throw new ForbiddenException(`Nhóm không tồn tại.`);
         }
 
-        return group;
+        const groupDto = await this.dataResources.groups.mapToDto(group, user);
+        const userPendingRequest = await this.joinRequestService.findByUser(user, {
+            status: SubscribeRequestStatus.PENDING,
+        });
+        const isPending = !_.isNil(userPendingRequest);
+        Object.assign(groupDto, {
+            isPending,
+        });
+
+        return groupDto;
     }
 
     async getMembers(userId: string, groupId: string) {
@@ -488,6 +497,11 @@ export class GroupService {
             memberIds.push(toObjectId(user._id));
             await this.dataServices.groups.updateById(group._id, {
                 memberIds,
+            });
+
+            user.groupIds.push(toObjectId(group._id));
+            await this.dataServices.users.updateById(user._id, {
+                groupIds: user.groupIds,
             });
         }
 
@@ -636,7 +650,8 @@ export class GroupService {
             },
         );
 
-        return groups;
+        const groupDtos = await this.dataResources.groups.mapToDtoList(groups, user);
+        return groupDtos;
     }
 
     async getUserCreatedGroups(userId: string, query: IGetGroupListQuery) {
@@ -650,7 +665,7 @@ export class GroupService {
 
         const groups = await this.dataServices.groups.findAll(
             {
-                'administrator.user': user._id,
+                'administrators.user': user._id,
             },
             {
                 skip: skip,

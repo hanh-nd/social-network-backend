@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ElasticsearchIndex, Privacy } from 'src/common/constants';
+import { ElasticsearchIndex, Privacy, SubscribeRequestStatus } from 'src/common/constants';
 import { toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
@@ -138,11 +138,11 @@ export class SearchService {
             ElasticsearchIndex.GROUP,
             {
                 bool: {
-                    must_not: {
-                        terms: {
-                            blockIds: `${user._id}`,
-                        },
-                    },
+                    // must_not: {
+                    //     terms: {
+                    //         blockIds: `${user._id}`,
+                    //     },
+                    // },
                     must: {
                         match: {
                             name: keyword,
@@ -159,6 +159,23 @@ export class SearchService {
             _id: toObjectIds(groupSearchIds),
         });
 
-        return groups;
+        const groupDtos = await this.dataResources.groups.mapToDtoList(groups, user);
+
+        const pendingJoinRequests = await this.dataServices.joinRequests.findAll({
+            sender: user._id,
+            group: toObjectIds(groups.map((g) => `${g._id}`)),
+            status: SubscribeRequestStatus.PENDING,
+        });
+
+        for (const groupDto of groupDtos) {
+            const pendingJoinRequest = pendingJoinRequests.find((pd) => `${pd.group}` == `${(groupDto as Group)._id}`);
+            if (pendingJoinRequest) {
+                Object.assign(groupDto, {
+                    isPending: true,
+                });
+            }
+        }
+
+        return groupDtos;
     }
 }
