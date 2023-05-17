@@ -1,5 +1,6 @@
 import {
     CommentDocument,
+    GroupDocument,
     NotificationDocument,
     PostDocument,
     ReactionDocument,
@@ -15,4 +16,5 @@ export abstract class IDataResources {
     abstract reactions: IGenericResource<ReactionDocument>;
     abstract reports: IGenericResource<ReportDocument>;
     abstract notifications: IGenericResource<NotificationDocument>;
+    abstract groups: IGenericResource<GroupDocument, UserDocument>;
 }

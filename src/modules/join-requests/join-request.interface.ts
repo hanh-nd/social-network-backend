@@ -7,3 +7,7 @@ export interface ICreateJoinRequestBody {
 export interface IUpdateJoinRequestBody {
     status: SubscribeRequestStatus;
 }
+
+export interface IGetJoinRequestQuery {
+    status: SubscribeRequestStatus;
+}
