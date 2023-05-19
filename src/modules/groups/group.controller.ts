@@ -194,6 +194,18 @@ export class GroupController {
         }
     }
 
+    @Post('/:id/cancel-join-requests')
+    @UseGuards(AccessTokenGuard)
+    async cancelToJoin(@LoginUser() loginUser, @Param('id') groupId: string) {
+        try {
+            const result = await this.groupService.cancelToJoin(loginUser.userId, groupId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[cancelToJoin] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
     @Post('/:id/leave')
     @UseGuards(AccessTokenGuard)
     async leave(@LoginUser() loginUser, @Param('id') groupId: string) {
@@ -294,6 +306,46 @@ export class GroupController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getDetail] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id/my-pending')
+    @UseGuards(AccessTokenGuard)
+    async getUserPendingPost(@LoginUser() loginUser, @Param('id') groupId: string, query: IGetGroupPostListQuery) {
+        try {
+            const result = await this.groupService.getUserPendingPost(loginUser.userId, groupId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserPendingPost] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Post('/:id/make-administrator/:targetId')
+    @UseGuards(AccessTokenGuard)
+    async makeAdministrator(@LoginUser() loginUser, @Param('id') groupId: string, @Param('targetId') targetId: string) {
+        try {
+            const result = await this.groupService.makeAdministrator(loginUser.userId, groupId, targetId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[makeAdministrator] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Post('/:id/remove-administrator/:targetId')
+    @UseGuards(AccessTokenGuard)
+    async removeAdministrator(
+        @LoginUser() loginUser,
+        @Param('id') groupId: string,
+        @Param('targetId') targetId: string,
+    ) {
+        try {
+            const result = await this.groupService.removeAdministrator(loginUser.userId, groupId, targetId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[removeAdministrator] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
