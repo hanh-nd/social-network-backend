@@ -17,9 +17,12 @@ import { PostResource } from './post.resource';
 import { ReactionResource } from './reaction.resource';
 import { ReportResource } from './report.resource';
 import { UserResource } from './user.resource';
+import { IDataServices } from 'src/common/repositories/data.service';
 
 @Injectable()
 export class MongoDataResources implements IDataResources, OnApplicationBootstrap {
+    constructor(private dataServices: IDataServices) {}
+
     users: IGenericResource<UserDocument>;
     posts: IGenericResource<PostDocument, UserDocument>;
     comments: IGenericResource<CommentDocument, UserDocument>;
@@ -29,12 +32,12 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
     groups: IGenericResource<GroupDocument, UserDocument>;
 
     onApplicationBootstrap() {
-        this.users = new UserResource();
-        this.posts = new PostResource();
-        this.comments = new CommentResource();
-        this.reactions = new ReactionResource();
-        this.reports = new ReportResource();
-        this.notifications = new NotificationResource();
-        this.groups = new GroupResource();
+        this.users = new UserResource(this.dataServices);
+        this.posts = new PostResource(this.dataServices);
+        this.comments = new CommentResource(this.dataServices);
+        this.reactions = new ReactionResource(this.dataServices);
+        this.reports = new ReportResource(this.dataServices);
+        this.notifications = new NotificationResource(this.dataServices);
+        this.groups = new GroupResource(this.dataServices);
     }
 }

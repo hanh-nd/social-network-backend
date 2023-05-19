@@ -44,13 +44,17 @@ export class GroupPostService {
     private async buildWhereQuery(query: IGetGroupPostListQuery) {
         const where: any = {};
 
-        const { status, groupIds } = query;
+        const { status, groupIds, authorId } = query;
         if (status) {
             where.status = status;
         }
 
         if (groupIds) {
             where.group = toObjectIds(groupIds);
+        }
+
+        if (authorId) {
+            where.author = toObjectId(authorId);
         }
 
         return where;
@@ -76,7 +80,7 @@ export class GroupPostService {
     async update(group: Group, groupPostId: string, body: IUpdateGroupPostBody) {
         const existedGroupPost = await this.dataServices.groupPosts.findOne({
             group: toObjectId(group._id),
-            id: toObjectId(groupPostId),
+            _id: toObjectId(groupPostId),
             status: SubscribeRequestStatus.PENDING,
         });
 

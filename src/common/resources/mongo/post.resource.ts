@@ -47,6 +47,14 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
         if (user) {
             const isReacted = postDto.reactIds.map((id) => `${id}`).includes(`${user._id}`);
             postDto.isReacted = isReacted;
+            if (isReacted) {
+                const reactionType = await this.dataServices.reactions.findOne({
+                    author: user._id,
+                    target: postDto._id,
+                    targetType: 'Post',
+                });
+                postDto.reactionType = reactionType?.type;
+            }
             const isSubscribing = toStringArray(postDto.author.subscriberIds).includes(`${user._id}`);
             postDto.author.isSubscribing = isSubscribing;
         }

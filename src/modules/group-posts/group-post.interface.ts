@@ -4,6 +4,7 @@ import { ICommonGetListQuery } from 'src/common/interfaces';
 import { ICreatePostBody } from '../posts/post.interface';
 
 export interface IGetGroupPostListQuery extends ICommonGetListQuery {
+    authorId?: string;
     status?: SubscribeRequestStatus;
     groupIds?: string[] | ObjectId[];
 }
