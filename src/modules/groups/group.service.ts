@@ -12,7 +12,7 @@ import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Group, GroupPost, User } from 'src/mongo-schemas';
-import { IUpdateGroupPostBody } from '../group-posts/group-post.interface';
+import { IGetGroupPostListQuery, IUpdateGroupPostBody } from '../group-posts/group-post.interface';
 import { GroupPostService } from '../group-posts/group-post.service';
 import { IUpdateJoinRequestBody } from '../join-requests/join-request.interface';
 import { JoinRequestService } from '../join-requests/join-request.service';
@@ -160,7 +160,7 @@ export class GroupService {
             toUpdateBody.memberIds = memberIds;
         }
 
-        if (administrators.map((admin) => `${admin.user}`).includes(targetUser._id)) {
+        if (administrators.map((admin) => `${admin.user}`).includes(`${targetUser._id}`)) {
             _.remove(administrators, (admin) => `${admin.user}` == targetUser._id);
             toUpdateBody.administrators = administrators;
         }
@@ -437,7 +437,7 @@ export class GroupService {
         }
 
         const groupDto = await this.dataResources.groups.mapToDto(group, user);
-        const userPendingRequest = await this.joinRequestService.findByUser(user, {
+        const userPendingRequest = await this.joinRequestService.findByUser(user, group, {
             status: SubscribeRequestStatus.PENDING,
         });
         const isPending = !_.isNil(userPendingRequest);
@@ -508,6 +508,34 @@ export class GroupService {
         return true;
     }
 
+    async cancelToJoin(userId: string, groupId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này..`);
+        }
+
+        const group = await this.dataServices.groups.findOne({
+            _id: toObjectId(groupId),
+        });
+        if (!group) {
+            throw new ForbiddenException(`Nhóm không tồn tại.`);
+        }
+
+        const joinRequest = await this.joinRequestService.findByUser(user, group, {
+            status: SubscribeRequestStatus.PENDING,
+        });
+
+        if (!joinRequest) {
+            throw new BadRequestException(`Bạn chưa yêu cầu tham gia nhóm này.`);
+        }
+
+        await this.joinRequestService.update(group, joinRequest._id, {
+            status: SubscribeRequestStatus.REJECTED,
+        });
+
+        return true;
+    }
+
     async leave(userId: string, groupId: string) {
         const user = await this.dataServices.users.findById(userId);
         if (!user) {
@@ -521,15 +549,24 @@ export class GroupService {
             throw new ForbiddenException(`Nhóm không tồn tại.`);
         }
 
-        const { memberIds = [] } = group;
+        const { memberIds = [], administrators = [] } = group;
         if (!toStringArray(memberIds).includes(`${user._id}`)) {
             throw new BadRequestException(`Bạn không phải là thành viên của nhóm.`);
         }
 
-        _.remove(memberIds, (id) => `${id}` == user._id);
+        if (administrators.map((admin) => `${admin.user}`).includes(`${user._id}`)) {
+            if (administrators.length < 2) {
+                throw new BadRequestException(
+                    `Bạn là quản trị viên cuối cùng của nhóm, vui lòng chỉ định người khác làm quản trị viên để rời khỏi nhóm.`,
+                );
+            }
+        }
 
+        _.remove(memberIds, (id) => `${id}` == user._id);
+        _.remove(administrators, (admin) => `${admin.user}` == `${user._id}`);
         await this.dataServices.groups.updateById(group._id, {
             memberIds,
+            administrators,
         });
 
         return true;
@@ -587,7 +624,7 @@ export class GroupService {
             throw new ForbiddenException(`Nhóm không tồn tại.`);
         }
 
-        const isUserAdministrator = group.administrators.map((admin) => admin.user == user._id);
+        const isUserAdministrator = group.administrators.find((admin) => admin.user == user._id);
         const status = isUserAdministrator
             ? SubscribeRequestStatus.ACCEPTED
             : group.reviewPost
@@ -679,7 +716,7 @@ export class GroupService {
     async getGroupFeed(userId: string, query: IGetPostListQuery) {
         const user = await this.dataServices.users.findById(userId);
         if (!user) {
-            throw new ForbiddenException(`Không tìm thấy người dùng này..`);
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
         }
 
         const groupPosts = await this.groupPostService.getGroupPosts({} as Group, {
@@ -689,5 +726,112 @@ export class GroupService {
         });
 
         return groupPosts;
+    }
+
+    async getUserPendingPost(userId: string, groupId: string, query: IGetGroupPostListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
+        }
+
+        const group = await this.dataServices.groups.findOne({
+            _id: toObjectId(groupId),
+            $or: [
+                {
+                    private: false,
+                },
+                {
+                    private: true,
+                    memberIds: toObjectId(user._id),
+                },
+            ],
+        });
+        if (!group) {
+            throw new ForbiddenException(`Nhóm không tồn tại.`);
+        }
+
+        const groupPosts = await this.groupPostService.getGroupPosts(group, {
+            ...query,
+            status: SubscribeRequestStatus.PENDING,
+            authorId: user._id,
+        });
+
+        return groupPosts;
+    }
+
+    async makeAdministrator(userId: string, groupId: string, targetId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const targetUser = await this.dataServices.users.findById(targetId);
+        if (!targetUser) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
+        }
+
+        const group = await this.dataServices.groups.findOne({
+            _id: toObjectId(groupId),
+            'administrators.user': toObjectId(user._id),
+        });
+        if (!group) {
+            throw new ForbiddenException(`Nhóm không tồn tại hoặc bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const { administrators = [] } = group;
+
+        if (administrators.map((admin) => `${admin.user}`).includes(`${targetUser._id}`)) {
+            throw new BadRequestException(`Người này đã là quản trị viên của nhóm.`);
+        }
+
+        administrators.push({
+            user: toObjectId(targetUser._id) as unknown,
+            isOwner: false,
+        });
+
+        await this.dataServices.groups.updateById(group._id, {
+            administrators,
+        });
+
+        return true;
+    }
+
+    async removeAdministrator(userId: string, groupId: string, targetId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const targetUser = await this.dataServices.users.findById(targetId);
+        if (!targetUser) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
+        }
+
+        const group = await this.dataServices.groups.findOne({
+            _id: toObjectId(groupId),
+            'administrators.user': toObjectId(user._id),
+        });
+        if (!group) {
+            throw new ForbiddenException(`Nhóm không tồn tại hoặc bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const { administrators = [] } = group;
+
+        const targetAdmin = administrators.find((admin) => `${admin.user}` == `${targetUser._id}`);
+        if (!targetAdmin) {
+            throw new BadRequestException(`Người này không phải là quản trị viên của nhóm.`);
+        }
+
+        if (targetAdmin.isOwner) {
+            throw new BadRequestException(`Bạn không có quyền thực hiện thao tác này với người sáng lập.`);
+        }
+
+        _.remove(administrators, (admin) => `${admin.user}` == `${targetUser._id}`);
+
+        await this.dataServices.groups.updateById(group._id, {
+            administrators,
+        });
+
+        return true;
     }
 }

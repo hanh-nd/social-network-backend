@@ -21,10 +21,11 @@ export class JoinRequestService {
         return createdJoinRequest;
     }
 
-    async findByUser(user: User, query: IGetJoinRequestQuery) {
+    async findByUser(user: User, group: Group, query: IGetJoinRequestQuery) {
         const { status } = query;
         const joinRequest = await this.dataServices.joinRequests.findOne({
             sender: user._id,
+            group: group._id,
             status,
         });
 
