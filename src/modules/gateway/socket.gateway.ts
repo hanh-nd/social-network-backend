@@ -1,3 +1,4 @@
+import { UseFilters } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -6,11 +7,11 @@ import {
     OnGatewayInit,
     WebSocketGateway,
     WebSocketServer,
-    WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ConfigKey } from 'src/common/config';
 import { IJwtPayload } from '../auth/auth.interface';
+import { WebsocketExceptionsFilter } from './exceptions';
 
 @WebSocketGateway({
     allowEIO3: true,
@@ -19,6 +20,7 @@ import { IJwtPayload } from '../auth/auth.interface';
         credentials: true,
     },
 })
+@UseFilters(new WebsocketExceptionsFilter())
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     constructor(private configService: ConfigService, private jwtService: JwtService) {}
 
@@ -28,7 +30,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     wsClients = [];
 
     afterInit(server: Server) {
-        console.info('Init socket server', server);
+        console.info('Socket server initialized');
     }
 
     handleDisconnect(client: Socket) {
@@ -48,7 +50,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         const { token } = client.handshake.headers;
 
         if (!token || Array.isArray(token)) {
-            throw new WsException('Invalid token');
+            this.handleDisconnect(client);
+            return client.disconnect();
         }
 
         try {
@@ -58,6 +61,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
             const { userId } = user;
             client.join(`${userId}`);
-        } catch (error) {}
+        } catch (error) {
+            this.handleDisconnect(client);
+            return client.disconnect();
+        }
     }
 }
