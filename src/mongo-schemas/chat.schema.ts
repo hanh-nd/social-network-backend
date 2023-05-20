@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
+import { ChatType } from 'src/modules/chats/chat.constants';
+import { Administrator, AdministratorSchema } from './administrator.schema';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
 import { User } from './user.schema';
@@ -23,14 +26,23 @@ export class Chat extends MongoBaseSchema {
     @Prop({ required: false, type: String })
     name: string;
 
-    @Prop({ required: false, type: String })
-    avatarId: string;
+    @Prop({ required: false, type: Types.ObjectId })
+    avatarId: ObjectId;
 
-    @Prop({ required: true, type: [Types.ObjectId], ref: User.name })
+    @Prop({ type: [AdministratorSchema], default: [] })
+    administrators: Administrator[];
+
+    @Prop({ required: true, type: [Types.ObjectId], ref: User.name, default: [] })
     members: Partial<User>[];
 
-    @Prop({ required: false, type: String })
-    type: string;
+    @Prop({ required: false, type: [Types.ObjectId], ref: User.name, default: [] })
+    blockedIds: Partial<User>[];
+
+    @Prop({ required: false, type: String, default: ChatType.PRIVATE })
+    type: ChatType;
+
+    @Prop({ required: false, type: [Types.ObjectId], default: [] })
+    deletedFor: Partial<User>[];
 }
 
 const BaseChatSchema = SchemaFactory.createForClass(Chat);

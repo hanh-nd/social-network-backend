@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
 import { Chat } from './chat.schema';
 import { MongoCollection } from './constant';
@@ -29,12 +30,14 @@ export class Message extends MongoBaseSchema {
     @Prop({ required: true, type: String })
     content: string;
 
-    @Prop({
-        required: false,
-        default: false,
-        type: Boolean,
-    })
+    @Prop({ required: false, type: Types.ObjectId })
+    mediaId: ObjectId;
+
+    @Prop({ required: false, default: false, type: Boolean })
     isRecalled: boolean;
+
+    @Prop({ required: false, type: [Types.ObjectId], default: [] })
+    deletedFor: Partial<User>[];
 }
 
 const BaseMessageSchema = SchemaFactory.createForClass(Message);
