@@ -52,6 +52,7 @@ export class ChatController {
     }
 
     @Post('/:id/members/:memberId')
+    @UseGuards(AccessTokenGuard)
     async addOrRemoveMember(@LoginUser() loginUser, @Param('id') chatId: string, @Param('memberId') targetId: string) {
         try {
             const result = await this.chatService.addOrRemoveMember(loginUser.userId, chatId, targetId);
@@ -63,6 +64,7 @@ export class ChatController {
     }
 
     @Post('/:id/members/:memberId/admin')
+    @UseGuards(AccessTokenGuard)
     async makeOrRemoveAdministrator(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -78,6 +80,7 @@ export class ChatController {
     }
 
     @Post('/:id/members/:memberId/block')
+    @UseGuards(AccessTokenGuard)
     async blockOrUnblockMember(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -105,6 +108,7 @@ export class ChatController {
     }
 
     @Get('/:id/messages')
+    @UseGuards(AccessTokenGuard)
     async getMessages(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -120,6 +124,7 @@ export class ChatController {
     }
 
     @Delete('/:id/messages/:messageId')
+    @UseGuards(AccessTokenGuard)
     async deleteMessage(@LoginUser() loginUser, @Param('id') chatId: string, @Param('messageId') messageId: string) {
         try {
             const result = await this.chatService.deleteMessage(loginUser.userId, chatId, messageId);
@@ -131,6 +136,7 @@ export class ChatController {
     }
 
     @Post('/:id/messages/:messageId')
+    @UseGuards(AccessTokenGuard)
     async reportMessage(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -142,6 +148,18 @@ export class ChatController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[ChatController][reportMessage] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id')
+    @UseGuards(AccessTokenGuard)
+    async getChatDetail(@LoginUser() loginUser, @Param('id') chatId: string) {
+        try {
+            const result = await this.chatService.getChatDetail(loginUser.userId, chatId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[ChatController][getChatDetail] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
