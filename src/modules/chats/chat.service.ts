@@ -94,7 +94,7 @@ export class ChatService {
                 populate: [
                     {
                         path: 'members',
-                        select: 'avatarId fullName',
+                        select: '_id avatarId fullName',
                     },
                 ],
             },
@@ -376,8 +376,8 @@ export class ChatService {
             throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
         }
 
-        await this.messageService.createMessage(user, chat, body);
-        return chat;
+        const message = await this.messageService.createMessage(user, chat, body);
+        return { chat, message };
     }
 
     async getMessages(userId: string, chatId: string, query: IGetMessageListQuery) {
@@ -450,5 +450,32 @@ export class ChatService {
 
         const createdReportId = await this.messageService.reportMessage(user, chat, messageId, body);
         return createdReportId;
+    }
+
+    async getChatDetail(userId: string, chatId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const chat = await this.dataServices.chats.findOne(
+            {
+                _id: toObjectId(chatId),
+                members: toObjectId(userId),
+            },
+            {
+                populate: [
+                    {
+                        path: 'members',
+                        select: '_id fullName avatartId',
+                    },
+                ],
+            },
+        );
+        if (!chat) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        return chat;
     }
 }
