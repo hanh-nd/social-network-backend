@@ -9,8 +9,6 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ConfigKey } from 'src/common/config';
-import { IJwtPayload } from '../auth/auth.interface';
 import { WebsocketExceptionsFilter } from './exceptions';
 
 @WebSocketGateway({
@@ -46,24 +44,5 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     handleConnection(client: Socket) {
         console.info(`Client connected: ${client.id}`);
         this.wsClients.push(client);
-
-        const { token } = client.handshake.headers;
-
-        if (!token || Array.isArray(token)) {
-            this.handleDisconnect(client);
-            return client.disconnect();
-        }
-
-        try {
-            const user = this.jwtService.verify<IJwtPayload>(token, {
-                secret: this.configService.get<string>(ConfigKey.JWT_ACCESS_TOKEN_SECRET),
-            });
-
-            const { userId } = user;
-            client.join(`${userId}`);
-        } catch (error) {
-            this.handleDisconnect(client);
-            return client.disconnect();
-        }
     }
 }

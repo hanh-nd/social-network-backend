@@ -29,6 +29,12 @@ export class MessageService {
         };
 
         const createdMessage = await this.dataServices.messages.create(toCreateMessageBody);
+        await createdMessage.populate([
+            {
+                path: 'author',
+                select: '_id fullName avatarId',
+            },
+        ]);
         return createdMessage;
     }
 
@@ -50,6 +56,7 @@ export class MessageService {
                         select: '_id fullName avatarId',
                     },
                 ],
+                sort: [['createdAt', -1]],
                 skip,
                 limit: +limit,
             },
