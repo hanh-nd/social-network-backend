@@ -1,4 +1,5 @@
 import {
+    ChatDocument,
     CommentDocument,
     GroupDocument,
     NotificationDocument,
@@ -17,4 +18,5 @@ export abstract class IDataResources {
     abstract reports: IGenericResource<ReportDocument>;
     abstract notifications: IGenericResource<NotificationDocument>;
     abstract groups: IGenericResource<GroupDocument, UserDocument>;
+    abstract chats: IGenericResource<ChatDocument, UserDocument>;
 }

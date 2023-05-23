@@ -163,4 +163,16 @@ export class ChatController {
             throw error;
         }
     }
+
+    @Post('/:id/leave')
+    @UseGuards(AccessTokenGuard)
+    async leaveChat(@LoginUser() loginUser, @Param('id') chatId: string) {
+        try {
+            const result = await this.chatService.leaveChat(loginUser.userId, chatId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[ChatController][leaveChat] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
 }
