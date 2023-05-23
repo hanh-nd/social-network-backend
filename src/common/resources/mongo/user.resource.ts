@@ -8,8 +8,8 @@ export class UserResource implements IGenericResource<UserDocument> {
 
     async mapToDto(user: UserDocument): Promise<object> {
         const userDto = Object.assign({}, user.toObject(), {
-            subscribers: user.subscriberIds.length,
-            subscribing: user.subscribingIds.length,
+            numberOfSubscribers: user.subscriberIds.length,
+            numberOfSubscribing: user.subscribingIds.length,
         });
 
         delete userDto.password;

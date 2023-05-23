@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 export function generateRandomString(length: number = 16) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -8,4 +10,12 @@ export function generateRandomString(length: number = 16) {
         counter += 1;
     }
     return result;
+}
+
+export function toObjectId(id: string | ObjectId) {
+    return new ObjectId(id);
+}
+
+export function toObjectIds(ids: (string | ObjectId)[]) {
+    return ids.map((id) => new ObjectId(id));
 }

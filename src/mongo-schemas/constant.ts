@@ -9,4 +9,5 @@ export enum MongoCollection {
     CHAT = 'chats',
     MESSAGE = 'messages',
     USER_TOKEN = 'user_tokens',
+    SUBSCRIBE_REQUEST = 'subscribe_requests',
 }

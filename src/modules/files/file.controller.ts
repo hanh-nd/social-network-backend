@@ -1,29 +1,66 @@
-import { Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    InternalServerErrorException,
+    Param,
+    Post,
+    Res,
+    UploadedFiles,
+    UseGuards,
+    UseInterceptors,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import * as _ from 'lodash';
+import { AccessTokenGuard } from 'src/common/guards';
+import { SuccessResponse } from 'src/common/helper';
+import { createWinstonLogger } from 'src/common/modules/winston';
+import { FileService } from './file.service';
 
 @Controller('/files')
 export class FileController {
-    @Post('')
-    @UseInterceptors(FilesInterceptor('file'))
+    constructor(private configService: ConfigService, private fileService: FileService) {}
+
+    private readonly logger = createWinstonLogger(FileController.name, 'files', this.configService);
+
+    @Post('/upload')
+    @UseGuards(AccessTokenGuard)
+    @UseInterceptors(FilesInterceptor('files'))
     upload(@UploadedFiles() files) {
-        const response = [];
-        files.forEach((file) => {
-            const fileResponse = {
-                originalname: file.originalname,
-                encoding: file.encoding,
-                mimetype: file.mimetype,
-                id: file.id,
-                filename: file.filename,
-                metadata: file.metadata,
-                bucketName: file.bucketName,
-                chunkSize: file.chunkSize,
-                size: file.size,
-                md5: file.md5,
-                uploadDate: file.uploadDate,
-                contentType: file.contentType,
-            };
-            response.push(fileResponse);
-        });
-        return response;
+        try {
+            const result = files.map((file) =>
+                _.pick(
+                    file,
+                    'originalname',
+                    'encoding',
+                    'mimetype',
+                    'id',
+                    'filename',
+                    'metadata',
+                    'bucketName',
+                    'chunkSize',
+                    'size',
+                    'md5',
+                    'uploadDate',
+                    'contentType',
+                ),
+            );
+            return new SuccessResponse({ item: result, totalItems: result.length });
+        } catch (error) {
+            this.logger.error(`[FileController][readStream] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    @Get('/:id')
+    async readStream(@Param('id') id: string, @Res() res) {
+        try {
+            await this.fileService.findById(id);
+            const fileStream = await this.fileService.readStream(id);
+            return fileStream.pipe(res);
+        } catch (error) {
+            this.logger.error(`[FileController][readStream] ${error.stack || JSON.stringify(error)}`);
+            throw new InternalServerErrorException(error);
+        }
     }
 }

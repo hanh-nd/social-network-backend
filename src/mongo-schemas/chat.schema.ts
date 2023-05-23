@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
-import { User, UserSchema } from './user.schema';
-import { Document } from 'mongoose';
+import { User } from './user.schema';
 
 export type ChatDocument = Chat & Document;
 
@@ -26,8 +26,8 @@ export class Chat extends MongoBaseSchema {
     @Prop({ required: false, type: String })
     avatarId: string;
 
-    @Prop({ required: true, type: [UserSchema] })
-    members: User[];
+    @Prop({ required: true, type: [Types.ObjectId], ref: User.name })
+    members: Partial<User>[];
 
     @Prop({ required: false, type: String })
     type: string;

@@ -17,6 +17,8 @@ import {
     ReportSchema,
     Role,
     RoleSchema,
+    SubscribeRequest,
+    SubscribeRequestSchema,
     UserToken,
     UserTokenSchema,
 } from 'src/mongo-schemas';
@@ -36,6 +38,7 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: Report.name, schema: ReportSchema }]),
         MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
         MongooseModule.forFeature([{ name: UserToken.name, schema: UserTokenSchema }]),
+        MongooseModule.forFeature([{ name: SubscribeRequest.name, schema: SubscribeRequestSchema }]),
     ],
     providers: [
         {

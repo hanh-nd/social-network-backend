@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { Types, Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
-import { User, UserSchema } from './user.schema';
-import { Post, PostSchema } from './post.schema';
+import { Post } from './post.schema';
+import { User } from './user.schema';
 
 export type CommentDocument = Comment & Document;
 
@@ -22,11 +22,11 @@ export type CommentDocument = Comment & Document;
 export class Comment extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: UserSchema })
-    author: User;
+    @Prop({ required: true, type: Types.ObjectId, ref: User.name })
+    author: Partial<User>;
 
-    @Prop({ required: true, type: PostSchema })
-    post: Post;
+    @Prop({ required: true, type: Types.ObjectId, ref: Post.name })
+    post: Partial<Post>;
 
     @Prop({ required: true, type: String })
     content: string;
@@ -35,7 +35,7 @@ export class Comment extends MongoBaseSchema {
         required: true,
         default: [],
         type: [Types.ObjectId],
-        ref: MongoCollection.USER,
+        ref: User.name,
     })
     reactIds: ObjectId[];
 

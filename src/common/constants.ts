@@ -95,3 +95,20 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
 export const CommonMessage = {
     AN_ERROR_OCCURRED: 'Có lỗi xảy ra, vui lòng thử lại.',
 };
+
+export const Privacy = {
+    PUBLIC: 1,
+    SUBSCRIBED: 2,
+    PRIVATE: 3,
+};
+
+export enum ElasticsearchIndex {
+    USER = 'user',
+    POST = 'post',
+}
+
+export const SubscribeRequestStatus = {
+    PENDING: 1,
+    ACCEPTED: 2,
+    REJECTED: 3,
+};

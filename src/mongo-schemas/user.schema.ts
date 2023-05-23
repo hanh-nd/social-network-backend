@@ -19,6 +19,7 @@ export type UserDocument = User & Document;
 })
 export class User extends MongoBaseSchema {
     _id: string;
+    id?: string;
 
     @Prop({ required: true, unique: true, type: String })
     username: string;
@@ -59,8 +60,8 @@ export class User extends MongoBaseSchema {
     @Prop({ required: false, type: String })
     describe: string;
 
-    @Prop({ required: true, default: true, type: Boolean })
-    privacy: boolean;
+    @Prop({ required: true, default: false, type: Boolean })
+    private: boolean;
 
     @Prop({ required: true, default: 0, type: Number })
     point: number;

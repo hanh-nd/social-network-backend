@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigKey } from '../config';
+import { ConfigKey } from '../../config';
+import { MongoService } from './mongo.service';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { ConfigKey } from '../config';
             },
         }),
     ],
-    providers: [],
+    providers: [MongoService],
+    exports: [MongoService],
 })
 export class MongoModule {}

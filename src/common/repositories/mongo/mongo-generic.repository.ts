@@ -1,4 +1,3 @@
-import { get } from 'lodash';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 import { IGenericRepository } from '../generic.repository';
@@ -8,6 +7,20 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
     constructor(model: Model<T>) {
         this._model = model;
+    }
+
+    async findAndCountAll(
+        where = {},
+        options: any = {},
+    ): Promise<{
+        items: T[];
+        totalItems: number;
+    }> {
+        const [items, totalItems] = await Promise.all([this.findAll(where, options), this.count(where)]);
+        return {
+            items,
+            totalItems,
+        };
     }
 
     async findAll(where = {}, options: any = {}): Promise<T[]> {
@@ -26,7 +39,28 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
             chain = chain.select(options.select);
         }
 
+        if (options.sort) {
+            chain = chain.sort(options.sort);
+        }
+
+        if (options.skip) {
+            chain = chain.skip(options.skip);
+        }
+
+        if (options.limit) {
+            chain = chain.limit(options.limit);
+        }
+
         return chain.exec();
+    }
+
+    async count(where = {}): Promise<number> {
+        Object.assign(where, {
+            deletedAt: {
+                $eq: null,
+            },
+        });
+        return this._model.count(where).exec();
     }
 
     async findOne(where?: object, options: any = {}): Promise<T | null> {

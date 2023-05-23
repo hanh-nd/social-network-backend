@@ -1,6 +1,16 @@
 import { ObjectId } from 'mongodb';
 export abstract class IGenericRepository<T> {
+    abstract findAndCountAll(
+        where: object,
+        options?: unknown,
+    ): Promise<{
+        items: T[];
+        totalItems: number;
+    }>;
+
     abstract findAll(where: object, options?: unknown): Promise<T[]>;
+
+    abstract count(where: object): Promise<number>;
 
     abstract findOne(where: object, options?: unknown): Promise<T>;
 

@@ -1,11 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { MongoGridFS } from 'mongo-gridfs';
-import { Db, GridFSBucketReadStream } from 'mongodb';
+import * as _ from 'lodash';
+import { IGridFSObject, MongoGridFS } from 'mongo-gridfs';
+import { Db, GridFSBucketReadStream, ObjectId } from 'mongodb';
 import { Connection } from 'mongoose';
-
-@Injectable()
-export class FilesService {
+export class FileService {
     private fileModel: MongoGridFS;
 
     constructor(@InjectConnection() private readonly connection: Connection) {
@@ -16,23 +15,32 @@ export class FilesService {
         return await this.fileModel.readFileStream(id);
     }
 
-    async findInfo(id: string): Promise<any> {
-        const result = await this.fileModel
-            .findById(id)
-            .catch((err) => {
-                throw new HttpException('File not found', HttpStatus.NOT_FOUND);
-            })
-            .then((result) => result);
-        return {
-            filename: result.filename,
-            length: result.length,
-            chunkSize: result.chunkSize,
-            md5: result.md5,
-            contentType: result.contentType,
-        };
+    async findById(id: string): Promise<IGridFSObject> {
+        const file = await this.fileModel.findById(id).catch(() => {
+            throw new NotFoundException(`File không tồn tại.`);
+        });
+        return file;
+    }
+
+    async findAll(query = {}): Promise<IGridFSObject[]> {
+        const where = this.buildWhereQuery(query);
+        return await this.fileModel.find(where);
     }
 
     async deleteFile(id: string): Promise<boolean> {
         return await this.fileModel.delete(id);
+    }
+
+    private buildWhereQuery(query: any = {}) {
+        const { userId, ids } = query;
+        const where: any = {};
+        if (userId) {
+            where['metadata.userId'] = userId;
+        }
+
+        if (_.isArray(ids)) {
+            where._id = new ObjectId('6447f5b1d8dbfc231901d018');
+        }
+        return where;
     }
 }

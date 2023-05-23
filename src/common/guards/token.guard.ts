@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { TokenExpiredException } from '../exception/token-expired.exception';
 import { UserToken } from '../interfaces';
@@ -14,6 +14,9 @@ export abstract class TokenGuard implements CanActivate {
             return true;
         } catch (e) {
             // return false or throw a specific error if desired
+            if (e instanceof UnauthorizedException) {
+                throw e;
+            }
             throw new TokenExpiredException();
         }
     }
@@ -25,11 +28,11 @@ export abstract class TokenGuard implements CanActivate {
     protected getToken(request: { headers: Record<string, string | string[]> }): string {
         const authorization = request.headers['authorization'];
         if (!authorization || Array.isArray(authorization)) {
-            throw new Error('Invalid Authorization Header');
+            throw new UnauthorizedException('Invalid Authorization Header');
         }
         const token = authorization.split(' ')[1];
         if (!token) {
-            throw new Error('Invalid token');
+            throw new UnauthorizedException('Invalid token');
         }
         return token;
     }
