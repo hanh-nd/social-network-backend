@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
-import { toObjectId, toObjectIds } from 'src/common/helper';
+import { ObjectId } from 'mongodb';
+import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Chat, User } from 'src/mongo-schemas';
@@ -33,6 +34,13 @@ export class ChatService {
             });
 
             if (existedChat) {
+                const { deletedFor = [] } = existedChat;
+                if (toStringArray(deletedFor as unknown as ObjectId[]).includes(`${user._id}`)) {
+                    _.remove(deletedFor, (id) => `${id}` == `${user._id}`);
+                    await this.dataServices.chats.updateById(existedChat._id, {
+                        deletedFor,
+                    });
+                }
                 return existedChat._id;
             }
         }
@@ -496,7 +504,6 @@ export class ChatService {
         }
 
         const { members = [] } = chat;
-
         _.remove(members, (id) => id == `${user._id}`);
 
         await this.dataServices.chats.updateById(chat._id, {
