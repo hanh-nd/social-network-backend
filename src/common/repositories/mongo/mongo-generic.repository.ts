@@ -106,6 +106,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
             chain = chain.select(options.select);
         }
 
+        if (options.sort) {
+            chain = chain.sort(options.sort);
+        }
+
         const item = await chain.exec();
         if (item) {
             return item as T;

@@ -48,7 +48,7 @@ export class ChatGateway {
         const { chatId, messageId } = payload;
         const { userId } = client;
 
-        const chat = await this.chatService.recallMessage(userId, chatId, messageId);
+        const { chat, message } = await this.chatService.recallMessage(userId, chatId, messageId);
         const { members = [], blockedIds = [] } = chat;
         const activeMembers = _.difference(
             toStringArray(members as unknown as ObjectId[]),
@@ -56,7 +56,7 @@ export class ChatGateway {
         );
         this.socketGateway.server.to(activeMembers).emit(SocketEvent.USER_RECALL, {
             chatId: chatId,
-            messageId: messageId,
+            message: message,
         });
         return;
     }

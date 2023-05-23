@@ -81,6 +81,9 @@ export class MessageService {
             content: `Tin nhắn đã bị thu hồi.`,
             mediaId: null,
         });
+
+        const updatedMessage = await this.dataServices.messages.findById(message._id);
+        return updatedMessage;
     }
 
     async deleteMessage(user: User, chat: Chat, messageId: string) {

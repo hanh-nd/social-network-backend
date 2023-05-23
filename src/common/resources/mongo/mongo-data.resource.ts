@@ -1,5 +1,6 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import {
+    ChatDocument,
     CommentDocument,
     GroupDocument,
     NotificationDocument,
@@ -18,6 +19,7 @@ import { ReactionResource } from './reaction.resource';
 import { ReportResource } from './report.resource';
 import { UserResource } from './user.resource';
 import { IDataServices } from 'src/common/repositories/data.service';
+import { ChatResource } from './chat.resource';
 
 @Injectable()
 export class MongoDataResources implements IDataResources, OnApplicationBootstrap {
@@ -30,6 +32,7 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
     reports: IGenericResource<ReportDocument>;
     notifications: IGenericResource<NotificationDocument>;
     groups: IGenericResource<GroupDocument, UserDocument>;
+    chats: IGenericResource<ChatDocument, UserDocument>;
 
     onApplicationBootstrap() {
         this.users = new UserResource(this.dataServices);
@@ -39,5 +42,6 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
         this.reports = new ReportResource(this.dataServices);
         this.notifications = new NotificationResource(this.dataServices);
         this.groups = new GroupResource(this.dataServices);
+        this.chats = new ChatResource(this.dataServices);
     }
 }

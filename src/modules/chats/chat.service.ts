@@ -100,7 +100,8 @@ export class ChatService {
             },
         );
 
-        return chats;
+        const chatDtos = await this.dataResources.chats.mapToDtoList(chats, user);
+        return chatDtos;
     }
 
     async updateChat(userId: string, chatId: string, body: IUpdateChatBody) {
@@ -412,8 +413,8 @@ export class ChatService {
             throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
         }
 
-        await this.messageService.recallMessage(user, chat, messageId);
-        return chat;
+        const updatedMessage = await this.messageService.recallMessage(user, chat, messageId);
+        return { chat, message: updatedMessage };
     }
 
     async deleteMessage(userId: string, chatId: string, messageId: string) {
@@ -467,7 +468,7 @@ export class ChatService {
                 populate: [
                     {
                         path: 'members',
-                        select: '_id fullName avatartId',
+                        select: '_id fullName avatarId',
                     },
                 ],
             },
@@ -476,6 +477,32 @@ export class ChatService {
             throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
         }
 
-        return chat;
+        const chatDto = await this.dataResources.chats.mapToDto(chat, user);
+        return chatDto;
+    }
+
+    async leaveChat(userId: string, chatId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const chat = await this.dataServices.chats.findOne({
+            _id: toObjectId(chatId),
+            members: toObjectId(userId),
+        });
+        if (!chat) {
+            throw new ForbiddenException(`Bạn không phải thành viên đoạn chat này.`);
+        }
+
+        const { members = [] } = chat;
+
+        _.remove(members, (id) => id == `${user._id}`);
+
+        await this.dataServices.chats.updateById(chat._id, {
+            members,
+        });
+
+        return true;
     }
 }
