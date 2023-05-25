@@ -44,7 +44,7 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
             numberOfShares: postDto.sharedIds.length,
         });
 
-        if (user) {
+        if (user && postDto?.author?.subscriberIds) {
             const isReacted = postDto.reactIds.map((id) => `${id}`).includes(`${user._id}`);
             postDto.isReacted = isReacted;
             if (isReacted) {
@@ -56,6 +56,9 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
                 postDto.reactionType = reactionType?.type;
             }
             const isSubscribing = toStringArray(postDto.author.subscriberIds).includes(`${user._id}`);
+            if (`${postDto.author._id}` == `${user._id}`) {
+                postDto.author.isSelf = true;
+            }
             postDto.author.isSubscribing = isSubscribing;
         }
 

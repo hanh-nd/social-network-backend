@@ -15,6 +15,7 @@ export class GroupResource extends IGenericResource<GroupDocument, UserDocument>
                     numberOfSubscribers: userDto.subscriberIds?.length,
                     numberOfSubscribing: userDto.subscribingIds?.length,
                     isSubscribing: toStringArray(userDto?.subscriberIds).includes(`${user?._id}`),
+                    isSelf: `${userDto?._id}` == user._id,
                 });
 
                 delete userDto.password;

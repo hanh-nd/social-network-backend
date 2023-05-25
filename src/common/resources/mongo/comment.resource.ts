@@ -19,10 +19,13 @@ export class CommentResource extends IGenericResource<CommentDocument, UserDocum
             numberOfReactions: commentDto.reactIds.length,
         });
 
-        if (user) {
+        if (user && commentDto?.author?.subscriberIds) {
             const isReacted = commentDto.reactIds.map((id) => `${id}`).includes(`${user._id}`);
             commentDto.isReacted = isReacted;
             const isSubscribing = toStringArray(commentDto.author.subscriberIds).includes(`${user._id}`);
+            if (`${commentDto.author._id}` == `${user._id}`) {
+                commentDto.author.isSelf = true;
+            }
             commentDto.author.isSubscribing = isSubscribing;
         }
 
