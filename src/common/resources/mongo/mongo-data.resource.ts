@@ -1,8 +1,10 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { IDataServices } from 'src/common/repositories/data.service';
 import {
     ChatDocument,
     CommentDocument,
     GroupDocument,
+    GroupPostDocument,
     NotificationDocument,
     PostDocument,
     ReactionDocument,
@@ -11,15 +13,15 @@ import {
 } from 'src/mongo-schemas';
 import { IDataResources } from '../data.resource';
 import { IGenericResource } from '../generic.resource';
+import { ChatResource } from './chat.resource';
 import { CommentResource } from './comment.resource';
+import { GroupPostResource } from './group-post.resource';
 import { GroupResource } from './group.resource';
 import { NotificationResource } from './notification.resource';
 import { PostResource } from './post.resource';
 import { ReactionResource } from './reaction.resource';
 import { ReportResource } from './report.resource';
 import { UserResource } from './user.resource';
-import { IDataServices } from 'src/common/repositories/data.service';
-import { ChatResource } from './chat.resource';
 
 @Injectable()
 export class MongoDataResources implements IDataResources, OnApplicationBootstrap {
@@ -28,11 +30,12 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
     users: IGenericResource<UserDocument>;
     posts: IGenericResource<PostDocument, UserDocument>;
     comments: IGenericResource<CommentDocument, UserDocument>;
-    reactions: IGenericResource<ReactionDocument>;
+    reactions: IGenericResource<ReactionDocument, UserDocument>;
     reports: IGenericResource<ReportDocument>;
     notifications: IGenericResource<NotificationDocument>;
     groups: IGenericResource<GroupDocument, UserDocument>;
     chats: IGenericResource<ChatDocument, UserDocument>;
+    groupPosts: IGenericResource<GroupPostDocument, UserDocument>;
 
     onApplicationBootstrap() {
         this.users = new UserResource(this.dataServices);
@@ -43,5 +46,6 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
         this.notifications = new NotificationResource(this.dataServices);
         this.groups = new GroupResource(this.dataServices);
         this.chats = new ChatResource(this.dataServices);
+        this.groupPosts = new GroupPostResource(this.dataServices);
     }
 }

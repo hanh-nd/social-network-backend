@@ -4,7 +4,7 @@ import { ReactionTarget } from 'src/common/interfaces';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { MongoGenericRepository } from 'src/common/repositories/mongo/mongo-generic.repository';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Comment, Reaction, ReactionDocument, User } from 'src/mongo-schemas';
+import { Comment, Reaction, ReactionDocument, User, UserDocument } from 'src/mongo-schemas';
 import { Post } from './../../mongo-schemas/post.schema';
 import { ICreateReactionBody, IGetReactionListQuery } from './reaction.interface';
 
@@ -12,7 +12,7 @@ import { ICreateReactionBody, IGetReactionListQuery } from './reaction.interface
 export class ReactionService {
     constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
 
-    async getReactions(targetType: string, target: Post | Comment, query: IGetReactionListQuery) {
+    async getReactions(user: User, targetType: string, target: Post | Comment, query: IGetReactionListQuery) {
         const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
         const skip = (+page - 1) * +limit;
 
@@ -27,7 +27,7 @@ export class ReactionService {
                 limit: +limit,
             },
         );
-        const reactionDtos = await this.dataResources.reactions.mapToDtoList(reactions);
+        const reactionDtos = await this.dataResources.reactions.mapToDtoList(reactions, user as UserDocument);
         return reactionDtos;
     }
 

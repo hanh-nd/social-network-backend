@@ -100,7 +100,19 @@ export class PostService {
             author: author.fullName as unknown,
             privacy: createdPost.privacy,
         });
-        return createdPost._id;
+
+        const post = await this.dataServices.posts.findById(createdPost._id, {
+            populate: [
+                'author',
+                {
+                    path: 'postShared',
+                    populate: ['author'],
+                },
+            ],
+        });
+
+        const postDto = await this.dataResources.posts.mapToDto(post);
+        return postDto as Post;
     }
 
     async getUserPosts(userId: string) {
@@ -386,13 +398,20 @@ export class PostService {
         return true;
     }
 
-    async getPostReactions(postId: string, query: IGetReactionListQuery) {
-        const post = await this.dataServices.posts.findById(postId);
+    async getPostReactions(userId: string, postId: string, query: IGetReactionListQuery) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
         }
 
-        const reactions = await this.reactionService.getReactions(ReactionTargetType.POST, post, query);
+        const reactions = await this.reactionService.getReactions(user, ReactionTargetType.POST, post, query);
         return reactions;
     }
 
@@ -465,11 +484,16 @@ export class PostService {
         return true;
     }
 
-    async getPostCommentReactions(postId: string, commentId: string, query: IGetReactionListQuery) {
-        const [post, comment] = await Promise.all([
+    async getPostCommentReactions(userId: string, postId: string, commentId: string, query: IGetReactionListQuery) {
+        const [user, post, comment] = await Promise.all([
+            this.dataServices.users.findById(userId),
             this.dataServices.posts.findById(postId),
             this.dataServices.comments.findById(commentId),
         ]);
+
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
 
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
@@ -479,7 +503,7 @@ export class PostService {
             throw new BadGatewayException(`Không tìm thấy bình luận.`);
         }
 
-        const reactions = await this.reactionService.getReactions(ReactionTargetType.COMMENT, comment, query);
+        const reactions = await this.reactionService.getReactions(user, ReactionTargetType.COMMENT, comment, query);
         return reactions;
     }
 
@@ -611,13 +635,13 @@ export class PostService {
         if (!post) {
             throw new BadRequestException(`Không tìm thấy bài viết này.`);
         }
-        const createdPostId = await this.createNewPost(userId, {
+        const createdPost = await this.createNewPost(userId, {
             content,
             postSharedId: postId,
         });
 
         const postShareIds = post.sharedIds;
-        post.sharedIds.push(toObjectId(createdPostId));
+        post.sharedIds.push(toObjectId(createdPost._id));
 
         const toUpdatePostBody = {
             shareIds: postShareIds,
@@ -642,7 +666,7 @@ export class PostService {
             NotificationAction.SHARE,
         );
 
-        return createdPostId;
+        return createdPost;
     }
 
     async getSharePosts(userId: string, postId: string, query: IGetPostListQuery) {

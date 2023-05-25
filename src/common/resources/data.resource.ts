@@ -2,6 +2,7 @@ import {
     ChatDocument,
     CommentDocument,
     GroupDocument,
+    GroupPostDocument,
     NotificationDocument,
     PostDocument,
     ReactionDocument,
@@ -14,9 +15,10 @@ export abstract class IDataResources {
     abstract users: IGenericResource<UserDocument>;
     abstract posts: IGenericResource<PostDocument, UserDocument>;
     abstract comments: IGenericResource<CommentDocument, UserDocument>;
-    abstract reactions: IGenericResource<ReactionDocument>;
+    abstract reactions: IGenericResource<ReactionDocument, UserDocument>;
     abstract reports: IGenericResource<ReportDocument>;
     abstract notifications: IGenericResource<NotificationDocument>;
     abstract groups: IGenericResource<GroupDocument, UserDocument>;
     abstract chats: IGenericResource<ChatDocument, UserDocument>;
+    abstract groupPosts: IGenericResource<GroupPostDocument, UserDocument>;
 }

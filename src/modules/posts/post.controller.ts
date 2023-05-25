@@ -1,15 +1,4 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    InternalServerErrorException,
-    Param,
-    Patch,
-    Post,
-    Query,
-    UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
@@ -171,11 +160,12 @@ export class PostController {
     @Get('/:postId/reactions')
     @UseGuards(AccessTokenGuard)
     async getPostReactions(
+        @LoginUser() loginUser,
         @Param('postId') postId: string,
         @Query(new RemoveEmptyQueryPipe()) query: IGetReactionListQuery,
     ) {
         try {
-            const result = await this.postService.getPostReactions(postId, query);
+            const result = await this.postService.getPostReactions(loginUser.userId, postId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostReactions] ${error.stack || JSON.stringify(error)}`);
@@ -202,12 +192,13 @@ export class PostController {
     @Get('/:postId/comments/:commentId/reactions')
     @UseGuards(AccessTokenGuard)
     async getPostCommentReactions(
+        @LoginUser() loginUser,
         @Param('postId') postId: string,
         @Param('commentId') commentId: string,
         @Query(new RemoveEmptyQueryPipe()) query: IGetReactionListQuery,
     ) {
         try {
-            const result = await this.postService.getPostCommentReactions(postId, commentId, query);
+            const result = await this.postService.getPostCommentReactions(loginUser.userId, postId, commentId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostCommentReactions] ${error.stack || JSON.stringify(error)}`);
