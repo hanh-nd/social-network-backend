@@ -1,3 +1,6 @@
+import { Gender } from 'src/common/constants';
+import { Address } from 'src/mongo-schemas';
+
 export interface ILoginBody {
     username: string;
     password: string;
@@ -10,12 +13,8 @@ export interface IRegisterBody {
     email: string;
     phone?: string;
     birthday?: Date;
-    address?: {
-        province: string;
-        district: string;
-        ward: string;
-        detail?: string;
-    };
+    address?: Address;
+    gender?: Gender;
 }
 
 export interface IJwtPayload {
