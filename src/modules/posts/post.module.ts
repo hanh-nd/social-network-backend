@@ -11,6 +11,7 @@ import { ReactionModule } from '../reactions/reaction.module';
 import { ReportModule } from '../reports/report.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
+import { TagModule } from '../tags/tag.module';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { PostService } from './post.service';
         ReportModule,
         NotificationModule,
         ChatGPTModule,
+        TagModule,
     ],
     controllers: [PostController],
     providers: [JwtService, PostService, FileService],

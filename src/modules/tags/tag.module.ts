@@ -9,5 +9,6 @@ import { TagService } from './tag.service';
     imports: [DataServicesModule, DataResourcesModule, JwtModule],
     controllers: [TagController],
     providers: [TagService],
+    exports: [TagService],
 })
 export class TagModule {}

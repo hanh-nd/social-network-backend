@@ -58,6 +58,24 @@ export class TagService {
         return tags;
     }
 
+    async getTagNames() {
+        const tags = await this.dataServices.tags.findAll({});
+        return tags.map((tag) => tag.name);
+    }
+
+    async getTagIds(names: string[]) {
+        const formattedNames = names.map((name) =>
+            name
+                .split(' ')
+                .map((name) => capitalize(name.toLowerCase()))
+                .join(' '),
+        );
+        const tags = await this.dataServices.tags.findAll({
+            name: formattedNames,
+        });
+        return tags.map((tag) => tag._id);
+    }
+
     async bulkDeleteTag(body: IBulkDeleteTagBody) {
         const { ids } = body;
         await this.dataServices.tags.bulkDelete({

@@ -31,6 +31,7 @@ import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reactio
 import { ReactionService } from '../reactions/reaction.service';
 import { ICreateReportBody } from '../reports/report.interface';
 import { ReportService } from '../reports/report.service';
+import { TagService } from '../tags/tag.service';
 import { DEFAULT_PAGE_LIMIT } from './../../common/constants';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 
@@ -46,6 +47,7 @@ export class PostService {
         private reportService: ReportService,
         private notificationService: NotificationService,
         private chatGPTService: ChatGPTService,
+        private tagService: TagService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
@@ -76,6 +78,15 @@ export class PostService {
             videoIds: toObjectIds(videoIds),
             point: 0,
         };
+
+        const tagNames = await this.tagService.getTagNames();
+        const response = await this.chatGPTService.sendMessage(
+            `Give me 3 tags in the list "${tagNames.join(
+                ', ',
+            )}" separated by comma that best fit for the paragraph below:\n${content}`,
+        );
+        const tagIds = await this.tagService.getTagIds((response.text || '').split(','));
+        createPostBody.tagIds = toObjectIds(tagIds);
 
         if (discussedInId) {
             const discussedInUser = await this.dataServices.users.findById(discussedInId);
