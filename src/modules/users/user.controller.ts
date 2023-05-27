@@ -193,12 +193,28 @@ export class UserController {
 
     @Get('/:id/posts')
     @UseGuards(AccessTokenGuard)
-    async getUserPosts(@Param('id') userId, @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery) {
+    async getUserPosts(
+        @LoginUser() loginUser,
+        @Param('id') userId,
+        @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery,
+    ) {
         try {
-            const result = await this.userService.getUserPosts(userId, query);
+            const result = await this.userService.getUserPosts(loginUser.userId, userId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getUserPosts] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id/details')
+    @UseGuards(AccessTokenGuard)
+    async getUserDetail(@LoginUser() loginUser, @Param('id') userId: string) {
+        try {
+            const result = await this.userService.getUserDetail(loginUser.userId, userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserDetail] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

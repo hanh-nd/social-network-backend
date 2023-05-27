@@ -24,3 +24,7 @@ export function toObjectIds(ids: (string | ObjectId)[]) {
 export function toStringArray(ids: ObjectId[] = []) {
     return ids.map((id) => `${id}`);
 }
+
+export function capitalize(word: string) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+}

@@ -137,6 +137,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
     async updateById(id: string, item: UpdateQuery<T>, options: any = {}): Promise<T> {
         let chain = this._model.findByIdAndUpdate(toObjectId(id), item, {
+            ...(options.upsert && { upsert: options.upsert }),
             new: true,
         });
 
@@ -153,6 +154,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
     async updateOne(where: object, item: UpdateQuery<T>, options: any = {}): Promise<T> {
         let chain = this._model.findOneAndUpdate(where, item, {
+            ...(options.upsert && { upsert: options.upsert }),
             new: true,
         });
 

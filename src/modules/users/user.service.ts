@@ -28,6 +28,7 @@ import {
 } from '../subscribe-requests/subscribe-request.interface';
 import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
 import { IChangePasswordBody, IGetUserListQuery, IUpdateProfileBody } from './user.interface';
+import * as moment from 'moment';
 
 @Injectable()
 export class UserService {
@@ -63,6 +64,29 @@ export class UserService {
         return userDto;
     }
 
+    async getUserDetail(loginUserId: string, userId: string) {
+        const [loginUser, user] = await Promise.all([
+            this.dataServices.users.findById(loginUserId),
+            this.dataServices.users.findById(userId),
+        ]);
+
+        if (!loginUser) {
+            throw new NotFoundException('Bạn không có quyền thực hiên thao tác này.');
+        }
+
+        if (!user) {
+            throw new NotFoundException('Không tìm thấy người dùng này.');
+        }
+
+        const userDetail = await this.dataServices.userDetails.findOne({
+            userId: toObjectId(userId),
+        });
+        return {
+            ...userDetail.toObject(),
+            tagIds: user.tagIds,
+        };
+    }
+
     async changeUserPassword(userId: string, body: IChangePasswordBody) {
         const existedUser = await this.dataServices.users.findById(userId);
         if (!existedUser) {
@@ -87,7 +111,22 @@ export class UserService {
             throw new NotFoundException(`Không tìm thấy user này.`);
         }
 
+        const { birthday } = body;
+
         await this.dataServices.users.updateById(userId, body);
+        await this.dataServices.userDetails.updateOne(
+            {
+                userId: toObjectId(userId),
+            },
+            {
+                ...body,
+                userId: toObjectId(userId),
+                birthday: moment(birthday).utc(true).toISOString(),
+            },
+            {
+                upsert: true,
+            },
+        );
 
         this.elasticsearchService.updateById<User>(ElasticsearchIndex.USER, existedUser._id, {
             id: existedUser._id,
@@ -111,7 +150,7 @@ export class UserService {
             },
         });
 
-        const subscriberDtos = await this.dataResources.users.mapToDtoList(subscribers);
+        const subscriberDtos = await this.dataResources.users.mapToDtoList(subscribers, existedUser);
         return subscriberDtos;
     }
 
@@ -142,7 +181,7 @@ export class UserService {
                 $in: blockedIds,
             },
         });
-        const blockedDtos = await this.dataResources.users.mapToDtoList(blockedList);
+        const blockedDtos = await this.dataResources.users.mapToDtoList(blockedList, existedUser);
         return blockedDtos;
     }
 
@@ -158,7 +197,7 @@ export class UserService {
                 $in: subscribingIds,
             },
         });
-        const subscribingDtos = await this.dataResources.users.mapToDtoList(subscribing);
+        const subscribingDtos = await this.dataResources.users.mapToDtoList(subscribing, existedUser);
         return subscribingDtos;
     }
 
@@ -377,11 +416,15 @@ export class UserService {
             },
         );
 
-        const suggestionDtos = await this.dataResources.users.mapToDtoList(suggestions);
+        const suggestionDtos = await this.dataResources.users.mapToDtoList(suggestions, user);
         return suggestionDtos;
     }
 
-    async getUserPosts(userId: string, query: IGetPostListQuery) {
+    async getUserPosts(loginUserId: string, userId: string, query: IGetPostListQuery) {
+        const loginUser = await this.dataServices.users.findById(loginUserId);
+        if (!loginUser) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
+        }
         const user = await this.dataServices.users.findById(userId);
         if (!user) {
             throw new ForbiddenException(`Không tìm thấy người dùng này.`);
@@ -407,7 +450,7 @@ export class UserService {
                 limit: +limit,
             },
         );
-        const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
+        const postDtos = await this.dataResources.posts.mapToDtoList(posts, loginUser);
         return postDtos;
     }
 }

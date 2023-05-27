@@ -176,3 +176,15 @@ export const SocketEvent = {
     USER_CHAT: 'USER_CHAT',
     USER_RECALL: 'USER_RECALL',
 };
+
+export enum Gender {
+    MALE = 'MALE',
+    FEMALE = 'FEMALE',
+    OTHER = 'OTHER',
+}
+
+export enum Relationship {
+    SINGLE = 'SINGLE',
+    IN_A_RELATIONSHIP = 'IN_A_RELATIONSHIP',
+    MARRIED = 'MARRIED',
+}

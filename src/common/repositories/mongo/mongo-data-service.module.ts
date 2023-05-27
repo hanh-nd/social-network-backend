@@ -28,6 +28,8 @@ import {
     Tag,
     TagSchema,
     User,
+    UserDetail,
+    UserDetailSchema,
     UserSchema,
     UserToken,
     UserTokenSchema,
@@ -52,6 +54,7 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: JoinRequest.name, schema: JoinRequestSchema }]),
         MongooseModule.forFeature([{ name: GroupPost.name, schema: GroupPostSchema }]),
         MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
+        MongooseModule.forFeature([{ name: UserDetail.name, schema: UserDetailSchema }]),
     ],
     providers: [
         {
