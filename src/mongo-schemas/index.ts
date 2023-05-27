@@ -14,5 +14,8 @@ export * from './report.schema';
 export * from './role.schema';
 export * from './subscribe-request.schema';
 export * from './tag.schema';
+export * from './user-detail.schema';
+export * from './user-education.schema';
 export * from './user-token.schema';
+export * from './user-work.schema';
 export * from './user.schema';

@@ -12,6 +12,7 @@ import {
     RoleDocument,
     SubscribeRequestDocument,
     TagDocument,
+    UserDetailDocument,
     UserDocument,
     UserTokenDocument,
 } from 'src/mongo-schemas';
@@ -33,4 +34,5 @@ export abstract class IDataServices {
     abstract joinRequests: IGenericRepository<JoinRequestDocument>;
     abstract groupPosts: IGenericRepository<GroupPostDocument>;
     abstract tags: IGenericRepository<TagDocument>;
+    abstract userDetails: IGenericRepository<UserDetailDocument>;
 }

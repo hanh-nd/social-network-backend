@@ -11,7 +11,7 @@ export class UserResource extends IGenericResource<UserDocument> {
             numberOfSubscribers: userDto.subscriberIds.length,
             numberOfSubscribing: userDto.subscribingIds.length,
             isSubscribing: toStringArray(userDto.subscriberIds).includes(`${loginUser?._id}`),
-            isSelf: `${userDto._id}` == `${loginUser._id}`,
+            isSelf: `${userDto._id}` == `${loginUser?._id}`,
         });
 
         delete userDto.password;

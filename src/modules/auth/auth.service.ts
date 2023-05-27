@@ -78,6 +78,10 @@ export class AuthService {
             password: hashedPassword,
             roleId: toObjectId(userRole._id),
         });
+        await this.dataServices.userDetails.create({
+            userId: toObjectId(createdUser._id),
+            ...body,
+        });
         await this.elasticsearchService.index<User>(ElasticsearchIndex.USER, {
             id: createdUser._id,
             username: createdUser.username,

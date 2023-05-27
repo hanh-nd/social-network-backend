@@ -29,11 +29,14 @@ import {
     Tag,
     TagDocument,
     User,
+    UserDetail,
+    UserDetailDocument,
     UserDocument,
     UserToken,
     UserTokenDocument,
 } from 'src/mongo-schemas';
 import { IDataServices } from '../data.service';
+import { IGenericRepository } from '../generic.repository';
 import { MongoGenericRepository } from './mongo-generic.repository';
 
 @Injectable()
@@ -53,6 +56,7 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     groupPosts: MongoGenericRepository<GroupPostDocument>;
     joinRequests: MongoGenericRepository<JoinRequestDocument>;
     tags: MongoGenericRepository<TagDocument>;
+    userDetails: IGenericRepository<UserDetailDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -85,6 +89,8 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private groupPostModel: Model<GroupPostDocument>,
         @InjectModel(Tag.name)
         private tagModel: Model<TagDocument>,
+        @InjectModel(UserDetail.name)
+        private userDetailModel: Model<UserDetailDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -103,5 +109,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.joinRequests = new MongoGenericRepository<JoinRequestDocument>(this.joinRequestModel);
         this.groupPosts = new MongoGenericRepository<GroupPostDocument>(this.groupPostModel);
         this.tags = new MongoGenericRepository<TagDocument>(this.tagModel);
+        this.userDetails = new MongoGenericRepository<UserDetailDocument>(this.userDetailModel);
     }
 }
