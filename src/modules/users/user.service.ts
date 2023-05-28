@@ -6,13 +6,14 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import {
     DEFAULT_PAGE_LIMIT,
     DEFAULT_PAGE_VALUE,
     ElasticsearchIndex,
     SubscribeRequestStatus,
 } from 'src/common/constants';
-import { toObjectId, toObjectIds } from 'src/common/helper';
+import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -28,7 +29,6 @@ import {
 } from '../subscribe-requests/subscribe-request.interface';
 import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
 import { IChangePasswordBody, IGetUserListQuery, IUpdateProfileBody } from './user.interface';
-import * as moment from 'moment';
 
 @Injectable()
 export class UserService {
@@ -45,10 +45,10 @@ export class UserService {
     async getUserProfile(loginUserId: string, userId: string) {
         const [loginUser, user] = await Promise.all([
             this.dataServices.users.findById(loginUserId, {
-                select: ['-password', '-blockedIds'],
+                select: ['-password'],
             }),
             this.dataServices.users.findById(userId, {
-                select: ['-password', '-blockedIds'],
+                select: ['-password'],
             }),
         ]);
 
@@ -57,6 +57,10 @@ export class UserService {
         }
 
         if (!user) {
+            throw new NotFoundException('Không tìm thấy người dùng này.');
+        }
+
+        if (toStringArray(loginUser.blockedIds).includes(`${user._id}`)) {
             throw new NotFoundException('Không tìm thấy người dùng này.');
         }
 
@@ -81,6 +85,7 @@ export class UserService {
         const userDetail = await this.dataServices.userDetails.findOne({
             userId: toObjectId(userId),
         });
+        if (!userDetail) return null;
         return {
             ...userDetail.toObject(),
             tagIds: user.tagIds,
@@ -228,6 +233,11 @@ export class UserService {
         if (isUserSubscribingTargetUser) {
             return await this.unsubscribeTargetUser(loginUser, targetUser);
         } else {
+            const canceledSubscribeRequest = await this.subscribeRequestService.cancelSubscribeRequest(
+                loginUser,
+                targetUser,
+            );
+            if (canceledSubscribeRequest) return canceledSubscribeRequest;
             return await this.subscribeUser(loginUser, targetUser);
         }
     }
@@ -365,6 +375,16 @@ export class UserService {
         }
 
         const subscribeRequests = await this.subscribeRequestService.getSubscribeRequests(user, query);
+        return subscribeRequests;
+    }
+
+    async getSentSubscribeRequests(userId: string, query: IGetSubscribeRequestListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new BadRequestException(`Không tìm thấy người dùng này.`);
+        }
+
+        const subscribeRequests = await this.subscribeRequestService.getSentSubscribeRequests(user, query);
         return subscribeRequests;
     }
 
