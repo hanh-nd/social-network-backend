@@ -35,7 +35,13 @@ export class NotificationService {
         return notificationDtos;
     }
 
-    async create(user: User, to: Partial<User>, targetType: string, target: NotificationTarget, action: string) {
+    async create(
+        user: Partial<User>,
+        to: Partial<User>,
+        targetType: string,
+        target: NotificationTarget,
+        action: string,
+    ) {
         if (`${user._id}` == `${to._id}`) {
             return;
         }
@@ -72,8 +78,7 @@ export class NotificationService {
             isRead: false,
         };
         const createdNotification = await this.dataServices.notifications.create(toCreateNotificationBody);
-        // TODO: send notification
-
+        this.socketGateway.server.to(`${to._id}`).emit(SocketEvent.USER_NOTIFICATION, createdNotification);
         return createdNotification._id;
     }
 
