@@ -115,18 +115,6 @@ export class UserController {
         }
     }
 
-    @Get('/:id')
-    @UseGuards(AccessTokenGuard)
-    async getUserInformation(@LoginUser() loginUser, @Param('id') id: string) {
-        try {
-            const user = await this.userService.getUserProfile(loginUser.userId, id);
-            return new SuccessResponse(user);
-        } catch (error) {
-            this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
-            throw error;
-        }
-    }
-
     @Patch('/:id/subscribe')
     @UseGuards(AccessTokenGuard)
     async subscribeOrUnsubscribeUser(@LoginUser() loginUser, @Param('id') targetUserId: string) {
@@ -159,6 +147,18 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getSubscribeRequests] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/sent-subscribe-requests')
+    @UseGuards(AccessTokenGuard)
+    async getSentSubscribeRequests(@LoginUser() loginUser, @Query() query: IGetSubscribeRequestListQuery) {
+        try {
+            const result = await this.userService.getSentSubscribeRequests(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getSentSubscribeRequests] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
@@ -215,6 +215,18 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getUserDetail] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id')
+    @UseGuards(AccessTokenGuard)
+    async getUserInformation(@LoginUser() loginUser, @Param('id') id: string) {
+        try {
+            const user = await this.userService.getUserProfile(loginUser.userId, id);
+            return new SuccessResponse(user);
+        } catch (error) {
+            this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
