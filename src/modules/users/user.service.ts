@@ -11,6 +11,8 @@ import {
     DEFAULT_PAGE_LIMIT,
     DEFAULT_PAGE_VALUE,
     ElasticsearchIndex,
+    NotificationAction,
+    NotificationTargetType,
     SubscribeRequestStatus,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
@@ -255,12 +257,20 @@ export class UserService {
     private async subscribePublicUser(loginUser: User, targetUser: User) {
         // target user is public. no need to wait for target user to accept
         // create subscribe request with status accepted
-        const createdSubscribeRequestId = await this.subscribeRequestService.create(
+        const createdSubscribeRequest = await this.subscribeRequestService.create(
             loginUser,
             targetUser,
             SubscribeRequestStatus.ACCEPTED,
         );
-        // TODO: Send notification to target user;
+
+        // send notification
+        await this.notificationService.create(
+            loginUser,
+            targetUser,
+            NotificationTargetType.USER,
+            createdSubscribeRequest,
+            NotificationAction.SUBSCRIBE_PROFILE,
+        );
 
         await this.subscribeTargetUser(loginUser, targetUser);
         return true;
@@ -268,12 +278,20 @@ export class UserService {
 
     private async subscribePrivateUser(loginUser: User, targetUser: User) {
         // target user is private. have to wait for target user to accept
-        const createdSubscribeRequestId = await this.subscribeRequestService.create(
+        const createdSubscribeRequest = await this.subscribeRequestService.create(
             loginUser,
             targetUser,
             SubscribeRequestStatus.PENDING,
         );
-        // TODO: Send notification to target user;
+
+        // send notification
+        await this.notificationService.create(
+            loginUser,
+            targetUser,
+            NotificationTargetType.USER,
+            createdSubscribeRequest,
+            NotificationAction.SENT_SUBSCRIBE_REQUEST,
+        );
 
         return true;
     }
@@ -404,7 +422,14 @@ export class UserService {
             const { sender, receiver } = updatedSubscribeRequest;
             await this.subscribeTargetUser(sender as User, receiver as User);
 
-            // TODO: Send notification to target user;
+            // send notification
+            await this.notificationService.create(
+                receiver,
+                sender,
+                NotificationTargetType.USER,
+                updatedSubscribeRequest,
+                NotificationAction.ACCEPT_SUBSCRIBE_REQUEST,
+            );
         }
 
         return true;

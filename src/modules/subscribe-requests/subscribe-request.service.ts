@@ -63,7 +63,7 @@ export class SubscribeRequestService {
         };
 
         const createdSubscribeRequest = await this.dataServices.subscribeRequests.create(toCreateSubscribeRequestBody);
-        return createdSubscribeRequest._id;
+        return createdSubscribeRequest;
     }
 
     async updateSubscribeRequest(user: User, subscribeRequestId: string, body: IUpdateSubscribeRequestBody) {
