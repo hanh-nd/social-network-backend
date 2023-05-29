@@ -716,4 +716,10 @@ export class PostService {
         const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
         return postDtos;
     }
+
+    async ask(body: { message: string }) {
+        const { message } = body;
+        const response = await this.chatGPTService.sendMessage(message);
+        return response;
+    }
 }
