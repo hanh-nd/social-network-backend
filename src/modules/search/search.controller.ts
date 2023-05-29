@@ -8,13 +8,13 @@ import { ISearchQuery } from './search.interface';
 import { SearchService } from './search.service';
 
 @Controller('/search')
+@UseGuards(AccessTokenGuard)
 export class SearchController {
     constructor(private configService: ConfigService, private searchService: SearchService) {}
 
     private readonly logger = createWinstonLogger(SearchController.name, this.configService);
 
     @Get('/')
-    @UseGuards(AccessTokenGuard)
     async search(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
             const result = await this.searchService.search(loginUser.userId, searchQuery);
@@ -26,7 +26,6 @@ export class SearchController {
     }
 
     @Get('/posts')
-    @UseGuards(AccessTokenGuard)
     async searchPosts(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
             const result = await this.searchService.searchPost(loginUser.userId, searchQuery);
@@ -38,7 +37,6 @@ export class SearchController {
     }
 
     @Get('/users')
-    @UseGuards(AccessTokenGuard)
     async searchUsers(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
             const result = await this.searchService.searchUser(loginUser.userId, searchQuery);
@@ -50,7 +48,6 @@ export class SearchController {
     }
 
     @Get('/groups')
-    @UseGuards(AccessTokenGuard)
     async searchGroups(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
         try {
             const result = await this.searchService.searchGroup(loginUser.userId, searchQuery);

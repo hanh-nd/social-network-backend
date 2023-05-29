@@ -15,15 +15,18 @@ import {
     IUpdateGroupBody,
 } from './group.interface';
 import { GroupService } from './group.service';
+import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
+import { MANAGE_GROUP_PERMISSIONS } from 'src/common/constants';
 
 @Controller('/groups')
+@UseGuards(AccessTokenGuard, AuthorizationGuard)
 export class GroupController {
     constructor(private configService: ConfigService, private groupService: GroupService) {}
 
     private readonly logger = createWinstonLogger(GroupController.name, this.configService);
 
     @Post('/')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async createNewGroup(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: ICreateNewGroupBody) {
         try {
             const result = await this.groupService.createNewGroup(loginUser.userId, body);
@@ -35,7 +38,7 @@ export class GroupController {
     }
 
     @Patch('/:id')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async updateGroup(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -51,7 +54,7 @@ export class GroupController {
     }
 
     @Post('/:id/members/:memberId/block')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async blockOrUnblockUser(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -67,7 +70,7 @@ export class GroupController {
     }
 
     @Post('/:id/members/:memberId/remove')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async removeMember(@LoginUser() loginUser, @Param('id') groupId: string, @Param('memberId') memberId: string) {
         try {
             const result = await this.groupService.removeMember(loginUser.userId, groupId, memberId);
@@ -79,7 +82,7 @@ export class GroupController {
     }
 
     @Get('/:id/join-requests')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getJoinRequests(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -95,7 +98,7 @@ export class GroupController {
     }
 
     @Patch('/:id/join-requests/:requestId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async acceptOrRejectJoinRequest(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -117,7 +120,7 @@ export class GroupController {
     }
 
     @Get('/:id/group-posts/pending')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getPendingGroupPosts(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -133,7 +136,7 @@ export class GroupController {
     }
 
     @Patch('/:id/group-posts/pending/:groupPostId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async acceptOrRejectGroupPost(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -155,7 +158,7 @@ export class GroupController {
     }
 
     @Post('/:id/group-posts/:groupPostId/pin')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async pinOrUnpinGroupPost(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -171,7 +174,7 @@ export class GroupController {
     }
 
     @Get('/:id/members')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getMembers(@LoginUser() loginUser, @Param('id') groupId: string) {
         try {
             const result = await this.groupService.getMembers(loginUser.userId, groupId);
@@ -183,7 +186,7 @@ export class GroupController {
     }
 
     @Post('/:id/join-requests')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async requestToJoin(@LoginUser() loginUser, @Param('id') groupId: string) {
         try {
             const result = await this.groupService.requestToJoin(loginUser.userId, groupId);
@@ -195,7 +198,7 @@ export class GroupController {
     }
 
     @Post('/:id/cancel-join-requests')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async cancelToJoin(@LoginUser() loginUser, @Param('id') groupId: string) {
         try {
             const result = await this.groupService.cancelToJoin(loginUser.userId, groupId);
@@ -207,7 +210,7 @@ export class GroupController {
     }
 
     @Post('/:id/leave')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async leave(@LoginUser() loginUser, @Param('id') groupId: string) {
         try {
             const result = await this.groupService.leave(loginUser.userId, groupId);
@@ -219,7 +222,7 @@ export class GroupController {
     }
 
     @Get('/:id/group-posts')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getPosts(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -235,7 +238,7 @@ export class GroupController {
     }
 
     @Post('/:id/group-posts')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async createPost(
         @LoginUser() loginUser,
         @Param('id') groupId: string,
@@ -251,7 +254,7 @@ export class GroupController {
     }
 
     @Delete('/:id/group-posts/:groupPostId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async deletePost(@LoginUser() loginUser, @Param('id') groupId: string, @Param('groupPostId') groupPostId: string) {
         try {
             const result = await this.groupService.deletePost(loginUser.userId, groupId, groupPostId);
@@ -263,7 +266,7 @@ export class GroupController {
     }
 
     @Get('/my-groups')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getUserCreatedGroups(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetGroupListQuery) {
         try {
             const result = await this.groupService.getUserCreatedGroups(loginUser.userId, query);
@@ -275,7 +278,7 @@ export class GroupController {
     }
 
     @Get('/')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getUserJoinedGroups(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetGroupListQuery) {
         try {
             const result = await this.groupService.getUserJoinedGroups(loginUser.userId, query);
@@ -287,7 +290,7 @@ export class GroupController {
     }
 
     @Get('/group-posts')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getGroupFeed(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetGroupPostListQuery) {
         try {
             const result = await this.groupService.getGroupFeed(loginUser.userId, query);
@@ -299,7 +302,7 @@ export class GroupController {
     }
 
     @Get('/:id')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getDetail(@LoginUser() loginUser, @Param('id') groupId: string) {
         try {
             const result = await this.groupService.getDetail(loginUser.userId, groupId);
@@ -311,7 +314,7 @@ export class GroupController {
     }
 
     @Get('/:id/my-pending')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async getUserPendingPost(@LoginUser() loginUser, @Param('id') groupId: string, query: IGetGroupPostListQuery) {
         try {
             const result = await this.groupService.getUserPendingPost(loginUser.userId, groupId, query);
@@ -323,7 +326,7 @@ export class GroupController {
     }
 
     @Post('/:id/make-administrator/:targetId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async makeAdministrator(@LoginUser() loginUser, @Param('id') groupId: string, @Param('targetId') targetId: string) {
         try {
             const result = await this.groupService.makeAdministrator(loginUser.userId, groupId, targetId);
@@ -335,7 +338,7 @@ export class GroupController {
     }
 
     @Post('/:id/remove-administrator/:targetId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_GROUP_PERMISSIONS)
     async removeAdministrator(
         @LoginUser() loginUser,
         @Param('id') groupId: string,

@@ -9,13 +9,13 @@ import { IBulkDeleteTagBody, ICreateTagBody, IUpdateTagBody } from './tag.interf
 import { TagService } from './tag.service';
 
 @Controller('/tags')
+@UseGuards(AccessTokenGuard)
 export class TagController {
     constructor(private configService: ConfigService, private tagService: TagService) {}
 
     private readonly logger = createWinstonLogger(TagController.name, this.configService);
 
     @Get('/')
-    @UseGuards(AccessTokenGuard)
     async getTags(@LoginUser() loginUser) {
         try {
             const result = await this.tagService.getTags(loginUser.userId);
@@ -26,7 +26,6 @@ export class TagController {
     }
 
     @Post('/')
-    @UseGuards(AccessTokenGuard)
     async createTag(@Body(new TrimBodyPipe()) body: ICreateTagBody) {
         try {
             const result = await this.tagService.createTag(body);
@@ -37,7 +36,6 @@ export class TagController {
     }
 
     @Patch('/:id')
-    @UseGuards(AccessTokenGuard)
     async updateTag(@Param('id') id: string, @Body(new TrimBodyPipe()) body: IUpdateTagBody) {
         try {
             const result = await this.tagService.updateTag(id, body);
@@ -48,7 +46,6 @@ export class TagController {
     }
 
     @Delete('/')
-    @UseGuards(AccessTokenGuard)
     async deleteTags(@Body(new TrimBodyPipe()) body: IBulkDeleteTagBody) {
         try {
             const result = await this.tagService.bulkDeleteTag(body);

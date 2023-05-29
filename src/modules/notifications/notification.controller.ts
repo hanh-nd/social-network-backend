@@ -9,13 +9,13 @@ import { IGetNotificationListQuery } from './notification.interface';
 import { NotificationService } from './notification.service';
 
 @Controller('/notifications')
+@UseGuards(AccessTokenGuard)
 export class NotificationController {
     constructor(private configService: ConfigService, private notificationService: NotificationService) {}
 
     private readonly logger = createWinstonLogger(NotificationController.name, this.configService);
 
     @Get('/')
-    @UseGuards(AccessTokenGuard)
     async getUserNotifications(
         @LoginUser() loginUser,
         @Query(new RemoveEmptyQueryPipe()) query: IGetNotificationListQuery,
@@ -30,7 +30,6 @@ export class NotificationController {
     }
 
     @Patch('/:id/read')
-    @UseGuards(AccessTokenGuard)
     async markOrUndoMarkAsRead(@LoginUser() loginUser, @Param('id') notificationId: string) {
         try {
             const result = await this.notificationService.markOrUndoMarkAsRead(loginUser.userId, notificationId);
@@ -42,7 +41,6 @@ export class NotificationController {
     }
 
     @Delete('/:id')
-    @UseGuards(AccessTokenGuard)
     async deleteNotification(@LoginUser() loginUser, @Param('id') notificationId: string) {
         try {
             const result = await this.notificationService.delete(loginUser.userId, notificationId);
