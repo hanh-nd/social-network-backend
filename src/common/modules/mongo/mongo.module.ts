@@ -10,9 +10,12 @@ import { MongoService } from './mongo.service';
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: async (configService: ConfigService) => {
+                const uri = configService.get<string>(ConfigKey.MONGO_DATABASE_CONNECTION_STRING);
+                const dbName = configService.get<string>(ConfigKey.MONGO_DATABASE_NAME);
+                console.log(`[MongoModule] connecting to ${uri}/${dbName}`);
                 return {
-                    uri: configService.get<string>(ConfigKey.MONGO_DATABASE_CONNECTION_STRING),
-                    dbName: configService.get<string>(ConfigKey.MONGO_DATABASE_NAME),
+                    uri: uri,
+                    dbName: dbName,
                 };
             },
         }),

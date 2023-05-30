@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { HttpStatus } from '../constants';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 const DEFAULT_SUCCESS_MESSAGE = 'success';
 
