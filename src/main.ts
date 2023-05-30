@@ -5,6 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { ConfigKey } from './common/config';
 import { RedisIoAdapter } from './modules/gateway/redis-io.adapter';
+import * as dotenv from 'dotenv';
+dotenv.config();
 import 'isomorphic-fetch';
 
 async function bootstrap() {
