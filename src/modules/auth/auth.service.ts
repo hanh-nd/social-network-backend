@@ -38,6 +38,10 @@ export class AuthService {
             throw new ForbiddenException('Tài khoản hoặc mật khẩu không chính xác.');
         }
 
+        if (!existedUser.active) {
+            throw new ForbiddenException('Tài khoản đã bị khóa.');
+        }
+
         const isCorrectPassword = await compare(body.password, existedUser.password);
 
         if (!isCorrectPassword) {
