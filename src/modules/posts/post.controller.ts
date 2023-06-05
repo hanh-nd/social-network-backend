@@ -99,11 +99,12 @@ export class PostController {
     @Get('/:postId/comments')
     @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostComments(
+        @LoginUser() loginUser,
         @Param('postId') postId: string,
         @Query(new RemoveEmptyQueryPipe()) query: IGetCommentListQuery,
     ) {
         try {
-            const result = await this.postService.getPostComment(postId, query);
+            const result = await this.postService.getPostComment(loginUser.userId, postId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostComments] ${error.stack || JSON.stringify(error)}`);

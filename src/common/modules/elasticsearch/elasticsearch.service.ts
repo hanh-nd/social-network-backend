@@ -40,14 +40,23 @@ export class ElasticsearchService {
     }
 
     async update<T, K = Partial<T>>(index: string, query: QueryDslQueryContainer, newBody: K) {
-        const script = Object.entries(newBody).reduce((result, [key, value]) => {
-            return `${result} ctx._source.${key}='${value}';`;
-        }, '');
-        return this.elService.updateByQuery({
-            index,
-            query,
-            script: script,
-        });
+        try {
+            const isIndexExists = await this.exists(index);
+            if (!isIndexExists) {
+                return false;
+            }
+            const script = Object.entries(newBody).reduce((result, [key, value]) => {
+                return `${result} ctx._source.${key}='${value}';`;
+            }, '');
+            await this.elService.updateByQuery({
+                index,
+                query,
+                script: script,
+            });
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 
     async exists(index: string) {
@@ -55,13 +64,22 @@ export class ElasticsearchService {
     }
 
     async deleteById(index: string, id: string) {
-        await this.elService.deleteByQuery({
-            index,
-            query: {
-                match: {
-                    id,
+        try {
+            const isIndexExists = await this.exists(index);
+            if (!isIndexExists) {
+                return false;
+            }
+            await this.elService.deleteByQuery({
+                index,
+                query: {
+                    match: {
+                        id,
+                    },
                 },
-            },
-        });
+            });
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }

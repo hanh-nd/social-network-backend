@@ -80,13 +80,15 @@ export class PostService {
         };
 
         const tagNames = await this.tagService.getTagNames();
-        const response = await this.chatGPTService.sendMessage(
-            `Give me 3 tags in the list "${tagNames.join(
-                ', ',
-            )}" separated by comma that best fit for the paragraph below:\n${content}`,
-        );
-        const tagIds = await this.tagService.getTagIds((response.text || '').split(','));
-        createPostBody.tagIds = toObjectIds(tagIds);
+        try {
+            // const response = await this.chatGPTService.sendMessage(
+            //     `Give me 3 tags in the list "${tagNames.join(
+            //         ', ',
+            //     )}" separated by comma that best fit for the paragraph below:\n${content}`,
+            // );
+            // const tagIds = await this.tagService.getTagIds((response.text || '').split(','));
+            // createPostBody.tagIds = toObjectIds(tagIds);
+        } catch (error) {}
 
         if (discussedInId) {
             const discussedInUser = await this.dataServices.users.findById(discussedInId);
@@ -329,13 +331,20 @@ export class PostService {
         return true;
     }
 
-    async getPostComment(postId: string, query: IGetCommentListQuery) {
-        const post = await this.dataServices.posts.findById(postId);
+    async getPostComment(userId: string, postId: string, query: IGetCommentListQuery) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
         }
 
-        const comment = await this.commentService.getCommentsInPost(post, query);
+        const comment = await this.commentService.getCommentsInPost(user, post, query);
         return comment;
     }
 
