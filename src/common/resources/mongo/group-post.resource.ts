@@ -52,7 +52,7 @@ export class GroupPostResource extends IGenericResource<GroupPostDocument, UserD
             if (isReacted) {
                 const reactionType = await this.dataServices.reactions.findOne({
                     author: user._id,
-                    target: groupPostDto._id,
+                    target: groupPostDto.post._id,
                     targetType: 'Post',
                 });
                 groupPostDto.post.reactionType = reactionType?.type;

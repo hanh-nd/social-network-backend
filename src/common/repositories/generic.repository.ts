@@ -27,9 +27,9 @@ export abstract class IGenericRepository<T> {
 
     abstract bulkUpdate(where: object, item: UpdateQuery<T>): Promise<void>;
 
-    abstract deleteById(id: string | ObjectId): Promise<void>;
+    abstract deleteById(id: string | ObjectId, extra?: Partial<T>): Promise<void>;
 
-    abstract deleteOne(where: object): Promise<void>;
+    abstract deleteOne(where: object, extra?: Partial<T>): Promise<void>;
 
     abstract bulkDelete(where: object): Promise<void>;
 }

@@ -22,12 +22,24 @@ export class CommentResource extends IGenericResource<CommentDocument, UserDocum
         if (user && commentDto?.author?.subscriberIds) {
             const isReacted = commentDto.reactIds.map((id) => `${id}`).includes(`${user._id}`);
             commentDto.isReacted = isReacted;
+            if (isReacted) {
+                const reactionType = await this.dataServices.reactions.findOne({
+                    author: user._id,
+                    target: commentDto._id,
+                    targetType: 'Comment',
+                });
+                commentDto.reactionType = reactionType?.type;
+            }
             const isSubscribing = toStringArray(commentDto.author.subscriberIds).includes(`${user._id}`);
             if (`${commentDto.author._id}` == `${user._id}`) {
                 commentDto.author.isSelf = true;
             }
             commentDto.author.isSubscribing = isSubscribing;
         }
+
+        Object.assign(commentDto, {
+            numberOfReacts: commentDto.reactIds.length,
+        });
 
         delete commentDto.reactIds;
         delete commentDto.point;

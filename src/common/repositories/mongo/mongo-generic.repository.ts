@@ -176,8 +176,9 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return;
     }
 
-    async deleteById(id: string): Promise<void> {
+    async deleteById(id: string, extra?: Partial<T>): Promise<void> {
         await this.updateById(id, {
+            ...extra,
             deletedAt: Date.now(),
         } as unknown as Partial<T>);
         return;
