@@ -1,4 +1,4 @@
-import { Controller, Get, InternalServerErrorException, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
@@ -11,7 +11,7 @@ import { SearchService } from './search.service';
 export class SearchController {
     constructor(private configService: ConfigService, private searchService: SearchService) {}
 
-    private readonly logger = createWinstonLogger(SearchController.name, 'search', this.configService);
+    private readonly logger = createWinstonLogger(SearchController.name, this.configService);
 
     @Get('/')
     @UseGuards(AccessTokenGuard)
@@ -20,8 +20,8 @@ export class SearchController {
             const result = await this.searchService.search(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[SearchController][search] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            this.logger.error(`[search] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 
@@ -32,8 +32,8 @@ export class SearchController {
             const result = await this.searchService.searchPost(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[SearchController][searchPosts] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            this.logger.error(`[searchPosts] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 
@@ -44,8 +44,20 @@ export class SearchController {
             const result = await this.searchService.searchUser(loginUser.userId, searchQuery);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[SearchController][searchUsers] ${error.stack || JSON.stringify(error)}`);
-            throw new InternalServerErrorException(error);
+            this.logger.error(`[searchUsers] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/groups')
+    @UseGuards(AccessTokenGuard)
+    async searchGroups(@LoginUser() loginUser, @Query() searchQuery: ISearchQuery) {
+        try {
+            const result = await this.searchService.searchGroup(loginUser.userId, searchQuery);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[searchGroups] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 }

@@ -39,11 +39,11 @@ export class Comment extends MongoBaseSchema {
     })
     reactIds: ObjectId[];
 
-    @Prop({ required: false, type: String })
-    pictureId: string;
+    @Prop({ required: false, type: Types.ObjectId })
+    pictureId: ObjectId;
 
-    @Prop({ required: false, type: String })
-    videoId: string;
+    @Prop({ required: false, type: Types.ObjectId })
+    videoId: ObjectId;
 
     @Prop({ required: true, default: 0, type: Number })
     point: number;

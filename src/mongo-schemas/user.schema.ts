@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
 import { Address, AddressSchema } from './address.schema';
 import { MongoCollection } from './constant';
+import { Group } from './group.schema';
 import { MongoBaseSchema } from './mongo.base.schema';
 
 export type UserDocument = User & Document;
@@ -46,7 +47,7 @@ export class User extends MongoBaseSchema {
     phone: string;
 
     @Prop({ required: false, type: Date })
-    birthday: string;
+    birthday: Date;
 
     @Prop({ required: false, default: true, type: Boolean })
     active: boolean;
@@ -86,6 +87,14 @@ export class User extends MongoBaseSchema {
         type: [Types.ObjectId],
     })
     blockedIds: ObjectId[];
+
+    @Prop({
+        required: true,
+        default: [],
+        type: [Types.ObjectId],
+        ref: 'Group',
+    })
+    groupIds: ObjectId[];
 
     @Prop({ required: false, type: String })
     lastRefreshToken: string;

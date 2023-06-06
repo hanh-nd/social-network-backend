@@ -1,3 +1,5 @@
+import { ICommonGetListQuery } from 'src/common/interfaces';
+
 export interface IChangePasswordBody {
     oldPassword: string;
     password: string;
@@ -8,7 +10,7 @@ export interface IUpdateProfileBody {
     coverId?: string;
     phone?: string;
     fullName?: string;
-    birthday?: string;
+    birthday?: Date;
     address?: IAddress;
     describe?: string;
     private?: boolean;
@@ -24,3 +26,5 @@ export interface IAddress {
 export interface IRemoveSubscriberBody {
     toRemoveId: string;
 }
+
+export interface IGetUserListQuery extends ICommonGetListQuery {}

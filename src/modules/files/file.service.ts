@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import * as _ from 'lodash';
 import { IGridFSObject, MongoGridFS } from 'mongo-gridfs';
-import { Db, GridFSBucketReadStream, ObjectId } from 'mongodb';
+import { Db, GridFSBucketReadStream } from 'mongodb';
 import { Connection } from 'mongoose';
 export class FileService {
     private fileModel: MongoGridFS;
@@ -39,7 +39,9 @@ export class FileService {
         }
 
         if (_.isArray(ids)) {
-            where._id = new ObjectId('6447f5b1d8dbfc231901d018');
+            where._id = {
+                $in: ids,
+            };
         }
         return where;
     }

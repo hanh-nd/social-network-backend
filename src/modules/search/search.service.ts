@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ElasticsearchIndex, Privacy } from 'src/common/constants';
+import { ElasticsearchIndex, Privacy, SubscribeRequestStatus } from 'src/common/constants';
 import { toObjectIds } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Post, User } from 'src/mongo-schemas';
+import { Group, Post, User } from 'src/mongo-schemas';
 import { ISearchQuery } from './search.interface';
 @Injectable()
 export class SearchService {
@@ -17,10 +17,12 @@ export class SearchService {
     async search(userId: string, query: ISearchQuery) {
         const postSearchResult = await this.searchPost(userId, query);
         const userSearchResult = await this.searchUser(userId, query);
+        const groupSearchResult = await this.searchGroup(userId, query);
 
         return {
             posts: postSearchResult,
             users: userSearchResult,
+            groups: groupSearchResult,
         };
     }
 
@@ -78,7 +80,7 @@ export class SearchService {
             const isLoginUserSubscribedAUthor = postAuthorSubscribingIds.map((id) => `${id}`).includes(`${userId}`);
             return isLoginUserSubscribedAUthor;
         });
-        const postDtos = await this.dataResources.posts.mapToDtoList(postsFilterByPrivacy);
+        const postDtos = await this.dataResources.posts.mapToDtoList(postsFilterByPrivacy, user);
         return {
             item: postDtos,
             totalItem: postDtos.length,
@@ -122,5 +124,58 @@ export class SearchService {
             item: userDtos,
             totalItem: userDtos.length,
         };
+    }
+
+    async searchGroup(userId: string, query: ISearchQuery) {
+        const { keyword, size = 10 } = query;
+
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`Không tìm thấy user này.`);
+        }
+
+        const groupSearchResult = await this.elasticsearchService.search<Group>(
+            ElasticsearchIndex.GROUP,
+            {
+                bool: {
+                    // must_not: {
+                    //     terms: {
+                    //         blockIds: `${user._id}`,
+                    //     },
+                    // },
+                    must: {
+                        match: {
+                            name: keyword,
+                        },
+                    },
+                },
+            },
+            {
+                size,
+            },
+        );
+        const groupSearchIds = groupSearchResult.map((result) => result.id);
+        const groups = await this.dataServices.groups.findAll({
+            _id: toObjectIds(groupSearchIds),
+        });
+
+        const groupDtos = await this.dataResources.groups.mapToDtoList(groups, user);
+
+        const pendingJoinRequests = await this.dataServices.joinRequests.findAll({
+            sender: user._id,
+            group: toObjectIds(groups.map((g) => `${g._id}`)),
+            status: SubscribeRequestStatus.PENDING,
+        });
+
+        for (const groupDto of groupDtos) {
+            const pendingJoinRequest = pendingJoinRequests.find((pd) => `${pd.group}` == `${(groupDto as Group)._id}`);
+            if (pendingJoinRequest) {
+                Object.assign(groupDto, {
+                    isPending: true,
+                });
+            }
+        }
+
+        return groupDtos;
     }
 }

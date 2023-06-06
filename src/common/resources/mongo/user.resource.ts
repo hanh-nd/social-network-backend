@@ -1,15 +1,14 @@
+import * as _ from 'lodash';
 import { UserDocument } from 'src/mongo-schemas';
 import { IGenericResource } from '../generic.resource';
 
-export class UserResource implements IGenericResource<UserDocument> {
-    async mapToDtoList(users: UserDocument[]): Promise<object[]> {
-        return await Promise.all(users.map((u) => this.mapToDto(u)));
-    }
-
+export class UserResource extends IGenericResource<UserDocument> {
     async mapToDto(user: UserDocument): Promise<object> {
-        const userDto = Object.assign({}, user.toObject(), {
-            numberOfSubscribers: user.subscriberIds.length,
-            numberOfSubscribing: user.subscribingIds.length,
+        const userDto = _.cloneDeep(user.toObject());
+
+        Object.assign(userDto, {
+            numberOfSubscribers: userDto.subscriberIds.length,
+            numberOfSubscribing: userDto.subscribingIds.length,
         });
 
         delete userDto.password;

@@ -1,12 +1,16 @@
-import { ObjectId } from 'mongodb';
-import { Model } from 'mongoose';
+import { Model, UpdateQuery } from 'mongoose';
+import { toObjectId } from 'src/common/helper';
 import { IGenericRepository } from '../generic.repository';
 
 export class MongoGenericRepository<T> implements IGenericRepository<T> {
-    private _model: Model<T>;
+    _model: Model<T>;
 
     constructor(model: Model<T>) {
         this._model = model;
+    }
+
+    getModel() {
+        return this._model;
     }
 
     async findAndCountAll(
@@ -23,12 +27,19 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         };
     }
 
-    async findAll(where = {}, options: any = {}): Promise<T[]> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+    async findAll(where: any = {}, options: any = {}): Promise<T[]> {
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
+        if (options.ignoreSoftDelete) {
+            delete where.deletedAt;
+        }
         let chain = this._model.find(where);
 
         if (options.populate) {
@@ -54,21 +65,37 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return chain.exec();
     }
 
-    async count(where = {}): Promise<number> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+    async count(where: any = {}, options: any = {}): Promise<number> {
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
-        return this._model.count(where).exec();
+            where,
+        );
+        if (options.ignoreSoftDelete) {
+            delete where.deletedAt;
+        }
+        let chain = this._model.count(where);
+
+        return chain.exec();
     }
 
-    async findOne(where?: object, options: any = {}): Promise<T | null> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+    async findOne(where?: any, options: any = {}): Promise<T | null> {
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
+        if (options.ignoreSoftDelete) {
+            delete where.deletedAt;
+        }
         let chain = this._model.findOne(where);
 
         if (options.populate) {
@@ -90,7 +117,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     async findById(id: string, options = {}): Promise<T | null> {
         return this.findOne(
             {
-                _id: new ObjectId(id),
+                _id: toObjectId(id),
             },
             options,
         );
@@ -104,8 +131,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return this._model.insertMany(items);
     }
 
-    async updateById(id: string, item: Partial<T>, options: any = {}): Promise<T> {
-        let chain = this._model.findByIdAndUpdate(new ObjectId(id), item, {
+    async updateById(id: string, item: UpdateQuery<T>, options: any = {}): Promise<T> {
+        let chain = this._model.findByIdAndUpdate(toObjectId(id), item, {
             new: true,
         });
 
@@ -120,7 +147,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return chain.exec();
     }
 
-    async updateOne(where: object, item: Partial<T>, options: any = {}): Promise<T> {
+    async updateOne(where: object, item: UpdateQuery<T>, options: any = {}): Promise<T> {
         let chain = this._model.findOneAndUpdate(where, item, {
             new: true,
         });
@@ -136,7 +163,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return chain.exec();
     }
 
-    async bulkUpdate(where: object, item: Partial<T>): Promise<void> {
+    async bulkUpdate(where: object, item: UpdateQuery<T>): Promise<void> {
         await this._model.updateMany(where, item, {
             new: true,
         });
@@ -151,11 +178,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
 
     async deleteOne(where: object): Promise<void> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
         await this.updateOne(where, {
             deletedAt: Date.now(),
         } as unknown as Partial<T>);
@@ -163,11 +194,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
 
     async bulkDelete(where: object): Promise<void> {
-        Object.assign(where, {
-            deletedAt: {
-                $eq: null,
+        where = Object.assign(
+            {},
+            {
+                deletedAt: {
+                    $eq: null,
+                },
             },
-        });
+            where,
+        );
         await this.bulkUpdate(where, {
             deletedAt: Date.now(),
         } as unknown as Partial<T>);

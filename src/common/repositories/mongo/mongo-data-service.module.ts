@@ -5,6 +5,12 @@ import {
     ChatSchema,
     Comment,
     CommentSchema,
+    Group,
+    GroupPost,
+    GroupPostSchema,
+    GroupSchema,
+    JoinRequest,
+    JoinRequestSchema,
     Message,
     MessageSchema,
     Notification,
@@ -19,10 +25,13 @@ import {
     RoleSchema,
     SubscribeRequest,
     SubscribeRequestSchema,
+    Tag,
+    TagSchema,
+    User,
+    UserSchema,
     UserToken,
     UserTokenSchema,
 } from 'src/mongo-schemas';
-import { User, UserSchema } from 'src/mongo-schemas/user.schema';
 import { IDataServices } from '../data.service';
 import { MongoDataServices } from './mongo-data.service';
 
@@ -39,6 +48,10 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
         MongooseModule.forFeature([{ name: UserToken.name, schema: UserTokenSchema }]),
         MongooseModule.forFeature([{ name: SubscribeRequest.name, schema: SubscribeRequestSchema }]),
+        MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
+        MongooseModule.forFeature([{ name: JoinRequest.name, schema: JoinRequestSchema }]),
+        MongooseModule.forFeature([{ name: GroupPost.name, schema: GroupPostSchema }]),
+        MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
     ],
     providers: [
         {

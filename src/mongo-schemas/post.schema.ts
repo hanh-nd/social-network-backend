@@ -3,7 +3,9 @@ import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
 import { Privacy } from 'src/common/constants';
 import { MongoCollection } from './constant';
+import { Group } from './group.schema';
 import { MongoBaseSchema } from './mongo.base.schema';
+import { Tag } from './tag.schema';
 import { User } from './user.schema';
 
 export type PostDocument = Post & Document;
@@ -59,11 +61,15 @@ export class Post extends MongoBaseSchema {
     @Prop({
         required: false,
         type: Types.ObjectId,
+        ref: Post.name,
     })
-    postShared: Post;
+    postShared: Partial<Post>;
 
     @Prop({ required: false, type: Types.ObjectId, ref: User.name })
     discussedIn: Partial<User>;
+
+    @Prop({ required: false, type: Types.ObjectId, ref: Group.name })
+    postedInGroup: Partial<Group>;
 
     @Prop({ required: false, type: [Types.ObjectId] })
     pictureIds: ObjectId[];
@@ -73,6 +79,15 @@ export class Post extends MongoBaseSchema {
 
     @Prop({ required: true, default: 0, type: Number, index: true })
     point: number;
+
+    @Prop({ type: [Types.ObjectId], default: [], ref: Tag.name })
+    tagIds: ObjectId[];
+
+    @Prop({ required: false, default: false, type: Boolean })
+    isAnonymous: boolean;
+
+    @Prop({ required: false, default: false, type: Boolean })
+    isDeletedBySystem: boolean;
 }
 
 const BasePostSchema = SchemaFactory.createForClass(Post);

@@ -9,7 +9,7 @@ export interface IRegisterBody {
     fullName: string;
     email: string;
     phone?: string;
-    birthday?: string;
+    birthday?: Date;
     address?: {
         province: string;
         district: string;
@@ -23,6 +23,7 @@ export interface IJwtPayload {
     username: string;
     role: string;
     permissions: string[];
+    refreshToken?: string;
 }
 
 export interface IForgotPasswordBody {
