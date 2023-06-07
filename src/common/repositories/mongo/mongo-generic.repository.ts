@@ -62,6 +62,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
             chain = chain.limit(options.limit);
         }
 
+        if (options.lean) {
+            return chain.lean();
+        }
+
         return chain.exec();
     }
 
@@ -108,6 +112,15 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
         if (options.sort) {
             chain = chain.sort(options.sort);
+        }
+
+        if (options.lean) {
+            const item = await chain.lean();
+            if (item) {
+                return item as T;
+            }
+
+            return null;
         }
 
         const item = await chain.exec();
