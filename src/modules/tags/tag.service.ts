@@ -1,13 +1,20 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { capitalize } from 'lodash';
 import { toObjectId, toObjectIds } from 'src/common/helper';
+import { RedisKey } from 'src/common/modules/redis/redis.constants';
+import { RedisService } from 'src/common/modules/redis/redis.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
+import { Tag } from 'src/mongo-schemas';
 import { IBulkDeleteTagBody, ICreateTagBody, IUpdateTagBody } from './tag.interface';
 
 @Injectable()
 export class TagService {
-    constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
+    constructor(
+        private dataServices: IDataServices,
+        private dataResources: IDataResources,
+        private redisService: RedisService,
+    ) {}
 
     async createTag(body: ICreateTagBody) {
         const { name, iconId } = body;
@@ -54,7 +61,10 @@ export class TagService {
         if (!user) {
             throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
         }
+        const cachedData = await this.redisService.get<Tag[]>(RedisKey.TAGS);
+        if (cachedData) return cachedData;
         const tags = await this.dataServices.tags.findAll({});
+        await this.redisService.set(RedisKey.TAGS, tags);
         return tags;
     }
 

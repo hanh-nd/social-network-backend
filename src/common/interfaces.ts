@@ -1,3 +1,4 @@
+import { IJwtPayload } from 'src/modules/auth/auth.interface';
 import { Comment, Message, Post, SubscribeRequest, User } from 'src/mongo-schemas';
 import { OrderBy, OrderDirection } from './constants';
 
@@ -9,14 +10,8 @@ export interface ICommonGetListQuery {
     orderBy?: OrderBy;
 }
 
-export interface UserToken {
-    sub: string;
-    username: string;
-    refreshToken?: string;
-}
-
 export interface RequestWithUser extends Request {
-    user: UserToken;
+    user: IJwtPayload;
 }
 
 export type ReactionTarget = Post | Comment;

@@ -1,10 +1,11 @@
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { SubscribeMessage, WebSocketGateway, WsResponse } from '@nestjs/websockets';
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import { SocketEvent } from 'src/common/constants';
 import { SocketToken } from 'src/common/guards/socket-token.guard';
 import { toStringArray } from 'src/common/helper';
+import { AccessLogInterceptor } from 'src/common/interceptors/access-log.interceptor';
 import { ChatService } from '../chats/chat.service';
 import { WebsocketExceptionsFilter } from './exceptions';
 import { SocketGateway } from './socket.gateway';
@@ -18,6 +19,7 @@ import { ISocket, IUserChatPayload, IUserRecallPayload } from './socket.interfac
     },
 })
 @UseFilters(WebsocketExceptionsFilter)
+@UseInterceptors(AccessLogInterceptor)
 export class ChatGateway {
     constructor(private readonly socketGateway: SocketGateway, private readonly chatService: ChatService) {}
 

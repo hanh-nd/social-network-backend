@@ -11,7 +11,15 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
 @Module({
-    imports: [DataServicesModule, DataResourcesModule, FileModule, ElasticsearchModule, SocketModule, NotificationModule, SubscribeRequestModule],
+    imports: [
+        DataServicesModule,
+        DataResourcesModule,
+        FileModule,
+        ElasticsearchModule,
+        SocketModule,
+        NotificationModule,
+        SubscribeRequestModule,
+    ],
     providers: [JwtService, UserService],
     controllers: [UserController],
     exports: [],
