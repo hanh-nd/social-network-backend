@@ -1,13 +1,13 @@
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import * as dotenv from 'dotenv';
+import 'isomorphic-fetch';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app.module';
 import { ConfigKey } from './common/config';
 import { RedisIoAdapter } from './modules/gateway/redis-io.adapter';
-import * as dotenv from 'dotenv';
 dotenv.config();
-import 'isomorphic-fetch';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);

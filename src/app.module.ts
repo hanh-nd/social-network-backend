@@ -1,12 +1,15 @@
 import { Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import mongoose from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AccessLogInterceptor } from './common/interceptors/access-log.interceptor';
 import { ChatGPTModule } from './common/modules/chatgpt/chatgpt.module';
 import { ElasticsearchModule } from './common/modules/elasticsearch';
 import { MongoModule } from './common/modules/mongo';
+import { RedisModule } from './common/modules/redis/redis.module';
 import { WinstonModule } from './common/modules/winston';
 import { DataServicesModule } from './common/repositories/data-services.module';
 import { DataResourcesModule } from './common/resources/data-resources.module';
@@ -57,9 +60,17 @@ import { UserModule } from './modules/users/user.module';
         ModeratorReportModule,
         ModeratorUserModule,
         RoleModule,
+        RedisModule,
     ],
     controllers: [AppController],
-    providers: [AppService, JwtService],
+    providers: [
+        AppService,
+        JwtService,
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: AccessLogInterceptor,
+        },
+    ],
     exports: [],
 })
 export class AppModule implements NestModule {
