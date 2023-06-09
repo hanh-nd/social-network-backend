@@ -1,4 +1,5 @@
 import {
+    AskUserQuestionDocument,
     ChatDocument,
     CommentDocument,
     GroupDocument,
@@ -11,7 +12,9 @@ import {
     ReportDocument,
     RoleDocument,
     SubscribeRequestDocument,
+    SystemMessageDocument,
     TagDocument,
+    UserDailyStatisticDocument,
     UserDetailDocument,
     UserDocument,
     UserTokenDocument,
@@ -35,4 +38,7 @@ export abstract class IDataServices {
     abstract groupPosts: IGenericRepository<GroupPostDocument>;
     abstract tags: IGenericRepository<TagDocument>;
     abstract userDetails: IGenericRepository<UserDetailDocument>;
+    abstract userDailyStatistics: IGenericRepository<UserDailyStatisticDocument>;
+    abstract systemMessages: IGenericRepository<SystemMessageDocument>;
+    abstract askUserQuestions: IGenericRepository<AskUserQuestionDocument>;
 }

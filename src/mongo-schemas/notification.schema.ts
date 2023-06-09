@@ -21,7 +21,7 @@ export type NotificationDocument = Notification & Document;
 export class Notification extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: Types.ObjectId, ref: User.name })
+    @Prop({ required: false, type: Types.ObjectId, ref: User.name })
     author: Partial<User>;
 
     @Prop({ required: true, type: Types.ObjectId, ref: User.name })
@@ -38,6 +38,15 @@ export class Notification extends MongoBaseSchema {
 
     @Prop({ required: true, default: false, type: Boolean })
     isRead: boolean;
+
+    @Prop({ type: String, required: false })
+    content: string;
+
+    @Prop({ type: Object, default: null })
+    additionalData: object;
+
+    @Prop({ type: Boolean, default: false })
+    urgent: boolean;
 }
 
 const BaseNotificationSchema = SchemaFactory.createForClass(Notification);
