@@ -232,6 +232,7 @@ export const NotificationTargetType = {
     COMMENT: 'Comment',
     MESSAGE: 'Message',
     USER: 'User',
+    SYSTEM_MESSAGE: 'SystemMessage',
 };
 
 export const NotificationAction = {
@@ -241,6 +242,7 @@ export const NotificationAction = {
     SUBSCRIBE_PROFILE: 'SUBSCRIBE_PROFILE',
     SENT_SUBSCRIBE_REQUEST: 'SENT_SUBSCRIBE_REQUEST',
     ACCEPT_SUBSCRIBE_REQUEST: 'ACCEPT_SUBSCRIBE_REQUEST',
+    SEND_MESSAGE: 'SEND_MESSAGE',
 };
 
 export const SocketEvent = {

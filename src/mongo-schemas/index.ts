@@ -1,5 +1,6 @@
 export * from './address.schema';
 export * from './administrator.schema';
+export * from './ask-user-questions.schema';
 export * from './chat.schema';
 export * from './comment.schema';
 export * from './constant';
@@ -13,7 +14,9 @@ export * from './reaction.schema';
 export * from './report.schema';
 export * from './role.schema';
 export * from './subscribe-request.schema';
+export * from './system-message.schema';
 export * from './tag.schema';
+export * from './user-daily-statistic.schema';
 export * from './user-detail.schema';
 export * from './user-education.schema';
 export * from './user-token.schema';

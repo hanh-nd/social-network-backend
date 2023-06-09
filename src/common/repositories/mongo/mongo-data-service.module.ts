@@ -25,9 +25,13 @@ import {
     RoleSchema,
     SubscribeRequest,
     SubscribeRequestSchema,
+    SystemMessage,
+    SystemMessageSchema,
     Tag,
     TagSchema,
     User,
+    UserDailyStatistic,
+    UserDailyStatisticSchema,
     UserDetail,
     UserDetailSchema,
     UserSchema,
@@ -55,6 +59,8 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: GroupPost.name, schema: GroupPostSchema }]),
         MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
         MongooseModule.forFeature([{ name: UserDetail.name, schema: UserDetailSchema }]),
+        MongooseModule.forFeature([{ name: UserDailyStatistic.name, schema: UserDailyStatisticSchema }]),
+        MongooseModule.forFeature([{ name: SystemMessage.name, schema: SystemMessageSchema }]),
     ],
     providers: [
         {

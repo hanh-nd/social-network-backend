@@ -62,6 +62,12 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
             postDto.author.isSubscribing = isSubscribing;
         }
 
+        if (postDto.isAnonymous && !postDto?.author?.isSelf) {
+            postDto.author = {
+                fullName: 'Người dùng ẩn danh',
+            };
+        }
+
         delete postDto.commentIds;
         delete postDto.reactIds;
         delete postDto.sharedIds;
