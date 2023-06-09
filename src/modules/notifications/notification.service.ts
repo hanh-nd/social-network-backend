@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, SocketEvent } from 'src/common/constants';
+import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, NotificationTargetType, SocketEvent } from 'src/common/constants';
 import { toObjectId } from 'src/common/helper';
 import { NotificationTarget } from 'src/common/interfaces';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Notification, User } from 'src/mongo-schemas';
+import { Notification, SystemMessage, User } from 'src/mongo-schemas';
 import { SocketGateway } from '../gateway/socket.gateway';
+import { SystemMessageService } from '../system-messages/system-message.service';
 import { IGetNotificationListQuery } from './notification.interface';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class NotificationService {
         private dataServices: IDataServices,
         private dataResources: IDataResources,
         private socketGateway: SocketGateway,
+        private systemMessageService: SystemMessageService,
     ) {}
 
     async getList(userId: string, query: IGetNotificationListQuery) {
@@ -36,11 +38,30 @@ export class NotificationService {
     }
 
     async create(
+        user: Partial<User> | null,
+        to: Partial<User>,
+        targetType: string,
+        target: NotificationTarget,
+        action: string,
+        additionalData?: object,
+        urgent = false,
+    ) {
+        const createdNotification =
+            targetType === NotificationTargetType.SYSTEM_MESSAGE
+                ? await this.createSystemMessageNotification(to, targetType, target, action, additionalData, urgent)
+                : await this.createUserNotification(user, to, targetType, target, action, urgent);
+
+        this.socketGateway.server.to(`${to._id}`).emit(SocketEvent.USER_NOTIFICATION, createdNotification);
+        return createdNotification._id;
+    }
+
+    private async createUserNotification(
         user: Partial<User>,
         to: Partial<User>,
         targetType: string,
         target: NotificationTarget,
         action: string,
+        urgent = false,
     ) {
         if (`${user._id}` == `${to._id}`) {
             return;
@@ -76,10 +97,38 @@ export class NotificationService {
             target: toObjectId(target._id) as unknown,
             action,
             isRead: false,
+            urgent,
         };
-        const createdNotification = await this.dataServices.notifications.create(toCreateNotificationBody);
-        this.socketGateway.server.to(`${to._id}`).emit(SocketEvent.USER_NOTIFICATION, createdNotification);
-        return createdNotification._id;
+        return await this.dataServices.notifications.create(toCreateNotificationBody);
+    }
+
+    private async createSystemMessageNotification(
+        to: Partial<User>,
+        targetType: string,
+        target: NotificationTarget,
+        action: string,
+        additionalData?: object,
+        urgent = false,
+    ) {
+        // create notification
+        const toCreateNotificationBody: Partial<Notification> = {
+            author: null,
+            to: toObjectId(to._id) as unknown,
+            targetType,
+            target: toObjectId(target._id) as unknown,
+            action,
+            additionalData,
+            isRead: false,
+            urgent,
+        };
+        const content = await this.systemMessageService.buildMessageContent(
+            target as SystemMessage,
+            additionalData,
+            false,
+            to,
+        );
+        toCreateNotificationBody.content = content;
+        return await this.dataServices.notifications.create(toCreateNotificationBody);
     }
 
     async markOrUndoMarkAsRead(userId: string, notificationId: string) {

@@ -2,12 +2,18 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { ConfigService } from '@nestjs/config';
 import * as moment from 'moment';
 import { ConfigKey } from '../config';
+import { toObjectId } from '../helper';
 import { RedisKey } from '../modules/redis/redis.constants';
 import { RedisService } from '../modules/redis/redis.service';
+import { IDataServices } from '../repositories/data.service';
 
 @Injectable()
 export class AccessLogInterceptor implements NestInterceptor {
-    constructor(private readonly redisService: RedisService, private readonly configService: ConfigService) {}
+    constructor(
+        private readonly redisService: RedisService,
+        private readonly configService: ConfigService,
+        private readonly dataServices: IDataServices,
+    ) {}
 
     async intercept(context: ExecutionContext, next: CallHandler) {
         const request = context.switchToHttp().getRequest();
@@ -21,15 +27,48 @@ export class AccessLogInterceptor implements NestInterceptor {
         const ALERT_TIME_RANGE = this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE);
 
         const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
+        const sessionSpentTimeSecond = (await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
         if (!cachedUserLastOnline) {
             // Reset counter to 0
             await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
+            this.dataServices.userDailyStatistics.updateOne(
+                {
+                    userId: toObjectId(userId),
+                },
+                {
+                    $inc: {
+                        spentTimeSecond: sessionSpentTimeSecond,
+                    },
+                    $setOnInsert: {
+                        userId: toObjectId(userId),
+                    },
+                },
+                {
+                    upsert: true,
+                },
+            );
         } else {
             const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
             if (timeDiff >= ALERT_TIME_RANGE) {
                 // User has been inactivated for over 5 minutes
                 // Reset counter to 0
                 await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
+                this.dataServices.userDailyStatistics.updateOne(
+                    {
+                        userId: toObjectId(userId),
+                    },
+                    {
+                        $inc: {
+                            spentTimeSecond: sessionSpentTimeSecond,
+                        },
+                        $setOnInsert: {
+                            userId: toObjectId(userId),
+                        },
+                    },
+                    {
+                        upsert: true,
+                    },
+                );
             } else {
                 await client.zincrby(RedisKey.ONLINE_USERS, timeDiff, userId);
             }

@@ -6,6 +6,7 @@ import { IGenericResource } from '../generic.resource';
 export class GroupPostResource extends IGenericResource<GroupPostDocument, UserDocument> {
     async mapToDto(groupPost: GroupPostDocument, user?: User): Promise<object> {
         const groupPostDto = _.cloneDeep(groupPost.toObject());
+        const isAnonymous = groupPostDto.post?.isAnonymous ?? false;
 
         if (_.isObject(groupPostDto?.post?.author)) {
             groupPostDto.post.author = _.pick(groupPostDto.post.author, [
@@ -62,6 +63,12 @@ export class GroupPostResource extends IGenericResource<GroupPostDocument, UserD
                 groupPostDto.post.author.isSelf = true;
             }
             groupPostDto.post.author.isSubscribing = isSubscribing;
+        }
+
+        if (isAnonymous && !groupPostDto?.post?.author?.isSelf) {
+            _.set(groupPostDto, 'post.author', {
+                fullName: `Người dùng ẩn danh`,
+            });
         }
 
         delete groupPostDto.post.commentIds;
