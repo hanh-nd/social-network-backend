@@ -29,11 +29,13 @@ export class AccessLogInterceptor implements NestInterceptor {
         const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
         const sessionSpentTimeSecond = (await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
         if (!cachedUserLastOnline) {
+            console.log('1', 1);
             // Reset counter to 0
             await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
             this.dataServices.userDailyStatistics.updateOne(
                 {
                     userId: toObjectId(userId),
+                    createdDate: +moment().format(`YYYYMMDD`),
                 },
                 {
                     $inc: {
@@ -50,6 +52,7 @@ export class AccessLogInterceptor implements NestInterceptor {
         } else {
             const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
             if (timeDiff >= ALERT_TIME_RANGE) {
+                console.log('2', 2);
                 // User has been inactivated for over 5 minutes
                 // Reset counter to 0
                 await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
@@ -70,6 +73,7 @@ export class AccessLogInterceptor implements NestInterceptor {
                     },
                 );
             } else {
+                console.log('3', 3);
                 await client.zincrby(RedisKey.ONLINE_USERS, timeDiff, userId);
             }
         }
