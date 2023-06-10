@@ -50,6 +50,7 @@ export class NotificationService {
             targetType === NotificationTargetType.SYSTEM_MESSAGE
                 ? await this.createSystemMessageNotification(to, targetType, target, action, additionalData, urgent)
                 : await this.createUserNotification(user, to, targetType, target, action, urgent);
+        if (!createdNotification) return;
 
         this.socketGateway.server.to(`${to._id}`).emit(SocketEvent.USER_NOTIFICATION, createdNotification);
         return createdNotification._id;

@@ -50,7 +50,7 @@ export class OnlineAlertJob {
         const matchedUsers = await client.zrangebyscore(
             RedisKey.ONLINE_USERS,
             timeSpentRange[0],
-            `(${timeSpentRange[1]}`,
+            level == 3 ? '+inf' : `(${timeSpentRange[1]}`,
         );
 
         const alertSystemMessage = await this.systemMessageService.getMessageByCode(
