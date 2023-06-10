@@ -100,7 +100,10 @@ export class NotificationService {
             isRead: false,
             urgent,
         };
-        return await this.dataServices.notifications.create(toCreateNotificationBody);
+        const createdNotification = await this.dataServices.notifications.create(toCreateNotificationBody);
+        const notification = await createdNotification.populate(['author', 'target']);
+        const notificationDtos = await this.dataResources.notifications.mapToDto(notification);
+        return notificationDtos;
     }
 
     private async createSystemMessageNotification(
@@ -129,7 +132,10 @@ export class NotificationService {
             to,
         );
         toCreateNotificationBody.content = content;
-        return await this.dataServices.notifications.create(toCreateNotificationBody);
+        const createdNotification = await this.dataServices.notifications.create(toCreateNotificationBody);
+        const notification = await createdNotification.populate(['author', 'target']);
+        const notificationDtos = await this.dataResources.notifications.mapToDto(notification);
+        return notificationDtos;
     }
 
     async markOrUndoMarkAsRead(userId: string, notificationId: string) {

@@ -4,4 +4,5 @@ export enum RedisKey {
 
     ROLES = 'roles',
     TAGS = 'tags',
+    TAG_NAMES = 'tag_names',
 }

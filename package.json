@@ -22,7 +22,8 @@
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "seed:roles": "npx nestjs-command create:roles",
         "seed:system_messages": "npx nestjs-command create:system_messages",
-        "seed:all": "npm run seed:roles && npm run seed:system_messages"
+        "seed:tags": "npx nestjs-command create:tags",
+        "seed:all": "npm run seed:roles && npm run seed:system_messages && npm run seed:tags"
     },
     "dependencies": {
         "@elastic/elasticsearch": "^8.7.0",

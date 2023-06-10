@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { capitalize } from 'lodash';
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { RedisKey } from 'src/common/modules/redis/redis.constants';
@@ -56,21 +56,21 @@ export class TagService {
         return updatedTag;
     }
 
-    async getTags(userId: string) {
-        const user = await this.dataServices.users.findById(userId);
-        if (!user) {
-            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
-        }
+    async getTags() {
         const cachedData = await this.redisService.get<Tag[]>(RedisKey.TAGS);
         if (cachedData) return cachedData;
-        const tags = await this.dataServices.tags.findAll({});
+        const tags = await this.dataServices.tags.findAll({}, { lean: true });
         await this.redisService.set(RedisKey.TAGS, tags);
-        return tags;
+        return tags as Tag[];
     }
 
     async getTagNames() {
-        const tags = await this.dataServices.tags.findAll({});
-        return tags.map((tag) => tag.name);
+        const cachedData = await this.redisService.get<string[]>(RedisKey.TAG_NAMES);
+        if (cachedData) return cachedData;
+        const tags = await this.getTags();
+        const tagNames = tags.map((tag) => tag.name);
+        await this.redisService.set(RedisKey.TAG_NAMES, tagNames);
+        return tagNames;
     }
 
     async getTagIds(names: string[]) {
@@ -80,10 +80,10 @@ export class TagService {
                 .map((name) => capitalize(name.toLowerCase()))
                 .join(' '),
         );
-        const tags = await this.dataServices.tags.findAll({
-            name: formattedNames,
-        });
-        return tags.map((tag) => tag._id);
+
+        const tags = await this.getTags();
+        const filteredTags = tags.filter((t: Tag) => formattedNames.includes(t.name));
+        return filteredTags.map((tag) => tag._id);
     }
 
     async bulkDeleteTag(body: IBulkDeleteTagBody) {
