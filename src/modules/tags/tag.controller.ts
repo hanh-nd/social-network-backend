@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
@@ -16,9 +15,9 @@ export class TagController {
     private readonly logger = createWinstonLogger(TagController.name, this.configService);
 
     @Get('/')
-    async getTags(@LoginUser() loginUser) {
+    async getTags() {
         try {
-            const result = await this.tagService.getTags(loginUser.userId);
+            const result = await this.tagService.getTags();
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getTags] ${error.stack || JSON.stringify(error)}`);

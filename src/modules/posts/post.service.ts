@@ -59,6 +59,7 @@ export class PostService {
             videoIds = [],
             postSharedId,
             postedInGroupId,
+            isAnonymous,
         } = body;
 
         const author = await this.dataServices.users.findById(userId);
@@ -77,18 +78,8 @@ export class PostService {
             pictureIds: toObjectIds(pictureIds),
             videoIds: toObjectIds(videoIds),
             point: 0,
+            isAnonymous,
         };
-
-        const tagNames = await this.tagService.getTagNames();
-        try {
-            // const response = await this.chatGPTService.sendMessage(
-            //     `Give me 3 tags in the list "${tagNames.join(
-            //         ', ',
-            //     )}" separated by comma that best fit for the paragraph below:\n${content}`,
-            // );
-            // const tagIds = await this.tagService.getTagIds((response.text || '').split(','));
-            // createPostBody.tagIds = toObjectIds(tagIds);
-        } catch (error) {}
 
         if (discussedInId) {
             const discussedInUser = await this.dataServices.users.findById(discussedInId);
@@ -124,8 +115,32 @@ export class PostService {
             ],
         });
 
+        this.updatePostTagIds(post);
         const postDto = await this.dataResources.posts.mapToDto(post);
         return postDto as Post;
+    }
+
+    async updatePostTagIds(post: Post) {
+        const tagNames = await this.tagService.getTagNames();
+        try {
+            const response = await this.chatGPTService.sendMessage(
+                `Give me 3 tags in the list "${tagNames.join(
+                    ', ',
+                )}" separated by comma that best fit for the paragraph below:\n${post.content}`,
+            );
+            const names = _.flatten((response.text || '').split(',').map((tag) => tag.split('\n'))) as string[];
+            const formattedNames = names.map((name) =>
+                name
+                    .replace('\n', '')
+                    .replace(/^\d+\.\s/, '')
+                    .replace('.', '')
+                    .trim(),
+            );
+            const tagIds = await this.tagService.getTagIds(formattedNames);
+            await this.dataServices.posts.updateById(post._id, {
+                tagIds: toObjectIds(tagIds),
+            });
+        } catch (error) {}
     }
 
     async getUserPosts(userId: string) {
