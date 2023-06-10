@@ -20,10 +20,13 @@ export type TagDocument = Tag & Document;
 export class Tag extends MongoBaseSchema {
     _id: string;
 
+    @Prop({ type: String })
+    code: string;
+
     @Prop({ required: true, type: String })
     name: string;
 
-    @Prop({ required: true, type: Types.ObjectId })
+    @Prop({ required: false, type: Types.ObjectId })
     iconId: ObjectId;
 }
 
