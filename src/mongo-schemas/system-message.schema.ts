@@ -2,12 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
+import { SystemMessageType } from 'src/modules/system-messages/sytem-message.constants';
 
 export type SystemMessageDocument = SystemMessage & Document;
 
 @Schema({
     timestamps: true,
-    collection: MongoCollection.USER_DAILY_STATISTIC,
+    collection: MongoCollection.SYSTEM_MESSAGES,
     toJSON: {
         virtuals: true,
     },
@@ -29,7 +30,7 @@ export class SystemMessage extends MongoBaseSchema {
     fullTemplate: string;
 
     @Prop({ required: false, type: String })
-    type: string;
+    type: SystemMessageType;
 }
 
 const BaseSystemMessageSchema = SchemaFactory.createForClass(SystemMessage);

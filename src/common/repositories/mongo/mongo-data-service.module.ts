@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
+    AskUserQuestion,
+    AskUserQuestionSchema,
     Chat,
     ChatSchema,
     Comment,
@@ -61,6 +63,7 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: UserDetail.name, schema: UserDetailSchema }]),
         MongooseModule.forFeature([{ name: UserDailyStatistic.name, schema: UserDailyStatisticSchema }]),
         MongooseModule.forFeature([{ name: SystemMessage.name, schema: SystemMessageSchema }]),
+        MongooseModule.forFeature([{ name: AskUserQuestion.name, schema: AskUserQuestionSchema }]),
     ],
     providers: [
         {

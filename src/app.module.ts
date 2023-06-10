@@ -2,6 +2,7 @@ import { Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import mongoose from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,6 +16,7 @@ import { DataServicesModule } from './common/repositories/data-services.module';
 import { DataResourcesModule } from './common/resources/data-resources.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ChatModule } from './modules/chats/chat.module';
+import { CronJobModule } from './modules/cron-jobs/cron-job.module';
 import { FileModule } from './modules/files/file.module';
 import { SocketModule } from './modules/gateway/socket.module';
 import { GroupPostModule } from './modules/group-posts/group-post.module';
@@ -63,6 +65,8 @@ import { UserModule } from './modules/users/user.module';
         RoleModule,
         RedisModule,
         SystemMessageModule,
+        ScheduleModule.forRoot(),
+        CronJobModule,
     ],
     controllers: [AppController],
     providers: [
