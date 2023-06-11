@@ -1,10 +1,16 @@
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
-import { toStringArray } from 'src/common/helper';
+import { toObjectIds, toStringArray } from 'src/common/helper';
+import { IDataServices } from 'src/common/repositories/data.service';
+import { FileService } from 'src/modules/files/file.service';
 import { GroupDocument, UserDocument } from 'src/mongo-schemas';
 import { IGenericResource } from '../generic.resource';
 
 export class GroupResource extends IGenericResource<GroupDocument, UserDocument> {
+    constructor(protected dataServices: IDataServices, protected fileService: FileService) {
+        super(dataServices);
+    }
+
     async mapToDto(group: GroupDocument, user?: UserDocument): Promise<object> {
         const groupDto = _.cloneDeep(group.toObject());
 
@@ -54,6 +60,16 @@ export class GroupResource extends IGenericResource<GroupDocument, UserDocument>
                         post.author.isSelf = true;
                     }
                     post.author.isSubscribing = isSubscribing;
+                }
+
+                if (post.pictureIds) {
+                    const pictures = await this.fileService.findAll({
+                        ids: toObjectIds(post.pictureIds),
+                    });
+
+                    Object.assign(post, {
+                        medias: pictures,
+                    });
                 }
 
                 delete post.commentIds;

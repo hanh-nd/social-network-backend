@@ -1,9 +1,15 @@
 import * as _ from 'lodash';
-import { toStringArray } from 'src/common/helper';
+import { toObjectIds, toStringArray } from 'src/common/helper';
+import { IDataServices } from 'src/common/repositories/data.service';
+import { FileService } from 'src/modules/files/file.service';
 import { GroupPostDocument, User, UserDocument } from 'src/mongo-schemas';
 import { IGenericResource } from '../generic.resource';
 
 export class GroupPostResource extends IGenericResource<GroupPostDocument, UserDocument> {
+    constructor(protected dataServices: IDataServices, protected fileService: FileService) {
+        super(dataServices);
+    }
+
     async mapToDto(groupPost: GroupPostDocument, user?: User): Promise<object> {
         const groupPostDto = _.cloneDeep(groupPost.toObject());
         const isAnonymous = groupPostDto.post?.isAnonymous ?? false;
@@ -46,6 +52,16 @@ export class GroupPostResource extends IGenericResource<GroupPostDocument, UserD
             numberOfReacts: groupPostDto.post.reactIds.length,
             numberOfShares: groupPostDto.post.sharedIds.length,
         });
+
+        if (groupPostDto?.post?.pictureIds) {
+            const pictures = await this.fileService.findAll({
+                ids: toObjectIds(groupPostDto?.post.pictureIds),
+            });
+
+            Object.assign(groupPostDto.post, {
+                medias: pictures,
+            });
+        }
 
         if (user) {
             const isReacted = groupPostDto.post.reactIds.map((id) => `${id}`).includes(`${user._id}`);

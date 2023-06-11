@@ -1,7 +1,7 @@
 import { Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
 import mongoose from 'mongoose';
 import { AppController } from './app.controller';
