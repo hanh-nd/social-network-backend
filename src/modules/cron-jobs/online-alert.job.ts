@@ -46,7 +46,7 @@ export class OnlineAlertJob {
     async scanAlertByLevel(level = 1) {
         const alertMinutes = Math.ceil(this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE) / 60);
         const client = await this.redisService.getClient();
-        const timeSpentRange = [level * alertMinutes, (level + 1) * alertMinutes];
+        const timeSpentRange = [level * alertMinutes * 60, (level + 1) * alertMinutes * 60];
         const matchedUsers = await client.zrangebyscore(
             RedisKey.ONLINE_USERS,
             timeSpentRange[0],

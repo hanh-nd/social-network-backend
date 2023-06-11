@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { isNil } from 'lodash';
 import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, NotificationTargetType, SocketEvent } from 'src/common/constants';
 import { toObjectId } from 'src/common/helper';
 import { NotificationTarget } from 'src/common/interfaces';
@@ -22,19 +23,36 @@ export class NotificationService {
         const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
         const skip = (page - 1) * +limit;
 
-        const notifications = await this.dataServices.notifications.findAll(
-            {
-                to: toObjectId(userId),
-            },
-            {
-                populate: ['author', 'target'],
-                sort: [['updatedAt', -1]],
-                skip: +skip,
-                limit: +limit,
-            },
-        );
+        const where = this.buildWhereQuery({
+            ...query,
+            userId,
+        });
+        const notifications = await this.dataServices.notifications.findAll(where, {
+            populate: ['author', 'target'],
+            sort: [['updatedAt', -1]],
+            skip: +skip,
+            limit: +limit,
+        });
         const notificationDtos = await this.dataResources.notifications.mapToDtoList(notifications);
         return notificationDtos;
+    }
+
+    private buildWhereQuery(query: IGetNotificationListQuery) {
+        const { userId, isRead } = query;
+
+        const where: any = {};
+
+        if (userId) {
+            where.to = toObjectId(userId);
+        }
+
+        if (!isNil(isRead)) {
+            try {
+                where.isRead = JSON.parse(isRead);
+            } catch (error) {}
+        }
+
+        return where;
     }
 
     async create(
@@ -138,7 +156,21 @@ export class NotificationService {
         return notificationDtos;
     }
 
-    async markOrUndoMarkAsRead(userId: string, notificationId: string) {
+    async markAllAsRead(userId: string) {
+        await this.dataServices.notifications.bulkUpdate(
+            {
+                to: toObjectId(userId),
+                isRead: false,
+            },
+            {
+                isRead: true,
+            },
+        );
+
+        return true;
+    }
+
+    async markAsRead(userId: string, notificationId: string) {
         const existedNotification = await this.dataServices.notifications.findOne({
             to: toObjectId(userId),
             _id: toObjectId(notificationId),
@@ -147,25 +179,27 @@ export class NotificationService {
             throw new BadRequestException(`Không tìm thấy thông báo này.`);
         }
 
-        if (existedNotification.isRead) {
-            await this.undoMarkAsRead(existedNotification);
-        } else {
-            await this.markAsRead(existedNotification);
-        }
+        if (existedNotification.isRead) return true;
 
-        return true;
-    }
-
-    private async markAsRead(notification: Notification) {
-        await this.dataServices.notifications.updateById(notification._id, {
+        await this.dataServices.notifications.updateById(existedNotification._id, {
             isRead: true,
         });
 
         return true;
     }
 
-    private async undoMarkAsRead(notification: Notification) {
-        await this.dataServices.notifications.updateById(notification._id, {
+    async undoMarkAsRead(userId: string, notificationId: string) {
+        const existedNotification = await this.dataServices.notifications.findOne({
+            to: toObjectId(userId),
+            _id: toObjectId(notificationId),
+        });
+        if (!existedNotification) {
+            throw new BadRequestException(`Không tìm thấy thông báo này.`);
+        }
+
+        if (!existedNotification.isRead) return true;
+
+        await this.dataServices.notifications.updateById(existedNotification._id, {
             isRead: false,
         });
 

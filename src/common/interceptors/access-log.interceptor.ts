@@ -22,15 +22,86 @@ export class AccessLogInterceptor implements NestInterceptor {
             return next.handle();
         }
 
+        if (request.url === `/api/ping`) {
+            await this.checkUserTimeSpent(userId);
+        } else {
+            await this.calcUserTimeSpend(userId);
+        }
+
+        return next.handle();
+    }
+
+    private async checkUserTimeSpent(userId: string) {
+        const client = this.redisService.getClient();
+        const sessionSpentTimeSecond = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
+
+        const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
+        if (!cachedUserLastOnline) {
+            // Reset counter to 0
+            await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
+
+            if (!sessionSpentTimeSecond) return;
+            this.dataServices.userDailyStatistics.updateOne(
+                {
+                    userId: toObjectId(userId),
+                    createdDate: +moment().format(`YYYYMMDD`),
+                },
+                {
+                    $inc: {
+                        spentTimeSecond: sessionSpentTimeSecond,
+                    },
+                    $setOnInsert: {
+                        userId: toObjectId(userId),
+                    },
+                },
+                {
+                    upsert: true,
+                },
+            );
+        } else {
+            const currentTimeMoment = moment();
+            const ALERT_TIME_RANGE = this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE);
+
+            const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
+            if (timeDiff >= ALERT_TIME_RANGE) {
+                // User has been inactivated for over 5 minutes
+                // Reset counter to 0
+                await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
+
+                if (!sessionSpentTimeSecond) return;
+                this.dataServices.userDailyStatistics.updateOne(
+                    {
+                        userId: toObjectId(userId),
+                    },
+                    {
+                        $inc: {
+                            spentTimeSecond: sessionSpentTimeSecond,
+                        },
+                        $setOnInsert: {
+                            userId: toObjectId(userId),
+                        },
+                    },
+                    {
+                        upsert: true,
+                    },
+                );
+            }
+        }
+    }
+
+    private async calcUserTimeSpend(userId: string) {
         const client = this.redisService.getClient();
         const currentTimeMoment = moment();
         const ALERT_TIME_RANGE = this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE);
 
         const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
-        const sessionSpentTimeSecond = (await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
+        const sessionSpentTimeSecond = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
+
         if (!cachedUserLastOnline) {
             // Reset counter to 0
             await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
+
+            if (!sessionSpentTimeSecond) return;
             this.dataServices.userDailyStatistics.updateOne(
                 {
                     userId: toObjectId(userId),
@@ -54,6 +125,8 @@ export class AccessLogInterceptor implements NestInterceptor {
                 // User has been inactivated for over 5 minutes
                 // Reset counter to 0
                 await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
+
+                if (!sessionSpentTimeSecond) return;
                 this.dataServices.userDailyStatistics.updateOne(
                     {
                         userId: toObjectId(userId),
@@ -81,6 +154,5 @@ export class AccessLogInterceptor implements NestInterceptor {
             'EX',
             ALERT_TIME_RANGE,
         );
-        return next.handle();
     }
 }
