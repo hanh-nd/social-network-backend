@@ -2,6 +2,7 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { FileService } from 'src/modules/files/file.service';
 import {
+    AskUserQuestionDocument,
     ChatDocument,
     CommentDocument,
     GroupDocument,
@@ -14,6 +15,7 @@ import {
 } from 'src/mongo-schemas';
 import { IDataResources } from '../data.resource';
 import { IGenericResource } from '../generic.resource';
+import { AskUserQuestionResource } from './ask-user-question.resource';
 import { ChatResource } from './chat.resource';
 import { CommentResource } from './comment.resource';
 import { GroupPostResource } from './group-post.resource';
@@ -37,6 +39,7 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
     groups: IGenericResource<GroupDocument, UserDocument>;
     chats: IGenericResource<ChatDocument, UserDocument>;
     groupPosts: IGenericResource<GroupPostDocument, UserDocument>;
+    askUserQuestions: IGenericResource<AskUserQuestionDocument, UserDocument>;
 
     onApplicationBootstrap() {
         this.users = new UserResource(this.dataServices);
@@ -48,5 +51,6 @@ export class MongoDataResources implements IDataResources, OnApplicationBootstra
         this.groups = new GroupResource(this.dataServices, this.fileService);
         this.chats = new ChatResource(this.dataServices);
         this.groupPosts = new GroupPostResource(this.dataServices, this.fileService);
+        this.askUserQuestions = new AskUserQuestionResource(this.dataServices);
     }
 }

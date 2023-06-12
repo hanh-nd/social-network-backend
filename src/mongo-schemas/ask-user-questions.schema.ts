@@ -32,7 +32,7 @@ export class AskUserQuestion extends MongoBaseSchema {
     @Prop({ required: true, type: String })
     question: string;
 
-    @Prop({ required: false, type: String })
+    @Prop({ required: false, type: String, default: null })
     answer: string;
 }
 
