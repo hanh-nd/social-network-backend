@@ -6,7 +6,10 @@ export interface ICreateAskUserQuestionBody {
     question: string;
 }
 
-export interface IGetAskUserQuestionQuery extends ICommonGetListQuery {}
+export interface IGetAskUserQuestionQuery extends ICommonGetListQuery {
+    userId?: string;
+    pending?: boolean;
+}
 
 export interface IUpdateAskUserQuestionBody {
     answer: string;
