@@ -1,4 +1,5 @@
 import {
+    AskUserQuestionDocument,
     ChatDocument,
     CommentDocument,
     GroupDocument,
@@ -21,4 +22,5 @@ export abstract class IDataResources {
     abstract groups: IGenericResource<GroupDocument, UserDocument>;
     abstract chats: IGenericResource<ChatDocument, UserDocument>;
     abstract groupPosts: IGenericResource<GroupPostDocument, UserDocument>;
+    abstract askUserQuestions: IGenericResource<AskUserQuestionDocument, UserDocument>;
 }

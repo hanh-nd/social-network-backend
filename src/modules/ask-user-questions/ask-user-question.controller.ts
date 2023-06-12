@@ -20,12 +20,13 @@ export class AskUserQuestionController {
     private readonly logger = createWinstonLogger(AskUserQuestionController.name, this.configService);
 
     @Get('/')
-    async getList(@Query(new RemoveEmptyQueryPipe()) query: IGetAskUserQuestionQuery) {
+    async getList(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetAskUserQuestionQuery) {
         try {
-            const result = await this.askUserQuestionService.getList(query);
+            const result = await this.askUserQuestionService.getList(loginUser.userId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getMessages] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 
@@ -36,6 +37,7 @@ export class AskUserQuestionController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[create] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 
@@ -46,16 +48,18 @@ export class AskUserQuestionController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updateMessage] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 
-    @Delete('/id')
+    @Delete('/:id')
     async delete(@Param('id') id: string) {
         try {
             const result = await this.askUserQuestionService.delete(id);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[deleteMessage] ${error.stack || JSON.stringify(error)}`);
+            throw error;
         }
     }
 }

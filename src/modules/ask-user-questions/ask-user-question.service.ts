@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE } from 'src/common/constants';
+import { toObjectId } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { AskUserQuestion } from 'src/mongo-schemas';
@@ -9,7 +9,6 @@ import {
     IGetAskUserQuestionQuery,
     IUpdateAskUserQuestionBody,
 } from './ask-user-question.interfaces';
-import { toObjectId } from 'src/common/helper';
 
 @Injectable()
 export class AskUserQuestionService {
@@ -26,21 +25,31 @@ export class AskUserQuestionService {
         return createdQuestion;
     }
 
-    async getList(query?: IGetAskUserQuestionQuery) {
+    async getList(userId: string, query?: IGetAskUserQuestionQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
         const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
         const skip = (+page - 1) * +limit;
-        const where = this.buildWhereQuery(query);
+        const where = this.buildWhereQuery({
+            ...query,
+            userId: user._id,
+        });
 
         const askUserQuestions = await this.dataServices.askUserQuestions.findAll(where, {
+            populate: ['sender'],
             skip: skip,
             limit: +limit,
         });
 
-        return askUserQuestions;
+        const questionDtos = await this.dataResources.askUserQuestions.mapToDtoList(askUserQuestions);
+        return questionDtos;
     }
 
     private buildWhereQuery(query?: IGetAskUserQuestionQuery) {
-        const { keyword } = query;
+        const { keyword, userId, pending } = query;
 
         const where: any = {};
 
@@ -48,13 +57,23 @@ export class AskUserQuestionService {
             where.code = keyword.trim();
         }
 
+        if (userId) {
+            where.receiver = toObjectId(userId);
+        }
+
+        if (+pending) {
+            where.answer = {
+                $eq: null,
+            };
+        }
+
         return where;
     }
 
     async update(id: string, body: IUpdateAskUserQuestionBody) {
         const existedAskUserQuestion = await this.dataServices.askUserQuestions.findById(id);
-        if (existedAskUserQuestion) {
-            throw new NotFoundException(`Tin nhắn không tồn tại trong hê thống`);
+        if (!existedAskUserQuestion) {
+            throw new NotFoundException(`Câu hỏi không tồn tại trong hê thống`);
         }
 
         const updatedQuestion = await this.dataServices.askUserQuestions.updateById(id, body);

@@ -54,7 +54,7 @@ export class SystemMessageService {
 
     async updateMessage(id: string, body: IUpdateSystemMessageBody) {
         const existedSystemMessage = await this.dataServices.systemMessages.findById(id);
-        if (existedSystemMessage) {
+        if (!existedSystemMessage) {
             throw new NotFoundException(`Tin nhắn không tồn tại trong hê thống`);
         }
 
