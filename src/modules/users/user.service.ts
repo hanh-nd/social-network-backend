@@ -13,6 +13,7 @@ import {
     ElasticsearchIndex,
     NotificationAction,
     NotificationTargetType,
+    Privacy,
     SubscribeRequestStatus,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
@@ -478,7 +479,20 @@ export class UserService {
         const skip = (page - 1) * +limit;
         const posts = await this.dataServices.posts.findAll(
             {
-                author: user._id,
+                $or: [
+                    {
+                        privacy: Privacy.PUBLIC,
+                    },
+                    {
+                        privacy: Privacy.SUBSCRIBED,
+                        author: {
+                            $in: loginUser.subscribingIds,
+                        },
+                    },
+                    {
+                        author: loginUser._id,
+                    },
+                ],
                 discussedIn: null,
                 postedInGroup: null,
             },
