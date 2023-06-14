@@ -59,9 +59,7 @@ export class OnlineAlertJob {
         for (const userId of matchedUsers) {
             this.notificationService.create(
                 null,
-                {
-                    _id: userId,
-                },
+                { _id: userId },
                 NotificationTargetType.SYSTEM_MESSAGE,
                 alertSystemMessage,
                 NotificationAction.SEND_MESSAGE,

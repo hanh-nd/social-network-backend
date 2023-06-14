@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { round } from 'lodash';
 import * as moment from 'moment';
+import { toObjectId } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { IGetStatisticQuery } from './statistic.interfaces';
@@ -18,6 +19,7 @@ export class StatisticService {
 
         const startStatisticDay = moment().subtract(range, 'day').format('YYYYMMDD');
         const userDailyStatistics = await this.dataServices.userDailyStatistics.findAll({
+            userId: toObjectId(userId),
             createDate: {
                 $gte: startStatisticDay,
             },

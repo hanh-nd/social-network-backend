@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { MANAGE_POST_PERMISSIONS } from 'src/common/constants';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
+import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
@@ -10,8 +12,6 @@ import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reactio
 import { ICreateReportBody } from '../reports/report.interface';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 import { PostService } from './post.service';
-import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
-import { MANAGE_POST_PERMISSIONS } from 'src/common/constants';
 
 @Controller('/posts')
 @UseGuards(AccessTokenGuard, AuthorizationGuard)
@@ -51,7 +51,19 @@ export class PostController {
             const result = await this.postService.getUserPosts(loginUser.userId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[createNewPost] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getUserPosts] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/interested')
+    @Permissions(MANAGE_POST_PERMISSIONS)
+    async getUserInterestedPosts(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery) {
+        try {
+            const result = await this.postService.getUserInterestedTagPosts(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserInterestedPosts] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
