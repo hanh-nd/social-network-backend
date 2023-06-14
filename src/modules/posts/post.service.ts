@@ -112,6 +112,10 @@ export class PostService {
                     path: 'postShared',
                     populate: ['author'],
                 },
+                {
+                    path: 'postedInGroup',
+                    select: '_id name',
+                },
             ],
         });
 
@@ -161,6 +165,10 @@ export class PostService {
                     {
                         path: 'postShared',
                         populate: ['author'],
+                    },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
                     },
                 ],
             },
@@ -218,6 +226,10 @@ export class PostService {
                         path: 'postShared',
                         populate: ['author'],
                     },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
+                    },
                 ],
                 sort: [
                     ['point', -1],
@@ -249,6 +261,10 @@ export class PostService {
                         path: 'postShared',
                         populate: ['author'],
                     },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
+                    },
                 ],
                 sort: [
                     ['point', -1],
@@ -274,6 +290,10 @@ export class PostService {
                 {
                     path: 'postShared',
                     populate: ['author'],
+                },
+                {
+                    path: 'postedInGroup',
+                    select: '_id name',
                 },
             ],
         });

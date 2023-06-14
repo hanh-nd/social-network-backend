@@ -31,6 +31,7 @@ import { PostModule } from './modules/posts/post.module';
 import { RoleModule } from './modules/roles/role.module';
 import { SearchModule } from './modules/search/search.module';
 import { SeedsModule } from './modules/seeder/seed.module';
+import { StatisticModule } from './modules/statistics/statistic.module';
 import { SystemMessageModule } from './modules/system-messages/system-message.module';
 import { TagModule } from './modules/tags/tag.module';
 import { UserModule } from './modules/users/user.module';
@@ -69,6 +70,7 @@ import { UserModule } from './modules/users/user.module';
         ScheduleModule.forRoot(),
         CronJobModule,
         AskUserQuestionModule,
+        StatisticModule,
     ],
     controllers: [AppController],
     providers: [

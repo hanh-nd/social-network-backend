@@ -24,7 +24,7 @@ export type UserDetailDocument = UserDetail & Document;
 export class UserDetail extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: Types.ObjectId })
+    @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
     userId: ObjectId;
 
     @Prop({ required: false, type: String, default: Gender.OTHER })
