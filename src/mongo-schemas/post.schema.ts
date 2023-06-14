@@ -88,6 +88,9 @@ export class Post extends MongoBaseSchema {
 
     @Prop({ required: false, default: false, type: Boolean })
     isDeletedBySystem: boolean;
+
+    @Prop({ required: false, default: false, type: Boolean })
+    isToxic: boolean;
 }
 
 const BasePostSchema = SchemaFactory.createForClass(Post);

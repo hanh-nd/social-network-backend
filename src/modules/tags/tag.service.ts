@@ -73,7 +73,7 @@ export class TagService {
         return tagNames;
     }
 
-    async getTagIds(names: string[]) {
+    async getTag(names: string[]) {
         const formattedNames = names.map((name) =>
             name
                 .split(' ')
@@ -83,7 +83,7 @@ export class TagService {
 
         const tags = await this.getTags();
         const filteredTags = tags.filter((t: Tag) => formattedNames.includes(t.name));
-        return filteredTags.map((tag) => tag._id);
+        return filteredTags;
     }
 
     async bulkDeleteTag(body: IBulkDeleteTagBody) {
