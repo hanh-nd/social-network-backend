@@ -5,4 +5,5 @@ export enum SystemMessageType {
 
 export const DefaultSystemMessageCode = {
     TIME_LIMIT_WARNING: 'TIME_LIMIT_WARNING',
+    HAPPY_BIRTHDAY: 'HAPPY_BIRTHDAY',
 };

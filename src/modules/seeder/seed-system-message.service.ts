@@ -10,6 +10,12 @@ const data = [
         template: `Bạn đã online trong @{minutes} phút rồi đó. Hãy nghỉ ngơi chút đi <3`,
         fullTemplate: `Bạn đã online trong @{minutes} phút rồi đó. Hãy nghỉ ngơi chút đi <3`,
     },
+    {
+        code: DefaultSystemMessageCode.HAPPY_BIRTHDAY,
+        type: SystemMessageType.INFO,
+        template: `Hôm nay là sinh nhật bạn nè. Chúc mừng sinh nhật <3`,
+        fullTemplate: `<div class="happy-birthday><div class="message">Chúc mừng sinh nhật! Hôm nay là một ngày đặc biệt, nơi chúng ta kỷ niệm sự xuất hiện của bạn trên hệ thống mạng xã hội này. Chúng tôi xin gửi lời chúc tốt đẹp nhất đến bạn, với hy vọng rằng ngày sinh nhật của bạn sẽ tràn đầy niềm vui, sức khỏe và thành công. Hãy tiếp tục đem đến niềm vui và kết nối cho mọi người xung quanh bạn. Chúc bạn có một ngày sinh nhật thật đáng nhớ và tràn đầy hạnh phúc!</div><img src="https://static.vecteezy.com/system/resources/previews/002/476/508/original/color-glossy-happy-birthday-balloons-banner-background-illustration-free-vector.jpg" width="100%" height="100%" /></div>`,
+    },
 ];
 
 @Injectable()
