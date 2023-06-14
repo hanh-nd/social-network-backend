@@ -1,7 +1,6 @@
 import { Controller, Get, Param, Post, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import * as _ from 'lodash';
 import { AccessTokenGuard } from 'src/common/guards';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
@@ -18,23 +17,10 @@ export class FileController {
     @UseInterceptors(FilesInterceptor('files'))
     upload(@UploadedFiles() files) {
         try {
-            const result = files.map((file) =>
-                _.pick(
-                    file,
-                    'originalname',
-                    'encoding',
-                    'mimetype',
-                    'id',
-                    'filename',
-                    'metadata',
-                    'bucketName',
-                    'chunkSize',
-                    'size',
-                    'md5',
-                    'uploadDate',
-                    'contentType',
-                ),
-            );
+            const result = files.map((file) => {
+                file._id = file.id;
+                return file;
+            });
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[readStream] ${error.stack || JSON.stringify(error)}`);

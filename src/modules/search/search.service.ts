@@ -70,7 +70,18 @@ export class SearchService {
                 _id: toObjectIds(postSearchIds),
             },
             {
-                populate: ['author'],
+                populate: [
+                    'author',
+                    'tagIds',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
+                    },
+                ],
             },
         );
         const postsFilterByPrivacy = posts.filter((post) => {
