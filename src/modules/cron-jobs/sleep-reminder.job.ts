@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import * as moment from 'moment';
 import { NotificationAction, NotificationTargetType } from 'src/common/constants';
 import { RedisKey } from 'src/common/modules/redis/redis.constants';
 import { RedisService } from 'src/common/modules/redis/redis.service';
@@ -10,6 +11,7 @@ import { User } from 'src/mongo-schemas';
 import { NotificationService } from '../notifications/notification.service';
 import { SystemMessageService } from '../system-messages/system-message.service';
 import { DefaultSystemMessageCode } from '../system-messages/sytem-message.constants';
+import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_SLEEP_REMINDER = process.env.CRON_JOB_SLEEP_REMINDER || '*/5 0-4,21-23 * * *';
 let isRunning = false;
@@ -25,12 +27,20 @@ export class SleepReminderJob {
 
     private readonly logger = createWinstonLogger(SleepReminderJob.name, this.configService);
 
-    @Cron(CRON_JOB_SLEEP_REMINDER)
+    @Cron(CRON_JOB_SLEEP_REMINDER, {
+        name: CronJobKey.SLEEP_REMINDER,
+    })
     async scanOnlineUsers() {
         try {
             if (isRunning) {
                 return;
             }
+
+            const config = await this.dataServices.jobConfigs.findOne({
+                key: CronJobKey.SLEEP_REMINDER,
+            });
+            if (config && !config.active) return;
+
             this.logger.info(`[SleepReminderJob][scanOnlineUsers] start cron job`);
             isRunning = true;
             const client = await this.redisService.getClient();
@@ -50,7 +60,9 @@ export class SleepReminderJob {
                         NotificationTargetType.SYSTEM_MESSAGE,
                         sleepReminderSystemMessage,
                         NotificationAction.SEND_MESSAGE,
-                        {},
+                        {
+                            time: moment().format(`HH:mm`),
+                        },
                         true,
                     );
                 }

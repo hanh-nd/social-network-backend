@@ -130,6 +130,7 @@ export class UserService {
                 ...body,
                 userId: toObjectId(userId),
                 birthday: moment(birthday).utc(true).toISOString(),
+                dob: moment(birthday).utc(true).format(`MMDD`),
             },
             {
                 upsert: true,

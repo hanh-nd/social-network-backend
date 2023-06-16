@@ -11,6 +11,8 @@ import {
     GroupPost,
     GroupPostSchema,
     GroupSchema,
+    JobConfig,
+    JobConfigSchema,
     JoinRequest,
     JoinRequestSchema,
     Message,
@@ -64,6 +66,7 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: UserDailyStatistic.name, schema: UserDailyStatisticSchema }]),
         MongooseModule.forFeature([{ name: SystemMessage.name, schema: SystemMessageSchema }]),
         MongooseModule.forFeature([{ name: AskUserQuestion.name, schema: AskUserQuestionSchema }]),
+        MongooseModule.forFeature([{ name: JobConfig.name, schema: JobConfigSchema }]),
     ],
     providers: [
         {

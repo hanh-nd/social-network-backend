@@ -17,6 +17,7 @@ import { DataResourcesModule } from './common/resources/data-resources.module';
 import { AskUserQuestionModule } from './modules/ask-user-questions/ask-user-question.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ChatModule } from './modules/chats/chat.module';
+import { CoreSettingsModule } from './modules/core-settings/core-settings.module';
 import { CronJobModule } from './modules/cron-jobs/cron-job.module';
 import { FileModule } from './modules/files/file.module';
 import { SocketModule } from './modules/gateway/socket.module';
@@ -71,6 +72,7 @@ import { UserModule } from './modules/users/user.module';
         CronJobModule,
         AskUserQuestionModule,
         StatisticModule,
+        CoreSettingsModule,
     ],
     controllers: [AppController],
     providers: [

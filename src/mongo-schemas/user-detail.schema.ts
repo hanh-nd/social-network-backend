@@ -33,6 +33,9 @@ export class UserDetail extends MongoBaseSchema {
     @Prop({ required: false, type: Date })
     birthday: Date;
 
+    @Prop({ required: false, type: String })
+    dob: string;
+
     @Prop({ required: false, type: AddressSchema })
     address: Address;
 
