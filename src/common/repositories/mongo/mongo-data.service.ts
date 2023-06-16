@@ -12,6 +12,8 @@ import {
     GroupDocument,
     GroupPost,
     GroupPostDocument,
+    JobConfig,
+    JobConfigDocument,
     JoinRequest,
     JoinRequestDocument,
     Message,
@@ -66,6 +68,7 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     userDailyStatistics: IGenericRepository<UserDailyStatisticDocument>;
     systemMessages: IGenericRepository<SystemMessageDocument>;
     askUserQuestions: IGenericRepository<AskUserQuestionDocument>;
+    jobConfigs: IGenericRepository<JobConfigDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -106,6 +109,8 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private systemMessageModel: Model<SystemMessageDocument>,
         @InjectModel(AskUserQuestion.name)
         private askUserQuestionModel: Model<AskUserQuestionDocument>,
+        @InjectModel(JobConfig.name)
+        private jobConfigModel: Model<JobConfigDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -128,5 +133,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.userDailyStatistics = new MongoGenericRepository<UserDailyStatisticDocument>(this.userDailyStatisticModel);
         this.systemMessages = new MongoGenericRepository<SystemMessageDocument>(this.systemMessageModel);
         this.askUserQuestions = new MongoGenericRepository<AskUserQuestionDocument>(this.askUserQuestionModel);
+        this.jobConfigs = new MongoGenericRepository<JobConfigDocument>(this.jobConfigModel);
     }
 }

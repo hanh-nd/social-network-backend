@@ -5,10 +5,11 @@ import { NotificationModule } from '../notifications/notification.module';
 import { SystemMessageModule } from '../system-messages/system-message.module';
 import { HappyBirthdayJob } from './happy-birthday.job';
 import { OnlineAlertJob } from './online-alert.job';
+import { ReducePointJob } from './reduce-point.job';
 import { SleepReminderJob } from './sleep-reminder.job';
 
 @Module({
     imports: [DataServicesModule, RedisModule, NotificationModule, SystemMessageModule],
-    providers: [OnlineAlertJob, HappyBirthdayJob, SleepReminderJob],
+    providers: [OnlineAlertJob, HappyBirthdayJob, SleepReminderJob, ReducePointJob],
 })
 export class CronJobModule {}

@@ -24,7 +24,7 @@ export class ModeratorUserController {
             const result = await this.moderatorUserService.getUserList(query);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[ModeratorUserController][getUserList] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getUserList] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
@@ -36,7 +36,7 @@ export class ModeratorUserController {
             const result = await this.moderatorUserService.getUserStatistic(query);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[ModeratorPostController][getUserStatistic] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getUserStatistic] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
@@ -48,7 +48,7 @@ export class ModeratorUserController {
             const result = await this.moderatorUserService.getUserDetail(id);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[ModeratorReportController][getUserDetail] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[getUserDetail] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
@@ -60,7 +60,7 @@ export class ModeratorUserController {
             const result = await this.moderatorUserService.activateOrDeactivate(id);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[ModeratorReportController][deleteUser] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[deleteUser] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
@@ -72,7 +72,7 @@ export class ModeratorUserController {
             const result = await this.moderatorUserService.updateUser(id, body);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[ModeratorReportController][updateUser] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[updateUser] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

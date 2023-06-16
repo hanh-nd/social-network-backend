@@ -6,6 +6,7 @@ export * from './comment.schema';
 export * from './constant';
 export * from './group-post.schema';
 export * from './group.schema';
+export * from './job-config.schema';
 export * from './join-request.schema';
 export * from './message.schema';
 export * from './notification.schema';

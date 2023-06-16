@@ -20,4 +20,5 @@ export enum MongoCollection {
     USER_EDUCATION = 'user_educations',
     USER_DAILY_STATISTIC = 'user_daily_statistics',
     SYSTEM_MESSAGES = 'system_messages',
+    JOB_CONFIG = 'job_configs',
 }

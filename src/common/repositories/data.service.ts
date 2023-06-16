@@ -4,6 +4,7 @@ import {
     CommentDocument,
     GroupDocument,
     GroupPostDocument,
+    JobConfigDocument,
     JoinRequestDocument,
     MessageDocument,
     NotificationDocument,
@@ -41,4 +42,5 @@ export abstract class IDataServices {
     abstract userDailyStatistics: IGenericRepository<UserDailyStatisticDocument>;
     abstract systemMessages: IGenericRepository<SystemMessageDocument>;
     abstract askUserQuestions: IGenericRepository<AskUserQuestionDocument>;
+    abstract jobConfigs: IGenericRepository<JobConfigDocument>;
 }
