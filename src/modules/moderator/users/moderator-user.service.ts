@@ -85,6 +85,7 @@ export class ModeratorUserService {
                 ...body,
                 userId: toObjectId(id),
                 birthday: moment(birthday).utc(true).toISOString(),
+                dob: moment(birthday).utc(true).format(`MMDD`),
             },
             {
                 upsert: true,

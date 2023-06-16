@@ -10,6 +10,7 @@ import { IDataServices } from 'src/common/repositories/data.service';
 import { NotificationService } from '../notifications/notification.service';
 import { SystemMessageService } from '../system-messages/system-message.service';
 import { DefaultSystemMessageCode } from '../system-messages/sytem-message.constants';
+import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/5 * * * *';
 let isRunning = false;
@@ -25,12 +26,20 @@ export class OnlineAlertJob {
 
     private readonly logger = createWinstonLogger(OnlineAlertJob.name, this.configService);
 
-    @Cron(CRON_JOB_ONLINE_ALERT)
+    @Cron(CRON_JOB_ONLINE_ALERT, {
+        name: CronJobKey.ONLINE_ALERT,
+    })
     async scanOnlineUsersAlert() {
         try {
             if (isRunning) {
                 return;
             }
+
+            const config = await this.dataServices.jobConfigs.findOne({
+                key: CronJobKey.ONLINE_ALERT,
+            });
+            if (config && !config.active) return;
+
             this.logger.info(`[OnlineAlertJob][scanOnlineUsersAlert] start cron job`);
             isRunning = true;
             await this.scanAlertByLevel(1);

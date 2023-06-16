@@ -22,6 +22,7 @@ import {
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ChatGPTService } from 'src/common/modules/chatgpt/chatgpt.service';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
+import { RedisService } from 'src/common/modules/redis/redis.service';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -54,6 +55,7 @@ export class PostService {
         private tagService: TagService,
         private configService: ConfigService,
         private socketGateway: SocketGateway,
+        private redisService: RedisService,
     ) {}
 
     private readonly logger = createWinstonLogger(PostService.name, this.configService);
