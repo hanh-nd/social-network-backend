@@ -40,15 +40,15 @@ export class OnlineAlertJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[OnlineAlertJob][scanOnlineUsersAlert] start cron job`);
+            this.logger.info(`[scanOnlineUsersAlert] start cron job`);
             isRunning = true;
             await this.scanAlertByLevel(1);
             await this.scanAlertByLevel(2);
             await this.scanAlertByLevel(3);
             isRunning = false;
-            this.logger.info(`[OnlineAlertJob][scanOnlineUsersAlert] stop cron job`);
+            this.logger.info(`[scanOnlineUsersAlert] stop cron job`);
         } catch (error) {
-            this.logger.error(`[OnlineAlertJob][scanOnlineUsersAlert] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[scanOnlineUsersAlert] ${error.stack || JSON.stringify(error)}`);
         }
     }
 
@@ -73,10 +73,16 @@ export class OnlineAlertJob {
                 alertSystemMessage,
                 NotificationAction.SEND_MESSAGE,
                 {
-                    minutes: alertMinutes,
+                    minutes: level * alertMinutes,
                 },
                 true,
             );
+
+            if (level === 3) {
+                this.dataServices.users.updateById(userId, {
+                    lastLimitedAt: new Date(),
+                });
+            }
         }
     }
 }

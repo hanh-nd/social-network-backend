@@ -38,6 +38,7 @@ import { ICreateReportBody } from '../reports/report.interface';
 import { ReportService } from '../reports/report.service';
 import { TagService } from '../tags/tag.service';
 import { DEFAULT_PAGE_LIMIT } from './../../common/constants';
+import { POST_LIMIT } from './post.constants';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 
 @Injectable()
@@ -221,6 +222,25 @@ export class PostService {
             throw new ForbiddenException(`Bạn không có quyền thực hiện tác vụ này.`);
         }
 
+        const isLimited = !_.isNil(loginUser.lastLimitedAt);
+        if (isLimited) {
+            if (page > 1) return [];
+            const { items: subscribedItems, totalItems: totalSubscribedItems } = await this.getSubscribedPosts(
+                loginUser,
+                0,
+                POST_LIMIT,
+            );
+
+            const newsFeedPosts = subscribedItems;
+            if (subscribedItems.length < +POST_LIMIT) {
+                const pastPages = Math.ceil(totalSubscribedItems / +POST_LIMIT);
+                const newSkip = (pastPages - 1) * +POST_LIMIT - totalSubscribedItems;
+                const posts = await this.getSuggestedPosts(loginUser, newSkip, POST_LIMIT);
+                newsFeedPosts.push(...posts);
+            }
+            const postDtos = await this.dataResources.posts.mapToDtoList(newsFeedPosts, loginUser);
+            return postDtos;
+        }
         const { items: subscribedItems, totalItems: totalSubscribedItems } = await this.getSubscribedPosts(
             loginUser,
             skip,
@@ -436,9 +456,9 @@ export class PostService {
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
         }
-        const createdCommentId = await this.commentService.createCommentInPost(user, post, body);
+        const createdComment = await this.commentService.createCommentInPost(user, post, body);
         const postCommentIds = post.commentIds;
-        postCommentIds.push(createdCommentId);
+        postCommentIds.push(createdComment._id);
         await this.dataServices.posts.updateById(post._id, {
             commentIds: postCommentIds,
         });
@@ -452,7 +472,8 @@ export class PostService {
             NotificationAction.COMMENT,
         );
 
-        return createdCommentId;
+        const populatedComment = await createdComment.populate(['author']);
+        return this.dataResources.comments.mapToDto(populatedComment);
     }
 
     async updatePostComment(userId: string, postId: string, commentId: string, body: IUpdateCommentBody) {
@@ -819,7 +840,9 @@ export class PostService {
             skip,
             limit,
             {
-                tagIds: toObjectIds(tagIds),
+                tagIds: {
+                    $in: toObjectIds(tagIds),
+                },
             },
         );
 

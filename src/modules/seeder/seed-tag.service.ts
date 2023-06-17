@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { capitalize } from 'lodash';
 import { Command } from 'nestjs-command';
+import { RedisKey } from 'src/common/modules/redis/redis.constants';
+import { RedisService } from 'src/common/modules/redis/redis.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 
 const data = [
@@ -41,7 +43,7 @@ const data = [
 
 @Injectable()
 export class TagSeedService {
-    constructor(private readonly dataServices: IDataServices) {}
+    constructor(private readonly dataServices: IDataServices, private readonly redisService: RedisService) {}
 
     @Command({ command: 'create:tags', describe: 'create default tags' })
     async create() {
@@ -64,5 +66,8 @@ export class TagSeedService {
                 },
             );
         }
+
+        const client = await this.redisService.getClient();
+        await client.del(RedisKey.TAGS, RedisKey.TAG_NAMES);
     }
 }

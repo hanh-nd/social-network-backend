@@ -72,4 +72,15 @@ export class NotificationController {
             throw error;
         }
     }
+
+    @Get('/count')
+    async getUnreadNotificationCount(@LoginUser() loginUser) {
+        try {
+            const result = await this.notificationService.getUnreadNotificationCount(loginUser.userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUnreadNotificationCount] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
 }

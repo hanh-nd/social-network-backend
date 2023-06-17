@@ -8,7 +8,7 @@ const data = [
         code: DefaultSystemMessageCode.TIME_LIMIT_WARNING,
         type: SystemMessageType.WARNING,
         template: `Bạn đã online trong @{minutes} phút rồi đó. Hãy nghỉ ngơi chút đi <3`,
-        fullTemplate: `<div class="bold">Bạn đã online trong @{minutes} phút rồi đó. Hãy nghỉ ngơi chút đi <3</div>`,
+        fullTemplate: `<div class="message bold">Bạn đã online trong @{minutes} phút rồi đó. Hãy nghỉ ngơi chút đi <3</div><img src="https://i.pinimg.com/originals/0e/ab/e3/0eabe3a418de89b97ce6c9cd4bb1d6de.jpg" width="100%" height="100%" />`,
     },
     {
         code: DefaultSystemMessageCode.HAPPY_BIRTHDAY,
@@ -20,7 +20,7 @@ const data = [
         code: DefaultSystemMessageCode.SLEEP_REMINDER,
         type: SystemMessageType.INFO,
         template: `Đã khuya lắm rồi đấy, tắt máy đi ngủ đi thôi bạn ơiiii...`,
-        fullTemplate: `<div class="sleep-reminder"><div class="bold">Trời ơi bạn ơi, bây giờ là @{time} rồi. Đã khuya lắm rồi đấy, tắt máy đi ngủ đi thôi bạn ơiiii...</div><img src="https://www.boredpanda.com/blog/wp-content/uploads/2019/12/Cute-pineapple-remind-people-to-be-chill-and-sleep-more-5df1a8b6d50df__880.jpg" width="100%" height="100%" /></div>`,
+        fullTemplate: `<div class="sleep-reminder"><div class="message bold">Trời ơi bạn ơi, bây giờ là @{time} rồi. Đã khuya lắm rồi đấy, tắt máy đi ngủ đi thôi bạn ơiiii...</div><img src="https://www.boredpanda.com/blog/wp-content/uploads/2019/12/Cute-pineapple-remind-people-to-be-chill-and-sleep-more-5df1a8b6d50df__880.jpg" width="100%" height="100%" /></div>`,
     },
 ];
 

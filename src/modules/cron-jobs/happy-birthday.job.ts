@@ -38,7 +38,7 @@ export class HappyBirthdayJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[HappyBirthdayJob][scanBirthdayUsers] start cron job`);
+            this.logger.info(`[scanBirthdayUsers] start cron job`);
             isRunning = true;
 
             const birthdayUserDetails = await this.dataServices.userDetails.findAll(
@@ -66,9 +66,9 @@ export class HappyBirthdayJob {
                 );
             }
             isRunning = false;
-            this.logger.info(`[HappyBirthdayJob][scanBirthdayUsers] stop cron job`);
+            this.logger.info(`[scanBirthdayUsers] stop cron job`);
         } catch (error) {
-            this.logger.error(`[HappyBirthdayJob][scanBirthdayUsers] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[scanBirthdayUsers] ${error.stack || JSON.stringify(error)}`);
         }
     }
 }
