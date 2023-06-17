@@ -41,7 +41,7 @@ export class SleepReminderJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[SleepReminderJob][scanOnlineUsers] start cron job`);
+            this.logger.info(`[scanOnlineUsers] start cron job`);
             isRunning = true;
             const client = await this.redisService.getClient();
             const matchedUserIds = await client.zrangebyscore(RedisKey.ONLINE_USERS, 1, '+inf');
@@ -68,9 +68,9 @@ export class SleepReminderJob {
                 }
             }
             isRunning = false;
-            this.logger.info(`[SleepReminderJob][scanOnlineUsers] stop cron job`);
+            this.logger.info(`[scanOnlineUsers] stop cron job`);
         } catch (error) {
-            this.logger.error(`[SleepReminderJob][scanOnlineUsers] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[scanOnlineUsers] ${error.stack || JSON.stringify(error)}`);
         }
     }
 }
