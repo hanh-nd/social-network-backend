@@ -23,7 +23,8 @@
         "seed:roles": "npx nestjs-command create:roles",
         "seed:system_messages": "npx nestjs-command create:system_messages",
         "seed:tags": "npx nestjs-command create:tags",
-        "seed:all": "npm run seed:roles && npm run seed:system_messages && npm run seed:tags"
+        "seed:jobs": "npx nestjs-command create:jobs",
+        "seed:all": "npm run seed:roles && npm run seed:system_messages && npm run seed:tags && npm run seed:jobs"
     },
     "dependencies": {
         "@elastic/elasticsearch": "^8.7.0",

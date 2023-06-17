@@ -483,17 +483,19 @@ export class UserService {
                 $or: [
                     {
                         privacy: Privacy.PUBLIC,
+                        author: user._id,
+                        isAnonymous: false,
                     },
                     {
                         privacy: Privacy.SUBSCRIBED,
                         author: {
                             $in: loginUser.subscribingIds,
+                            $eq: user._id,
                         },
+                        isAnonymous: false,
                     },
-                    {
-                        author: loginUser._id,
-                    },
-                ],
+                    loginUserId == userId && { author: loginUser._id },
+                ].filter((e) => e),
                 discussedIn: null,
                 postedInGroup: null,
             },
@@ -501,6 +503,7 @@ export class UserService {
                 sort: [['createdAt', 'desc']],
                 populate: [
                     'author',
+                    'tagIds',
                     {
                         path: 'postShared',
                         populate: ['author'],

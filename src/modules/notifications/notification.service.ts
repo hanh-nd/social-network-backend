@@ -218,4 +218,16 @@ export class NotificationService {
         await this.dataServices.notifications.deleteById(notificationId);
         return true;
     }
+
+    async getUnreadNotificationCount(userId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) return 0;
+
+        const count = await this.dataServices.notifications.count({
+            to: user._id,
+            isRead: false,
+        });
+
+        return count;
+    }
 }

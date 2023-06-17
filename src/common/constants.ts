@@ -98,6 +98,8 @@ export enum PermissionName {
     UPDATE_PROFILE = 'UPDATE_PROFILE',
     DELETE_PROFILE = 'DELETE_PROFILE',
     GET_USER_STATISTIC = 'GET_USER_STATISTIC',
+
+    UPDATE_USER_ROLE = 'UPDATE_USER_ROLE',
 }
 
 export const MANAGE_POST_PERMISSIONS = [
@@ -165,6 +167,7 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
     ...ADMINISTRATOR_PROFILE_PERMISSIONS,
     PermissionName.GET_POST_STATISTIC,
     PermissionName.GET_USER_STATISTIC,
+    PermissionName.UPDATE_USER_ROLE,
 ];
 
 export const CommonMessage = {

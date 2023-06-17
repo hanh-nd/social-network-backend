@@ -24,6 +24,11 @@ const data = [
         cronTime: '*/5 0-4,21-23 * * *',
         active: true,
     },
+    {
+        key: CronJobKey.DAILY_SCAN,
+        cronTime: '0 1 * * *',
+        active: true,
+    },
 ];
 
 @Injectable()
