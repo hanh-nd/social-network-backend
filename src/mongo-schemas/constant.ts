@@ -21,4 +21,6 @@ export enum MongoCollection {
     USER_DAILY_STATISTIC = 'user_daily_statistics',
     SYSTEM_MESSAGES = 'system_messages',
     JOB_CONFIG = 'job_configs',
+    SURVEY = 'surveys',
+    SURVEY_ANSWER = 'survey_answers',
 }
