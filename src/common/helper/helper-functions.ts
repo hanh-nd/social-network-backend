@@ -29,3 +29,28 @@ export function toStringArray(ids: ObjectId[] = []) {
 export function capitalize(word: string) {
     return word.charAt(0).toUpperCase() + word.slice(1);
 }
+
+export function extractJSONFromText(text: string) {
+    const formattedText = text.replace(/ /g, '').replace(/\n/g, '').replace('\n', '');
+    let json = null;
+    const regex = /\[.*?\]/; // Regex pattern to match JSON arrays
+    const match = formattedText.match(regex);
+    if (match) {
+        try {
+            json = JSON.parse(match[0]);
+        } catch (error) {
+            console.log(error);
+            const regex = /{(?:[^{}]|(?:{[^{}]*}))*}/; // Regex pattern to match JSON objects
+            const match = formattedText.match(regex);
+            if (match) {
+                try {
+                    json = JSON.parse(match[0]);
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    }
+
+    return json;
+}

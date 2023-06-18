@@ -4,4 +4,5 @@ export enum CronJobKey {
     REDUCE_POINT = 'REDUCE_POINT',
     SLEEP_REMINDER = 'SLEEP_REMINDER',
     DAILY_SCAN = 'DAILY_SCAN',
+    SURVEY_SCAN = 'SURVEY_SCAN',
 }

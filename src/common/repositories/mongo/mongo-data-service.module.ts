@@ -29,6 +29,10 @@ import {
     RoleSchema,
     SubscribeRequest,
     SubscribeRequestSchema,
+    Survey,
+    SurveyAnswer,
+    SurveyAnswerSchema,
+    SurveySchema,
     SystemMessage,
     SystemMessageSchema,
     Tag,
@@ -67,6 +71,8 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: SystemMessage.name, schema: SystemMessageSchema }]),
         MongooseModule.forFeature([{ name: AskUserQuestion.name, schema: AskUserQuestionSchema }]),
         MongooseModule.forFeature([{ name: JobConfig.name, schema: JobConfigSchema }]),
+        MongooseModule.forFeature([{ name: Survey.name, schema: SurveySchema }]),
+        MongooseModule.forFeature([{ name: SurveyAnswer.name, schema: SurveyAnswerSchema }]),
     ],
     providers: [
         {

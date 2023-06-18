@@ -5,7 +5,7 @@ import { toObjectId } from 'src/common/helper';
 import { NotificationTarget } from 'src/common/interfaces';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Notification, SystemMessage, User } from 'src/mongo-schemas';
+import { Notification, Survey, SystemMessage, User } from 'src/mongo-schemas';
 import { SocketGateway } from '../gateway/socket.gateway';
 import { SystemMessageService } from '../system-messages/system-message.service';
 import { IGetNotificationListQuery } from './notification.interface';
@@ -29,7 +29,7 @@ export class NotificationService {
         });
         const notifications = await this.dataServices.notifications.findAll(where, {
             populate: ['author', 'target'],
-            sort: [['updatedAt', -1]],
+            sort: [['createdAt', -1]],
             skip: +skip,
             limit: +limit,
         });
@@ -67,6 +67,8 @@ export class NotificationService {
         const createdNotification =
             targetType === NotificationTargetType.SYSTEM_MESSAGE
                 ? await this.createSystemMessageNotification(to, targetType, target, action, additionalData, urgent)
+                : targetType === NotificationTargetType.SURVEY
+                ? await this.createSurveyNotification(to, targetType, target, action, additionalData)
                 : await this.createUserNotification(user, to, targetType, target, action, urgent);
         if (!createdNotification) return;
 
@@ -150,6 +152,31 @@ export class NotificationService {
             to,
         );
         toCreateNotificationBody.content = content;
+        const createdNotification = await this.dataServices.notifications.create(toCreateNotificationBody);
+        const notification = await createdNotification.populate(['author', 'target']);
+        const notificationDtos = await this.dataResources.notifications.mapToDto(notification);
+        return notificationDtos;
+    }
+
+    private async createSurveyNotification(
+        to: Partial<User>,
+        targetType: string,
+        target: NotificationTarget,
+        action: string,
+        additionalData?: object,
+    ) {
+        // create notification
+        const toCreateNotificationBody: Partial<Notification> = {
+            author: null,
+            to: toObjectId(to._id) as unknown,
+            targetType,
+            target: toObjectId(target._id) as unknown,
+            content: (target as Survey).name,
+            action,
+            additionalData,
+            isRead: false,
+            urgent: (target as Survey).urgent,
+        };
         const createdNotification = await this.dataServices.notifications.create(toCreateNotificationBody);
         const notification = await createdNotification.populate(['author', 'target']);
         const notificationDtos = await this.dataResources.notifications.mapToDto(notification);

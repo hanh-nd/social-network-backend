@@ -15,6 +15,8 @@ export * from './reaction.schema';
 export * from './report.schema';
 export * from './role.schema';
 export * from './subscribe-request.schema';
+export * from './survey-answer.schema';
+export * from './survey.schema';
 export * from './system-message.schema';
 export * from './tag.schema';
 export * from './user-daily-statistic.schema';
