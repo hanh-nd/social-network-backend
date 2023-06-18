@@ -29,6 +29,13 @@ const data = [
     { name: 'Tình yêu và mối quan hệ', code: 'love_relationships' },
     { name: 'Cuộc sống hàng ngày', code: 'daily_life' },
     { name: 'Pháp luật và quy định', code: 'law_regulations' },
+    { name: 'Học hỏi và kiến thức', code: 'ask_knowledge' },
+    { name: 'Kinh doanh trực tuyến', code: 'online_business' },
+    { name: 'Thiên văn học', code: 'astronomy' },
+    { name: 'Phát triển cá nhân', code: 'personal_development' },
+    { name: 'Kiến trúc và xây dựng', code: 'architecture_construction' },
+    { name: 'Gia đình và nuôi dạy con', code: 'family_parenting' },
+    { name: 'Chăm sóc vật nuôi', code: 'pet_care' },
     { name: 'Khác', code: 'others' },
 ];
 

@@ -5,6 +5,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as _ from 'lodash';
 import {
     DEFAULT_PAGE_VALUE,
@@ -16,16 +17,19 @@ import {
     ReactionTypePoint,
     ReportTargetType,
     SHARE_POST_POINT,
+    SocketEvent,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ChatGPTService } from 'src/common/modules/chatgpt/chatgpt.service';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
+import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Comment, Post, User } from 'src/mongo-schemas';
 import { ICreateCommentBody, IGetCommentListQuery, IUpdateCommentBody } from '../comments/comment.interface';
 import { CommentService } from '../comments/comment.service';
 import { FileService } from '../files/file.service';
+import { SocketGateway } from '../gateway/socket.gateway';
 import { NotificationService } from '../notifications/notification.service';
 import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reaction.interface';
 import { ReactionService } from '../reactions/reaction.service';
@@ -48,7 +52,11 @@ export class PostService {
         private notificationService: NotificationService,
         private chatGPTService: ChatGPTService,
         private tagService: TagService,
+        private configService: ConfigService,
+        private socketGateway: SocketGateway,
     ) {}
+
+    private readonly logger = createWinstonLogger(PostService.name, this.configService);
 
     async createNewPost(userId: string, body: ICreatePostBody) {
         const {
@@ -108,14 +116,20 @@ export class PostService {
         const post = await this.dataServices.posts.findById(createdPost._id, {
             populate: [
                 'author',
+                'tagIds',
                 {
                     path: 'postShared',
                     populate: ['author'],
+                },
+                {
+                    path: 'postedInGroup',
+                    select: '_id name',
                 },
             ],
         });
 
         this.updatePostTagIds(post);
+        this.updatePostIsToxic(post);
         const postDto = await this.dataResources.posts.mapToDto(post);
         return postDto as Post;
     }
@@ -128,6 +142,7 @@ export class PostService {
                     ', ',
                 )}" separated by comma that best fit for the paragraph below:\n${post.content}`,
             );
+            this.logger.info(`[updatePostTagIds] postId = ${post._id}, message = ${response.text}`);
             const names = _.flatten((response.text || '').split(',').map((tag) => tag.split('\n'))) as string[];
             const formattedNames = names.map((name) =>
                 name
@@ -136,9 +151,31 @@ export class PostService {
                     .replace('.', '')
                     .trim(),
             );
-            const tagIds = await this.tagService.getTagIds(formattedNames);
+            const tags = await this.tagService.getTag(formattedNames);
+            const tagIds = tags.map((t) => t._id);
+            this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
+                postId: post._id,
+                tagIds: tags,
+            });
             await this.dataServices.posts.updateById(post._id, {
                 tagIds: toObjectIds(tagIds),
+            });
+        } catch (error) {}
+    }
+
+    async updatePostIsToxic(post: Post) {
+        try {
+            const response = await this.chatGPTService.sendMessage(
+                `Give me just the text "1" if and only if the paragraph below contains toxic words, or else "0":\n${post.content}`,
+            );
+            this.logger.info(`[updatePostIsToxic] postId = ${post._id}, message = ${response.text}`);
+            const isToxic = /Yes|1/.test(response.text);
+            this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
+                postId: post._id,
+                isToxic: isToxic,
+            });
+            await this.dataServices.posts.updateById(post._id, {
+                isToxic: isToxic,
             });
         } catch (error) {}
     }
@@ -158,9 +195,14 @@ export class PostService {
                 sort: [['createdAt', 'desc']],
                 populate: [
                     'author',
+                    'tagIds',
                     {
                         path: 'postShared',
                         populate: ['author'],
+                    },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
                     },
                 ],
             },
@@ -194,7 +236,7 @@ export class PostService {
         return postDtos;
     }
 
-    private async getSubscribedPosts(user: User, skip: number, limit: number) {
+    private async getSubscribedPosts(user: User, skip: number, limit: number, query: object = {}) {
         const result = await this.dataServices.posts.findAndCountAll(
             {
                 $or: [
@@ -210,13 +252,19 @@ export class PostService {
                         author: user._id,
                     },
                 ],
+                ...query,
             },
             {
                 populate: [
                     'author',
+                    'tagIds',
                     {
                         path: 'postShared',
                         populate: ['author'],
+                    },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
                     },
                 ],
                 sort: [
@@ -230,7 +278,7 @@ export class PostService {
         return result;
     }
 
-    private async getSuggestedPosts(user: User, skip: number, limit: number) {
+    private async getSuggestedPosts(user: User, skip: number, limit: number, query: object = {}) {
         if (skip < 0) {
             skip = 0;
             limit = limit + skip;
@@ -241,13 +289,19 @@ export class PostService {
                 author: {
                     $nin: [...user.subscribingIds, ...user.blockedIds, user._id],
                 },
+                ...query,
             },
             {
                 populate: [
                     'author',
+                    'tagIds',
                     {
                         path: 'postShared',
                         populate: ['author'],
+                    },
+                    {
+                        path: 'postedInGroup',
+                        select: '_id name',
                     },
                 ],
                 sort: [
@@ -271,9 +325,14 @@ export class PostService {
             populate: [
                 'author',
                 'discussedIn',
+                'tagIds',
                 {
                     path: 'postShared',
                     populate: ['author'],
+                },
+                {
+                    path: 'postedInGroup',
+                    select: '_id name',
                 },
             ],
         });
@@ -741,9 +800,37 @@ export class PostService {
         return postDtos;
     }
 
-    async ask(body: { message: string }) {
-        const { message } = body;
-        const response = await this.chatGPTService.sendMessage(message);
-        return response;
+    async getUserInterestedTagPosts(userId: string, query?: IGetPostListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const { tagIds = [] } = user;
+        if (!tagIds) return [];
+
+        const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
+        const skip = (+page - 1) * +limit;
+
+        const { items: subscribedItems, totalItems: totalSubscribedItems } = await this.getSubscribedPosts(
+            user,
+            skip,
+            limit,
+            {
+                tagIds: toObjectIds(tagIds),
+            },
+        );
+
+        const interestedPosts = subscribedItems;
+        if (subscribedItems.length < +limit) {
+            const pastPages = Math.ceil(totalSubscribedItems / +limit);
+            const newSkip = pastPages * +limit - totalSubscribedItems + (page - pastPages - 1) * +limit;
+            const posts = await this.getSuggestedPosts(user, newSkip, limit, {
+                tagIds: toObjectIds(tagIds),
+            });
+            interestedPosts.push(...posts);
+        }
+        const postDtos = await this.dataResources.posts.mapToDtoList(interestedPosts, user);
+        return postDtos;
     }
 }

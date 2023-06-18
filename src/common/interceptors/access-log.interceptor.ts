@@ -97,6 +97,13 @@ export class AccessLogInterceptor implements NestInterceptor {
         const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
         const sessionSpentTimeSecond = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
 
+        await client.set(
+            `${RedisKey.LAST_ONLINE}_${userId}`,
+            currentTimeMoment.format(`YYYY-MM-DD HH:mm:ss`),
+            'EX',
+            ALERT_TIME_RANGE,
+        );
+
         if (!cachedUserLastOnline) {
             // Reset counter to 0
             await client.zadd(RedisKey.ONLINE_USERS, 0, userId);
@@ -147,12 +154,5 @@ export class AccessLogInterceptor implements NestInterceptor {
                 await client.zincrby(RedisKey.ONLINE_USERS, timeDiff, userId);
             }
         }
-
-        await client.set(
-            `${RedisKey.LAST_ONLINE}_${userId}`,
-            currentTimeMoment.format(`YYYY-MM-DD HH:mm:ss`),
-            'EX',
-            ALERT_TIME_RANGE,
-        );
     }
 }
