@@ -81,10 +81,7 @@ export class SearchService {
             return isLoginUserSubscribedAUthor;
         });
         const postDtos = await this.dataResources.posts.mapToDtoList(postsFilterByPrivacy, user);
-        return {
-            item: postDtos,
-            totalItem: postDtos.length,
-        };
+        return postDtos;
     }
 
     async searchUser(userId: string, query: ISearchQuery) {
@@ -119,11 +116,8 @@ export class SearchService {
         const users = await this.dataServices.users.findAll({
             _id: toObjectIds(userSearchIds),
         });
-        const userDtos = await this.dataResources.users.mapToDtoList(users);
-        return {
-            item: userDtos,
-            totalItem: userDtos.length,
-        };
+        const userDtos = await this.dataResources.users.mapToDtoList(users, user);
+        return userDtos;
     }
 
     async searchGroup(userId: string, query: ISearchQuery) {

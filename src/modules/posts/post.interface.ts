@@ -8,6 +8,7 @@ export interface ICreatePostBody {
     postSharedId?: string;
     pictureIds?: string[];
     videoIds?: string[];
+    isAnonymous?: boolean;
 }
 
 export interface IUpdatePostBody {

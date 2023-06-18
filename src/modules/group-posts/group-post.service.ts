@@ -74,7 +74,21 @@ export class GroupPostService {
         };
 
         const createdGroupPost = await this.dataServices.groupPosts.create(toCreateBody);
-        return createdGroupPost;
+        const groupPost = await this.findById(createdGroupPost._id);
+        return groupPost;
+    }
+
+    async findById(groupPostId: string) {
+        const groupPost = await this.dataServices.groupPosts.findById(groupPostId, {
+            populate: [
+                {
+                    path: 'post',
+                    populate: ['author'],
+                },
+                'group',
+            ],
+        });
+        return groupPost;
     }
 
     async update(group: Group, groupPostId: string, body: IUpdateGroupPostBody) {

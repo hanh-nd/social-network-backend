@@ -13,7 +13,8 @@ export function generateRandomString(length: number = 16) {
 }
 
 export function toObjectId(id: string | ObjectId) {
-    if (!id) return undefined;
+    if (!id) return null;
+    if (!ObjectId.isValid(id)) return null;
     return new ObjectId(id);
 }
 
@@ -23,4 +24,8 @@ export function toObjectIds(ids: (string | ObjectId)[]) {
 
 export function toStringArray(ids: ObjectId[] = []) {
     return ids.map((id) => `${id}`);
+}
+
+export function capitalize(word: string) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
 }

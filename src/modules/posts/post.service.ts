@@ -31,6 +31,7 @@ import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reactio
 import { ReactionService } from '../reactions/reaction.service';
 import { ICreateReportBody } from '../reports/report.interface';
 import { ReportService } from '../reports/report.service';
+import { TagService } from '../tags/tag.service';
 import { DEFAULT_PAGE_LIMIT } from './../../common/constants';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 
@@ -46,6 +47,7 @@ export class PostService {
         private reportService: ReportService,
         private notificationService: NotificationService,
         private chatGPTService: ChatGPTService,
+        private tagService: TagService,
     ) {}
 
     async createNewPost(userId: string, body: ICreatePostBody) {
@@ -57,6 +59,7 @@ export class PostService {
             videoIds = [],
             postSharedId,
             postedInGroupId,
+            isAnonymous,
         } = body;
 
         const author = await this.dataServices.users.findById(userId);
@@ -75,6 +78,7 @@ export class PostService {
             pictureIds: toObjectIds(pictureIds),
             videoIds: toObjectIds(videoIds),
             point: 0,
+            isAnonymous,
         };
 
         if (discussedInId) {
@@ -100,7 +104,43 @@ export class PostService {
             author: author.fullName as unknown,
             privacy: createdPost.privacy,
         });
-        return createdPost._id;
+
+        const post = await this.dataServices.posts.findById(createdPost._id, {
+            populate: [
+                'author',
+                {
+                    path: 'postShared',
+                    populate: ['author'],
+                },
+            ],
+        });
+
+        this.updatePostTagIds(post);
+        const postDto = await this.dataResources.posts.mapToDto(post);
+        return postDto as Post;
+    }
+
+    async updatePostTagIds(post: Post) {
+        const tagNames = await this.tagService.getTagNames();
+        try {
+            const response = await this.chatGPTService.sendMessage(
+                `Give me 3 tags in the list "${tagNames.join(
+                    ', ',
+                )}" separated by comma that best fit for the paragraph below:\n${post.content}`,
+            );
+            const names = _.flatten((response.text || '').split(',').map((tag) => tag.split('\n'))) as string[];
+            const formattedNames = names.map((name) =>
+                name
+                    .replace('\n', '')
+                    .replace(/^\d+\.\s/, '')
+                    .replace('.', '')
+                    .trim(),
+            );
+            const tagIds = await this.tagService.getTagIds(formattedNames);
+            await this.dataServices.posts.updateById(post._id, {
+                tagIds: toObjectIds(tagIds),
+            });
+        } catch (error) {}
     }
 
     async getUserPosts(userId: string) {
@@ -306,13 +346,20 @@ export class PostService {
         return true;
     }
 
-    async getPostComment(postId: string, query: IGetCommentListQuery) {
-        const post = await this.dataServices.posts.findById(postId);
+    async getPostComment(userId: string, postId: string, query: IGetCommentListQuery) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
         }
 
-        const comment = await this.commentService.getCommentsInPost(post, query);
+        const comment = await this.commentService.getCommentsInPost(user, post, query);
         return comment;
     }
 
@@ -386,13 +433,20 @@ export class PostService {
         return true;
     }
 
-    async getPostReactions(postId: string, query: IGetReactionListQuery) {
-        const post = await this.dataServices.posts.findById(postId);
+    async getPostReactions(userId: string, postId: string, query: IGetReactionListQuery) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
         }
 
-        const reactions = await this.reactionService.getReactions(ReactionTargetType.POST, post, query);
+        const reactions = await this.reactionService.getReactions(user, ReactionTargetType.POST, post, query);
         return reactions;
     }
 
@@ -465,11 +519,16 @@ export class PostService {
         return true;
     }
 
-    async getPostCommentReactions(postId: string, commentId: string, query: IGetReactionListQuery) {
-        const [post, comment] = await Promise.all([
+    async getPostCommentReactions(userId: string, postId: string, commentId: string, query: IGetReactionListQuery) {
+        const [user, post, comment] = await Promise.all([
+            this.dataServices.users.findById(userId),
             this.dataServices.posts.findById(postId),
             this.dataServices.comments.findById(commentId),
         ]);
+
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
 
         if (!post) {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
@@ -479,7 +538,7 @@ export class PostService {
             throw new BadGatewayException(`Không tìm thấy bình luận.`);
         }
 
-        const reactions = await this.reactionService.getReactions(ReactionTargetType.COMMENT, comment, query);
+        const reactions = await this.reactionService.getReactions(user, ReactionTargetType.COMMENT, comment, query);
         return reactions;
     }
 
@@ -611,13 +670,13 @@ export class PostService {
         if (!post) {
             throw new BadRequestException(`Không tìm thấy bài viết này.`);
         }
-        const createdPostId = await this.createNewPost(userId, {
+        const createdPost = await this.createNewPost(userId, {
             content,
             postSharedId: postId,
         });
 
         const postShareIds = post.sharedIds;
-        post.sharedIds.push(toObjectId(createdPostId));
+        post.sharedIds.push(toObjectId(createdPost._id));
 
         const toUpdatePostBody = {
             shareIds: postShareIds,
@@ -642,6 +701,49 @@ export class PostService {
             NotificationAction.SHARE,
         );
 
-        return createdPostId;
+        return createdPost;
+    }
+
+    async getSharePosts(userId: string, postId: string, query: IGetPostListQuery) {
+        const [user, post] = await Promise.all([
+            this.dataServices.users.findById(userId),
+            this.dataServices.posts.findById(postId),
+        ]);
+
+        if (!user) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
+        if (!post) {
+            throw new BadRequestException(`Không tìm thấy bài viết này.`);
+        }
+
+        const posts = await this.dataServices.posts.findAll(
+            {
+                postShared: post._id,
+                author: {
+                    $nin: toObjectIds(user.blockedIds),
+                },
+            },
+            {
+                sort: [['createdAt', 'desc']],
+                populate: [
+                    'author',
+                    {
+                        path: 'postShared',
+                        populate: ['author'],
+                    },
+                ],
+            },
+        );
+
+        const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
+        return postDtos;
+    }
+
+    async ask(body: { message: string }) {
+        const { message } = body;
+        const response = await this.chatGPTService.sendMessage(message);
+        return response;
     }
 }

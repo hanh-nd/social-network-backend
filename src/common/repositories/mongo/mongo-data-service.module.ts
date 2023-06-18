@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
+    AskUserQuestion,
+    AskUserQuestionSchema,
     Chat,
     ChatSchema,
     Comment,
@@ -25,9 +27,15 @@ import {
     RoleSchema,
     SubscribeRequest,
     SubscribeRequestSchema,
+    SystemMessage,
+    SystemMessageSchema,
     Tag,
     TagSchema,
     User,
+    UserDailyStatistic,
+    UserDailyStatisticSchema,
+    UserDetail,
+    UserDetailSchema,
     UserSchema,
     UserToken,
     UserTokenSchema,
@@ -52,6 +60,10 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: JoinRequest.name, schema: JoinRequestSchema }]),
         MongooseModule.forFeature([{ name: GroupPost.name, schema: GroupPostSchema }]),
         MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
+        MongooseModule.forFeature([{ name: UserDetail.name, schema: UserDetailSchema }]),
+        MongooseModule.forFeature([{ name: UserDailyStatistic.name, schema: UserDailyStatisticSchema }]),
+        MongooseModule.forFeature([{ name: SystemMessage.name, schema: SystemMessageSchema }]),
+        MongooseModule.forFeature([{ name: AskUserQuestion.name, schema: AskUserQuestionSchema }]),
     ],
     providers: [
         {

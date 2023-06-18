@@ -6,13 +6,17 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import {
     DEFAULT_PAGE_LIMIT,
     DEFAULT_PAGE_VALUE,
     ElasticsearchIndex,
+    NotificationAction,
+    NotificationTargetType,
+    Privacy,
     SubscribeRequestStatus,
 } from 'src/common/constants';
-import { toObjectId, toObjectIds } from 'src/common/helper';
+import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -41,17 +45,54 @@ export class UserService {
         private notificationService: NotificationService,
     ) {}
 
-    async getUserProfile(userId: string) {
-        const user = await this.dataServices.users.findById(userId, {
-            select: ['-password', '-blockedIds'],
-        });
+    async getUserProfile(loginUserId: string, userId: string) {
+        const [loginUser, user] = await Promise.all([
+            this.dataServices.users.findById(loginUserId, {
+                select: ['-password'],
+            }),
+            this.dataServices.users.findById(userId, {
+                select: ['-password'],
+            }),
+        ]);
+
+        if (!loginUser) {
+            throw new NotFoundException('Bạn không có quyền thực hiên thao tác này.');
+        }
 
         if (!user) {
             throw new NotFoundException('Không tìm thấy người dùng này.');
         }
 
-        const userDto = await this.dataResources.users.mapToDto(user);
+        if (toStringArray(loginUser.blockedIds).includes(`${user._id}`)) {
+            throw new NotFoundException('Không tìm thấy người dùng này.');
+        }
+
+        const userDto = await this.dataResources.users.mapToDto(user, loginUser);
         return userDto;
+    }
+
+    async getUserDetail(loginUserId: string, userId: string) {
+        const [loginUser, user] = await Promise.all([
+            this.dataServices.users.findById(loginUserId),
+            this.dataServices.users.findById(userId),
+        ]);
+
+        if (!loginUser) {
+            throw new NotFoundException('Bạn không có quyền thực hiên thao tác này.');
+        }
+
+        if (!user) {
+            throw new NotFoundException('Không tìm thấy người dùng này.');
+        }
+
+        const userDetail = await this.dataServices.userDetails.findOne({
+            userId: toObjectId(userId),
+        });
+        if (!userDetail) return null;
+        return {
+            ...userDetail.toObject(),
+            tagIds: user.tagIds,
+        };
     }
 
     async changeUserPassword(userId: string, body: IChangePasswordBody) {
@@ -78,7 +119,22 @@ export class UserService {
             throw new NotFoundException(`Không tìm thấy user này.`);
         }
 
+        const { birthday } = body;
+
         await this.dataServices.users.updateById(userId, body);
+        await this.dataServices.userDetails.updateOne(
+            {
+                userId: toObjectId(userId),
+            },
+            {
+                ...body,
+                userId: toObjectId(userId),
+                birthday: moment(birthday).utc(true).toISOString(),
+            },
+            {
+                upsert: true,
+            },
+        );
 
         this.elasticsearchService.updateById<User>(ElasticsearchIndex.USER, existedUser._id, {
             id: existedUser._id,
@@ -102,7 +158,7 @@ export class UserService {
             },
         });
 
-        const subscriberDtos = await this.dataResources.users.mapToDtoList(subscribers);
+        const subscriberDtos = await this.dataResources.users.mapToDtoList(subscribers, existedUser);
         return subscriberDtos;
     }
 
@@ -133,7 +189,7 @@ export class UserService {
                 $in: blockedIds,
             },
         });
-        const blockedDtos = await this.dataResources.users.mapToDtoList(blockedList);
+        const blockedDtos = await this.dataResources.users.mapToDtoList(blockedList, existedUser);
         return blockedDtos;
     }
 
@@ -149,7 +205,7 @@ export class UserService {
                 $in: subscribingIds,
             },
         });
-        const subscribingDtos = await this.dataResources.users.mapToDtoList(subscribing);
+        const subscribingDtos = await this.dataResources.users.mapToDtoList(subscribing, existedUser);
         return subscribingDtos;
     }
 
@@ -180,6 +236,11 @@ export class UserService {
         if (isUserSubscribingTargetUser) {
             return await this.unsubscribeTargetUser(loginUser, targetUser);
         } else {
+            const canceledSubscribeRequest = await this.subscribeRequestService.cancelSubscribeRequest(
+                loginUser,
+                targetUser,
+            );
+            if (canceledSubscribeRequest) return canceledSubscribeRequest;
             return await this.subscribeUser(loginUser, targetUser);
         }
     }
@@ -197,12 +258,20 @@ export class UserService {
     private async subscribePublicUser(loginUser: User, targetUser: User) {
         // target user is public. no need to wait for target user to accept
         // create subscribe request with status accepted
-        const createdSubscribeRequestId = await this.subscribeRequestService.create(
+        const createdSubscribeRequest = await this.subscribeRequestService.create(
             loginUser,
             targetUser,
             SubscribeRequestStatus.ACCEPTED,
         );
-        // TODO: Send notification to target user;
+
+        // send notification
+        await this.notificationService.create(
+            loginUser,
+            targetUser,
+            NotificationTargetType.USER,
+            createdSubscribeRequest,
+            NotificationAction.SUBSCRIBE_PROFILE,
+        );
 
         await this.subscribeTargetUser(loginUser, targetUser);
         return true;
@@ -210,12 +279,20 @@ export class UserService {
 
     private async subscribePrivateUser(loginUser: User, targetUser: User) {
         // target user is private. have to wait for target user to accept
-        const createdSubscribeRequestId = await this.subscribeRequestService.create(
+        const createdSubscribeRequest = await this.subscribeRequestService.create(
             loginUser,
             targetUser,
             SubscribeRequestStatus.PENDING,
         );
-        // TODO: Send notification to target user;
+
+        // send notification
+        await this.notificationService.create(
+            loginUser,
+            targetUser,
+            NotificationTargetType.USER,
+            createdSubscribeRequest,
+            NotificationAction.SENT_SUBSCRIBE_REQUEST,
+        );
 
         return true;
     }
@@ -320,6 +397,16 @@ export class UserService {
         return subscribeRequests;
     }
 
+    async getSentSubscribeRequests(userId: string, query: IGetSubscribeRequestListQuery) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new BadRequestException(`Không tìm thấy người dùng này.`);
+        }
+
+        const subscribeRequests = await this.subscribeRequestService.getSentSubscribeRequests(user, query);
+        return subscribeRequests;
+    }
+
     async updateSubscribeRequest(userId: string, subscribeRequestId: string, body: IUpdateSubscribeRequestBody) {
         const user = await this.dataServices.users.findById(userId);
         if (!user) {
@@ -336,7 +423,14 @@ export class UserService {
             const { sender, receiver } = updatedSubscribeRequest;
             await this.subscribeTargetUser(sender as User, receiver as User);
 
-            // TODO: Send notification to target user;
+            // send notification
+            await this.notificationService.create(
+                receiver,
+                sender,
+                NotificationTargetType.USER,
+                updatedSubscribeRequest,
+                NotificationAction.ACCEPT_SUBSCRIBE_REQUEST,
+            );
         }
 
         return true;
@@ -368,11 +462,15 @@ export class UserService {
             },
         );
 
-        const suggestionDtos = await this.dataResources.users.mapToDtoList(suggestions);
+        const suggestionDtos = await this.dataResources.users.mapToDtoList(suggestions, user);
         return suggestionDtos;
     }
 
-    async getUserPosts(userId: string, query: IGetPostListQuery) {
+    async getUserPosts(loginUserId: string, userId: string, query: IGetPostListQuery) {
+        const loginUser = await this.dataServices.users.findById(loginUserId);
+        if (!loginUser) {
+            throw new ForbiddenException(`Không tìm thấy người dùng này.`);
+        }
         const user = await this.dataServices.users.findById(userId);
         if (!user) {
             throw new ForbiddenException(`Không tìm thấy người dùng này.`);
@@ -381,7 +479,20 @@ export class UserService {
         const skip = (page - 1) * +limit;
         const posts = await this.dataServices.posts.findAll(
             {
-                author: user._id,
+                $or: [
+                    {
+                        privacy: Privacy.PUBLIC,
+                    },
+                    {
+                        privacy: Privacy.SUBSCRIBED,
+                        author: {
+                            $in: loginUser.subscribingIds,
+                        },
+                    },
+                    {
+                        author: loginUser._id,
+                    },
+                ],
                 discussedIn: null,
                 postedInGroup: null,
             },
@@ -398,7 +509,7 @@ export class UserService {
                 limit: +limit,
             },
         );
-        const postDtos = await this.dataResources.posts.mapToDtoList(posts, user);
+        const postDtos = await this.dataResources.posts.mapToDtoList(posts, loginUser);
         return postDtos;
     }
 }

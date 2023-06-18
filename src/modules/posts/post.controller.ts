@@ -1,15 +1,4 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    InternalServerErrorException,
-    Param,
-    Patch,
-    Post,
-    Query,
-    UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
@@ -21,15 +10,18 @@ import { ICreateReactionBody, IGetReactionListQuery } from '../reactions/reactio
 import { ICreateReportBody } from '../reports/report.interface';
 import { ICreatePostBody, IGetPostListQuery, IUpdatePostBody } from './post.interface';
 import { PostService } from './post.service';
+import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
+import { MANAGE_POST_PERMISSIONS } from 'src/common/constants';
 
 @Controller('/posts')
+@UseGuards(AccessTokenGuard, AuthorizationGuard)
 export class PostController {
     constructor(private configService: ConfigService, private postService: PostService) {}
 
     private readonly logger = createWinstonLogger(PostController.name, this.configService);
 
     @Post('/')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async createNewPost(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: ICreatePostBody) {
         try {
             const result = await this.postService.createNewPost(loginUser.userId, body);
@@ -41,7 +33,7 @@ export class PostController {
     }
 
     @Get('/news-feed')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async getNewsFeed(@LoginUser() loginUser, @Query() query: IGetPostListQuery) {
         try {
             const result = await this.postService.getNewsFeed(loginUser.userId, query);
@@ -53,7 +45,7 @@ export class PostController {
     }
 
     @Get('/me')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async getUserPosts(@LoginUser() loginUser) {
         try {
             const result = await this.postService.getUserPosts(loginUser.userId);
@@ -65,7 +57,7 @@ export class PostController {
     }
 
     @Get('/:id')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostDetail(@LoginUser() loginUser, @Param('id') postId: string) {
         try {
             const result = await this.postService.getDetail(loginUser.userId, postId);
@@ -77,7 +69,7 @@ export class PostController {
     }
 
     @Patch('/:postId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async updatePost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -93,7 +85,7 @@ export class PostController {
     }
 
     @Delete('/:postId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async deletePost(@LoginUser() loginUser, @Param('postId') postId: string) {
         try {
             const result = await this.postService.deleteUserPost(loginUser.userId, postId);
@@ -105,13 +97,14 @@ export class PostController {
     }
 
     @Get('/:postId/comments')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostComments(
+        @LoginUser() loginUser,
         @Param('postId') postId: string,
         @Query(new RemoveEmptyQueryPipe()) query: IGetCommentListQuery,
     ) {
         try {
-            const result = await this.postService.getPostComment(postId, query);
+            const result = await this.postService.getPostComment(loginUser.userId, postId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostComments] ${error.stack || JSON.stringify(error)}`);
@@ -120,7 +113,7 @@ export class PostController {
     }
 
     @Post('/:postId/comments')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async createPostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -136,7 +129,7 @@ export class PostController {
     }
 
     @Patch('/:postId/comments/:commentId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async updatePostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -153,7 +146,7 @@ export class PostController {
     }
 
     @Delete('/:postId/comments/:commentId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async deletePostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -169,13 +162,14 @@ export class PostController {
     }
 
     @Get('/:postId/reactions')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostReactions(
+        @LoginUser() loginUser,
         @Param('postId') postId: string,
         @Query(new RemoveEmptyQueryPipe()) query: IGetReactionListQuery,
     ) {
         try {
-            const result = await this.postService.getPostReactions(postId, query);
+            const result = await this.postService.getPostReactions(loginUser.userId, postId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostReactions] ${error.stack || JSON.stringify(error)}`);
@@ -184,7 +178,7 @@ export class PostController {
     }
 
     @Post('/:postId/react')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async reactOrUndoReactPost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -200,14 +194,15 @@ export class PostController {
     }
 
     @Get('/:postId/comments/:commentId/reactions')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostCommentReactions(
+        @LoginUser() loginUser,
         @Param('postId') postId: string,
         @Param('commentId') commentId: string,
         @Query(new RemoveEmptyQueryPipe()) query: IGetReactionListQuery,
     ) {
         try {
-            const result = await this.postService.getPostCommentReactions(postId, commentId, query);
+            const result = await this.postService.getPostCommentReactions(loginUser.userId, postId, commentId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getPostCommentReactions] ${error.stack || JSON.stringify(error)}`);
@@ -216,7 +211,7 @@ export class PostController {
     }
 
     @Post('/:postId/comments/:commentId/react')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async reactOrUndoReactPostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -238,7 +233,7 @@ export class PostController {
     }
 
     @Post('/:postId/report')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async reportPost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -254,7 +249,7 @@ export class PostController {
     }
 
     @Post('/:postId/comments/:commentId/report')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async reportPostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -271,7 +266,7 @@ export class PostController {
     }
 
     @Post('/:postId/share')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(MANAGE_POST_PERMISSIONS)
     async sharePost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -282,6 +277,22 @@ export class PostController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[sharePost] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:postId/shares')
+    @Permissions(MANAGE_POST_PERMISSIONS)
+    async getSharePosts(
+        @LoginUser() loginUser,
+        @Param('postId') postId: string,
+        @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery,
+    ) {
+        try {
+            const result = await this.postService.getSharePosts(loginUser.userId, postId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getSharePosts] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

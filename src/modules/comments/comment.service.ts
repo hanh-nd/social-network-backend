@@ -3,13 +3,13 @@ import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, OrderDirection } from 'src/comm
 import { toObjectId } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
-import { Comment, Post, User } from 'src/mongo-schemas';
+import { Comment, Post, User, UserDocument } from 'src/mongo-schemas';
 import { ICreateCommentBody, IGetCommentListQuery, IUpdateCommentBody } from './comment.interface';
 @Injectable()
 export class CommentService {
     constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
 
-    async getCommentsInPost(post: Post, query: IGetCommentListQuery) {
+    async getCommentsInPost(user: User, post: Post, query: IGetCommentListQuery) {
         const {
             page = DEFAULT_PAGE_VALUE,
             limit = DEFAULT_PAGE_LIMIT,
@@ -30,7 +30,7 @@ export class CommentService {
             },
         );
 
-        const commentDtos = await this.dataResources.comments.mapToDtoList(comments);
+        const commentDtos = await this.dataResources.comments.mapToDtoList(comments, user as UserDocument);
         return commentDtos;
     }
 

@@ -10,10 +10,6 @@ export class NotificationResource extends IGenericResource<NotificationDocument>
             notificationDto.author = _.pick(notificationDto.author, ['_id', 'username', 'avatarId', 'fullName']);
         }
 
-        if (_.isObject(notificationDto.target)) {
-            notificationDto.target = _.pick(notificationDto.target, ['_id', 'content']);
-        }
-
         return notificationDto;
     }
 }

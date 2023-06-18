@@ -1,9 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Document, Types } from 'mongoose';
-import { Address, AddressSchema } from './address.schema';
 import { MongoCollection } from './constant';
-import { Group } from './group.schema';
 import { MongoBaseSchema } from './mongo.base.schema';
 
 export type UserDocument = User & Document;
@@ -46,17 +44,11 @@ export class User extends MongoBaseSchema {
     @Prop({ required: false, type: String })
     phone: string;
 
-    @Prop({ required: false, type: Date })
-    birthday: Date;
-
     @Prop({ required: false, default: true, type: Boolean })
     active: boolean;
 
     @Prop({ required: false, default: Date.now, type: Date })
     lastOnlineAt: string;
-
-    @Prop({ required: false, type: AddressSchema })
-    address: Address;
 
     @Prop({ required: false, type: String })
     describe: string;
@@ -98,6 +90,14 @@ export class User extends MongoBaseSchema {
 
     @Prop({ required: false, type: String })
     lastRefreshToken: string;
+
+    @Prop({
+        required: true,
+        default: [],
+        type: [Types.ObjectId],
+        ref: 'Tag',
+    })
+    tagIds: ObjectId[];
 }
 
 const BaseUserSchema = SchemaFactory.createForClass(User);

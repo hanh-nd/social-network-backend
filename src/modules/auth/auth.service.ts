@@ -38,6 +38,10 @@ export class AuthService {
             throw new ForbiddenException('Tài khoản hoặc mật khẩu không chính xác.');
         }
 
+        if (!existedUser.active) {
+            throw new ForbiddenException('Tài khoản đã bị khóa.');
+        }
+
         const isCorrectPassword = await compare(body.password, existedUser.password);
 
         if (!isCorrectPassword) {
@@ -77,6 +81,10 @@ export class AuthService {
             ...body,
             password: hashedPassword,
             roleId: toObjectId(userRole._id),
+        });
+        await this.dataServices.userDetails.create({
+            userId: toObjectId(createdUser._id),
+            ...body,
         });
         await this.elasticsearchService.index<User>(ElasticsearchIndex.USER, {
             id: createdUser._id,

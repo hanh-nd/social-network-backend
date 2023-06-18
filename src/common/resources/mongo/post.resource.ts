@@ -1,9 +1,15 @@
 import * as _ from 'lodash';
-import { toStringArray } from 'src/common/helper';
+import { toObjectIds, toStringArray } from 'src/common/helper';
+import { IDataServices } from 'src/common/repositories/data.service';
+import { FileService } from 'src/modules/files/file.service';
 import { PostDocument, User, UserDocument } from 'src/mongo-schemas';
 import { IGenericResource } from '../generic.resource';
 
 export class PostResource extends IGenericResource<PostDocument, UserDocument> {
+    constructor(protected dataServices: IDataServices, protected fileService: FileService) {
+        super(dataServices);
+    }
+
     async mapToDto(post: PostDocument, user?: User): Promise<object> {
         const postDto = _.cloneDeep(post.toObject());
 
@@ -28,6 +34,13 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
                 'deletedAt',
             ]);
 
+            if (postDto.postShared?.pictureIds) {
+                const pictures = await this.fileService.findAll({
+                    ids: toObjectIds(postDto.postShared.pictureIds),
+                });
+                postDto.postShared.medias = pictures;
+            }
+
             if (_.isObject(postDto.postShared?.author)) {
                 postDto.postShared.author = _.pick(postDto.postShared.author, [
                     '_id',
@@ -44,7 +57,7 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
             numberOfShares: postDto.sharedIds.length,
         });
 
-        if (user) {
+        if (user && postDto?.author?.subscriberIds) {
             const isReacted = postDto.reactIds.map((id) => `${id}`).includes(`${user._id}`);
             postDto.isReacted = isReacted;
             if (isReacted) {
@@ -56,7 +69,23 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
                 postDto.reactionType = reactionType?.type;
             }
             const isSubscribing = toStringArray(postDto.author.subscriberIds).includes(`${user._id}`);
+            if (`${postDto.author._id}` == `${user._id}`) {
+                postDto.author.isSelf = true;
+            }
             postDto.author.isSubscribing = isSubscribing;
+        }
+
+        if (postDto.isAnonymous && !postDto?.author?.isSelf) {
+            postDto.author = {
+                fullName: 'Người dùng ẩn danh',
+            };
+        }
+
+        if (postDto?.pictureIds) {
+            const pictures = await this.fileService.findAll({
+                ids: toObjectIds(postDto.pictureIds),
+            });
+            postDto.medias = pictures;
         }
 
         delete postDto.commentIds;

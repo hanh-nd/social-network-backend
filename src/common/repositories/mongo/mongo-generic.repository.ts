@@ -62,6 +62,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
             chain = chain.limit(options.limit);
         }
 
+        if (options.lean) {
+            return chain.lean();
+        }
+
         return chain.exec();
     }
 
@@ -106,6 +110,19 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
             chain = chain.select(options.select);
         }
 
+        if (options.sort) {
+            chain = chain.sort(options.sort);
+        }
+
+        if (options.lean) {
+            const item = await chain.lean();
+            if (item) {
+                return item as T;
+            }
+
+            return null;
+        }
+
         const item = await chain.exec();
         if (item) {
             return item as T;
@@ -133,6 +150,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
     async updateById(id: string, item: UpdateQuery<T>, options: any = {}): Promise<T> {
         let chain = this._model.findByIdAndUpdate(toObjectId(id), item, {
+            ...(options.upsert && { upsert: options.upsert }),
             new: true,
         });
 
@@ -149,6 +167,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
 
     async updateOne(where: object, item: UpdateQuery<T>, options: any = {}): Promise<T> {
         let chain = this._model.findOneAndUpdate(where, item, {
+            ...(options.upsert && { upsert: options.upsert }),
             new: true,
         });
 
@@ -170,8 +189,9 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         return;
     }
 
-    async deleteById(id: string): Promise<void> {
+    async deleteById(id: string, extra?: Partial<T>): Promise<void> {
         await this.updateById(id, {
+            ...extra,
             deletedAt: Date.now(),
         } as unknown as Partial<T>);
         return;

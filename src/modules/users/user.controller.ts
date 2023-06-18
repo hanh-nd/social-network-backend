@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { USER_PROFILE_PERMISSIONS } from 'src/common/constants';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
+import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
@@ -13,17 +15,18 @@ import {
 import { IChangePasswordBody, IGetUserListQuery, IRemoveSubscriberBody, IUpdateProfileBody } from './user.interface';
 import { UserService } from './user.service';
 
-@Controller('/users/')
+@Controller('/users')
+@UseGuards(AccessTokenGuard, AuthorizationGuard)
 export class UserController {
     constructor(private configService: ConfigService, private userService: UserService) {}
 
     private readonly logger = createWinstonLogger(UserController.name, this.configService);
 
     @Get('/me')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getLoginUserProfile(@LoginUser() loginUser) {
         try {
-            const user = await this.userService.getUserProfile(loginUser.userId);
+            const user = await this.userService.getUserProfile(loginUser.userId, loginUser.userId);
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[getLoginUserProfile] ${error.stack || JSON.stringify(error)}`);
@@ -32,7 +35,7 @@ export class UserController {
     }
 
     @Patch('/change-password')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async changeUserPassword(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IChangePasswordBody) {
         try {
             const result = await this.userService.changeUserPassword(loginUser.userId, body);
@@ -44,7 +47,7 @@ export class UserController {
     }
 
     @Patch('/update-profile')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async updateProfile(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IUpdateProfileBody) {
         try {
             const result = await this.userService.updateProfile(loginUser.userId, body);
@@ -56,7 +59,7 @@ export class UserController {
     }
 
     @Get('/:id/subscribers')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getSubscribers(@Param('id') userId: string) {
         try {
             const result = await this.userService.getSubscribers(userId);
@@ -68,7 +71,7 @@ export class UserController {
     }
 
     @Patch('/subscribers/remove')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async removeSubscribers(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IRemoveSubscriberBody) {
         try {
             const result = await this.userService.removeSubscribers(loginUser.userId, body.toRemoveId);
@@ -80,7 +83,7 @@ export class UserController {
     }
 
     @Get('/blocked-list')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getBlockedList(@LoginUser() loginUser) {
         try {
             const result = await this.userService.getBlockedList(loginUser.userId);
@@ -92,7 +95,7 @@ export class UserController {
     }
 
     @Get(':id/subscribing')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getSubscribing(@Param('id') userId) {
         try {
             const result = await this.userService.getSubscribing(userId);
@@ -104,7 +107,7 @@ export class UserController {
     }
 
     @Get('/:id/files')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getUserFiles(@Param('id') id: string) {
         try {
             const result = await this.userService.getUserFiles(id);
@@ -115,20 +118,8 @@ export class UserController {
         }
     }
 
-    @Get('/:id')
-    @UseGuards(AccessTokenGuard)
-    async getUserInformation(@Param('id') id: string) {
-        try {
-            const user = await this.userService.getUserProfile(id);
-            return new SuccessResponse(user);
-        } catch (error) {
-            this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
-            throw error;
-        }
-    }
-
     @Patch('/:id/subscribe')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async subscribeOrUnsubscribeUser(@LoginUser() loginUser, @Param('id') targetUserId: string) {
         try {
             const result = await this.userService.subscribeOrUnsubscribeUser(loginUser.userId, targetUserId);
@@ -140,7 +131,7 @@ export class UserController {
     }
 
     @Patch('/:id/block')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async blockOrUnblockUser(@LoginUser() loginUser, @Param('id') targetUserId: string) {
         try {
             const result = await this.userService.blockOrUnblockUser(loginUser.userId, targetUserId);
@@ -152,7 +143,7 @@ export class UserController {
     }
 
     @Get('/subscribe-requests')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getSubscribeRequests(@LoginUser() loginUser, @Query() query: IGetSubscribeRequestListQuery) {
         try {
             const result = await this.userService.getSubscribeRequests(loginUser.userId, query);
@@ -163,8 +154,20 @@ export class UserController {
         }
     }
 
+    @Get('/sent-subscribe-requests')
+    @Permissions(USER_PROFILE_PERMISSIONS)
+    async getSentSubscribeRequests(@LoginUser() loginUser, @Query() query: IGetSubscribeRequestListQuery) {
+        try {
+            const result = await this.userService.getSentSubscribeRequests(loginUser.userId, query);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getSentSubscribeRequests] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
     @Patch('/subscribe-requests/:subscribeRequestId')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async updateSubscribeRequest(
         @LoginUser() loginUser,
         @Param('subscribeRequestId') subscribeRequestId: string,
@@ -180,7 +183,7 @@ export class UserController {
     }
 
     @Get('/suggestions')
-    @UseGuards(AccessTokenGuard)
+    @Permissions(USER_PROFILE_PERMISSIONS)
     async getUserSuggestions(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetUserListQuery) {
         try {
             const result = await this.userService.getUserSuggestions(loginUser.userId, query);
@@ -192,13 +195,41 @@ export class UserController {
     }
 
     @Get('/:id/posts')
-    @UseGuards(AccessTokenGuard)
-    async getUserPosts(@Param('id') userId, @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery) {
+    @Permissions(USER_PROFILE_PERMISSIONS)
+    async getUserPosts(
+        @LoginUser() loginUser,
+        @Param('id') userId,
+        @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery,
+    ) {
         try {
-            const result = await this.userService.getUserPosts(userId, query);
+            const result = await this.userService.getUserPosts(loginUser.userId, userId, query);
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[getUserPosts] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id/details')
+    @Permissions(USER_PROFILE_PERMISSIONS)
+    async getUserDetail(@LoginUser() loginUser, @Param('id') userId: string) {
+        try {
+            const result = await this.userService.getUserDetail(loginUser.userId, userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[getUserDetail] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Get('/:id')
+    @Permissions(USER_PROFILE_PERMISSIONS)
+    async getUserInformation(@LoginUser() loginUser, @Param('id') id: string) {
+        try {
+            const user = await this.userService.getUserProfile(loginUser.userId, id);
+            return new SuccessResponse(user);
+        } catch (error) {
+            this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

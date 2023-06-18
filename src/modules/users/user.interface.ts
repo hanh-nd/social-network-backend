@@ -1,4 +1,6 @@
+import { Gender, Relationship } from 'src/common/constants';
 import { ICommonGetListQuery } from 'src/common/interfaces';
+import { UserEducation, UserWork } from 'src/mongo-schemas';
 
 export interface IChangePasswordBody {
     oldPassword: string;
@@ -14,6 +16,10 @@ export interface IUpdateProfileBody {
     address?: IAddress;
     describe?: string;
     private?: boolean;
+    gender?: Gender;
+    relationship?: Relationship;
+    work?: UserWork;
+    education?: UserEducation;
 }
 
 export interface IAddress {

@@ -72,7 +72,8 @@ export class GroupService {
             blockIds: toStringArray(createdGroup.blockIds) as unknown as ObjectId[],
         });
 
-        return createdGroup._id;
+        const createdGroupDto = await this.getDetail(userId, createdGroup._id);
+        return createdGroupDto;
     }
 
     async updateGroup(userId: string, groupId: string, body: IUpdateGroupBody) {
@@ -185,6 +186,8 @@ export class GroupService {
             summary: group.summary,
             blockIds: toStringArray(blockIds) as unknown as ObjectId[],
         });
+
+        return true;
     }
 
     private async unblockUser(loginUser: Partial<User>, group: Partial<Group>, targetUser: Partial<User>) {
@@ -200,6 +203,8 @@ export class GroupService {
             summary: group.summary,
             blockIds: toStringArray(blockIds) as unknown as ObjectId[],
         });
+
+        return true;
     }
 
     async removeMember(loginUserId: string, groupId: string, targetUserId: string) {
@@ -335,7 +340,8 @@ export class GroupService {
             status: SubscribeRequestStatus.PENDING,
         });
 
-        return groupPosts;
+        const groupPostDtos = await this.dataResources.groupPosts.mapToDtoList(groupPosts, user);
+        return groupPostDtos;
     }
 
     async acceptOrRejectGroupPost(userId: string, groupId: string, groupPostId: string, body: IUpdateGroupPostBody) {
@@ -396,6 +402,8 @@ export class GroupService {
         await this.dataServices.groups.updateById(group._id, {
             pinnedPosts,
         });
+
+        return true;
     }
 
     private async unpinGroupPost(user: User, group: Group, groupPost: GroupPost) {
@@ -405,6 +413,8 @@ export class GroupService {
         await this.dataServices.groups.updateById(group._id, {
             pinnedPosts,
         });
+
+        return true;
     }
 
     async getDetail(userId: string, groupId: string) {
@@ -599,7 +609,8 @@ export class GroupService {
             status: SubscribeRequestStatus.ACCEPTED,
         });
 
-        return groupPosts;
+        const groupPostDtos = await this.dataResources.groupPosts.mapToDtoList(groupPosts, user);
+        return groupPostDtos;
     }
 
     async createPost(userId: string, groupId: string, body: ICreatePostInGroupBody) {
@@ -634,7 +645,9 @@ export class GroupService {
             ...body,
             status,
         });
-        return createdGroupPost._id;
+
+        const groupPostDto = await this.dataResources.groupPosts.mapToDto(createdGroupPost, user);
+        return groupPostDto;
     }
 
     async deletePost(userId: string, groupId: string, groupPostId: string) {
@@ -710,7 +723,8 @@ export class GroupService {
             },
         );
 
-        return groups;
+        const groupDtos = await this.dataResources.groups.mapToDtoList(groups, user);
+        return groupDtos;
     }
 
     async getGroupFeed(userId: string, query: IGetPostListQuery) {
@@ -725,7 +739,8 @@ export class GroupService {
             groupIds: user.groupIds,
         });
 
-        return groupPosts;
+        const groupPostDtos = await this.dataResources.groupPosts.mapToDtoList(groupPosts, user);
+        return groupPostDtos;
     }
 
     async getUserPendingPost(userId: string, groupId: string, query: IGetGroupPostListQuery) {
@@ -756,7 +771,8 @@ export class GroupService {
             authorId: user._id,
         });
 
-        return groupPosts;
+        const groupPostDtos = await this.dataResources.groupPosts.mapToDtoList(groupPosts, user);
+        return groupPostDtos;
     }
 
     async makeAdministrator(userId: string, groupId: string, targetId: string) {

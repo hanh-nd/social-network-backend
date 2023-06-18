@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, InternalServerErrorException, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
@@ -9,13 +9,13 @@ import { IGetNotificationListQuery } from './notification.interface';
 import { NotificationService } from './notification.service';
 
 @Controller('/notifications')
+@UseGuards(AccessTokenGuard)
 export class NotificationController {
     constructor(private configService: ConfigService, private notificationService: NotificationService) {}
 
     private readonly logger = createWinstonLogger(NotificationController.name, this.configService);
 
     @Get('/')
-    @UseGuards(AccessTokenGuard)
     async getUserNotifications(
         @LoginUser() loginUser,
         @Query(new RemoveEmptyQueryPipe()) query: IGetNotificationListQuery,
@@ -29,20 +29,40 @@ export class NotificationController {
         }
     }
 
-    @Patch('/:id/read')
-    @UseGuards(AccessTokenGuard)
-    async markOrUndoMarkAsRead(@LoginUser() loginUser, @Param('id') notificationId: string) {
+    @Patch('/markAllAsRead')
+    async markAllAsRead(@LoginUser() loginUser) {
         try {
-            const result = await this.notificationService.markOrUndoMarkAsRead(loginUser.userId, notificationId);
+            const result = await this.notificationService.markAllAsRead(loginUser.userId);
             return new SuccessResponse(result);
         } catch (error) {
-            this.logger.error(`[markOrUndoMarkAsRead] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[markAllAsRead] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Patch('/:id/read')
+    async markAsRead(@LoginUser() loginUser, @Param('id') notificationId: string) {
+        try {
+            const result = await this.notificationService.markAsRead(loginUser.userId, notificationId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[markAsRead] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Patch('/:id/unread')
+    async undoMarkAsRead(@LoginUser() loginUser, @Param('id') notificationId: string) {
+        try {
+            const result = await this.notificationService.undoMarkAsRead(loginUser.userId, notificationId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[undoMarkAsRead] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
 
     @Delete('/:id')
-    @UseGuards(AccessTokenGuard)
     async deleteNotification(@LoginUser() loginUser, @Param('id') notificationId: string) {
         try {
             const result = await this.notificationService.delete(loginUser.userId, notificationId);

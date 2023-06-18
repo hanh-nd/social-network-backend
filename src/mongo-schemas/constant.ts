@@ -14,4 +14,10 @@ export enum MongoCollection {
     JOIN_REQUEST = 'join_requests',
     GROUP_POSTS = 'group_posts',
     TAGS = 'tags',
+    USER_DETAIL = 'user_details',
+    ASK_USER_QUESTIONS = 'ask_user_questions',
+    USER_WORK = 'user_works',
+    USER_EDUCATION = 'user_educations',
+    USER_DAILY_STATISTIC = 'user_daily_statistics',
+    SYSTEM_MESSAGES = 'system_messages',
 }

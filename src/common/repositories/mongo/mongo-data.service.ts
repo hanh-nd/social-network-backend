@@ -2,6 +2,8 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
+    AskUserQuestion,
+    AskUserQuestionDocument,
     Chat,
     ChatDocument,
     Comment,
@@ -26,14 +28,21 @@ import {
     RoleDocument,
     SubscribeRequest,
     SubscribeRequestDocument,
+    SystemMessage,
+    SystemMessageDocument,
     Tag,
     TagDocument,
     User,
+    UserDailyStatistic,
+    UserDailyStatisticDocument,
+    UserDetail,
+    UserDetailDocument,
     UserDocument,
     UserToken,
     UserTokenDocument,
 } from 'src/mongo-schemas';
 import { IDataServices } from '../data.service';
+import { IGenericRepository } from '../generic.repository';
 import { MongoGenericRepository } from './mongo-generic.repository';
 
 @Injectable()
@@ -53,6 +62,10 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     groupPosts: MongoGenericRepository<GroupPostDocument>;
     joinRequests: MongoGenericRepository<JoinRequestDocument>;
     tags: MongoGenericRepository<TagDocument>;
+    userDetails: IGenericRepository<UserDetailDocument>;
+    userDailyStatistics: IGenericRepository<UserDailyStatisticDocument>;
+    systemMessages: IGenericRepository<SystemMessageDocument>;
+    askUserQuestions: IGenericRepository<AskUserQuestionDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -85,6 +98,14 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private groupPostModel: Model<GroupPostDocument>,
         @InjectModel(Tag.name)
         private tagModel: Model<TagDocument>,
+        @InjectModel(UserDetail.name)
+        private userDetailModel: Model<UserDetailDocument>,
+        @InjectModel(UserDailyStatistic.name)
+        private userDailyStatisticModel: Model<UserDailyStatisticDocument>,
+        @InjectModel(SystemMessage.name)
+        private systemMessageModel: Model<SystemMessageDocument>,
+        @InjectModel(AskUserQuestion.name)
+        private askUserQuestionModel: Model<AskUserQuestionDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -103,5 +124,9 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.joinRequests = new MongoGenericRepository<JoinRequestDocument>(this.joinRequestModel);
         this.groupPosts = new MongoGenericRepository<GroupPostDocument>(this.groupPostModel);
         this.tags = new MongoGenericRepository<TagDocument>(this.tagModel);
+        this.userDetails = new MongoGenericRepository<UserDetailDocument>(this.userDetailModel);
+        this.userDailyStatistics = new MongoGenericRepository<UserDailyStatisticDocument>(this.userDailyStatisticModel);
+        this.systemMessages = new MongoGenericRepository<SystemMessageDocument>(this.systemMessageModel);
+        this.askUserQuestions = new MongoGenericRepository<AskUserQuestionDocument>(this.askUserQuestionModel);
     }
 }
