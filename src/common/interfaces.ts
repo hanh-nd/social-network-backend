@@ -1,5 +1,5 @@
 import { IJwtPayload } from 'src/modules/auth/auth.interface';
-import { Comment, Message, Post, SubscribeRequest, SystemMessage, User } from 'src/mongo-schemas';
+import { Comment, Message, Post, SubscribeRequest, Survey, SystemMessage, User } from 'src/mongo-schemas';
 import { OrderBy, OrderDirection } from './constants';
 
 export interface ICommonGetListQuery {
@@ -16,4 +16,4 @@ export interface RequestWithUser extends Request {
 
 export type ReactionTarget = Post | Comment;
 export type ReportTarget = Post | Comment | Message | User;
-export type NotificationTarget = Post | Comment | Message | User | SubscribeRequest | SystemMessage;
+export type NotificationTarget = Post | Comment | Message | User | SubscribeRequest | SystemMessage | Survey;

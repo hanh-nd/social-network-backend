@@ -236,6 +236,7 @@ export const NotificationTargetType = {
     MESSAGE: 'Message',
     USER: 'User',
     SYSTEM_MESSAGE: 'SystemMessage',
+    SURVEY: 'Survey',
 };
 
 export const NotificationAction = {
@@ -246,6 +247,7 @@ export const NotificationAction = {
     SENT_SUBSCRIBE_REQUEST: 'SENT_SUBSCRIBE_REQUEST',
     ACCEPT_SUBSCRIBE_REQUEST: 'ACCEPT_SUBSCRIBE_REQUEST',
     SEND_MESSAGE: 'SEND_MESSAGE',
+    SEND_SURVEY: 'SEND_SURVEY',
 };
 
 export const SocketEvent = {
@@ -261,6 +263,8 @@ export const SocketEvent = {
     USER_NOTIFICATION: 'USER_NOTIFICATION',
 
     POST_UPDATE: 'POST_UPDATE',
+
+    USER_SURVEY_MUSIC_RECOMMEND: 'USER_SURVEY_MUSIC_RECOMMEND',
 };
 
 export enum Gender {

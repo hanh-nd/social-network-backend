@@ -14,7 +14,7 @@ export class ChatGPTService {
         });
     }
 
-    async sendMessage(message: string) {
-        return await this.api.sendMessage(message);
+    async sendMessage(message: string, options?: any) {
+        return await this.api.sendMessage(message, options);
     }
 }

@@ -29,6 +29,11 @@ const data = [
         cronTime: '0 1 * * *',
         active: true,
     },
+    {
+        key: CronJobKey.SURVEY_SCAN,
+        cronTime: '*/1 * * * *',
+        active: true,
+    },
 ];
 
 @Injectable()
