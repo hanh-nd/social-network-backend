@@ -487,9 +487,7 @@ export class GroupService {
             throw new ForbiddenException(`Không tìm thấy người dùng này..`);
         }
 
-        const group = await this.dataServices.groups.findOne({
-            _id: toObjectId(groupId),
-        });
+        const group = await this.dataServices.groups.findById(groupId);
         if (!group) {
             throw new ForbiddenException(`Nhóm không tồn tại.`);
         }

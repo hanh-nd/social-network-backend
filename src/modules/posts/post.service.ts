@@ -421,7 +421,7 @@ export class PostService {
             const postSharedShareIds = existedPost.postShared.sharedIds;
             _.remove(postSharedShareIds, (id) => `${id}` == existedPost._id);
             await this.dataServices.posts.updateById(existedPost.postShared._id, {
-                shareIds: postSharedShareIds,
+                sharedIds: postSharedShareIds,
             });
         }
         return true;
@@ -753,7 +753,7 @@ export class PostService {
             throw new BadRequestException(`Không tìm thấy bài viết này.`);
         }
         const createdPost = await this.createNewPost(userId, {
-            content,
+            content: content || '',
             postSharedId: postId,
         });
 
@@ -761,7 +761,7 @@ export class PostService {
         post.sharedIds.push(toObjectId(createdPost._id));
 
         const toUpdatePostBody = {
-            shareIds: postShareIds,
+            sharedIds: postShareIds,
         };
 
         if (`${post.author}` != userId) {
@@ -777,7 +777,7 @@ export class PostService {
         // send notification
         await this.notificationService.create(
             user,
-            post.author,
+            { _id: post.author as string },
             NotificationTargetType.POST,
             post,
             NotificationAction.SHARE,

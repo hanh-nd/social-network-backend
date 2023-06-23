@@ -1,14 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SubscribeRequestStatus } from 'src/common/constants';
+import { NotificationAction, NotificationTargetType, SubscribeRequestStatus } from 'src/common/constants';
 import { toObjectId, toStringArray } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Group, JoinRequest, User } from 'src/mongo-schemas';
+import { NotificationService } from '../notifications/notification.service';
 import { ICreateJoinRequestBody, IGetJoinRequestQuery, IUpdateJoinRequestBody } from './join-request.interface';
 
 @Injectable()
 export class JoinRequestService {
-    constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
+    constructor(
+        private dataServices: IDataServices,
+        private dataResources: IDataResources,
+        private notificationService: NotificationService,
+    ) {}
 
     async create(user: User, group: Group, body: ICreateJoinRequestBody) {
         const toCreateBody: Partial<JoinRequest> = {
@@ -18,6 +23,20 @@ export class JoinRequestService {
         };
 
         const createdJoinRequest = await this.dataServices.joinRequests.create(toCreateBody);
+
+        // Send notification to group's owner
+        const groupAdminIds = group.administrators.map((admin) => `${admin.user}`);
+        for (const adminId of groupAdminIds) {
+            this.notificationService.create(
+                user,
+                {
+                    _id: adminId,
+                },
+                NotificationTargetType.GROUP,
+                group,
+                NotificationAction.REQUEST_JOIN_GROUP,
+            );
+        }
         return createdJoinRequest;
     }
 

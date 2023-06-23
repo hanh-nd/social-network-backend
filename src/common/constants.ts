@@ -237,6 +237,8 @@ export const NotificationTargetType = {
     USER: 'User',
     SYSTEM_MESSAGE: 'SystemMessage',
     SURVEY: 'Survey',
+    GROUP: 'Group',
+    QUESTION: 'Question',
 };
 
 export const NotificationAction = {
@@ -248,6 +250,9 @@ export const NotificationAction = {
     ACCEPT_SUBSCRIBE_REQUEST: 'ACCEPT_SUBSCRIBE_REQUEST',
     SEND_MESSAGE: 'SEND_MESSAGE',
     SEND_SURVEY: 'SEND_SURVEY',
+    ASK_QUESTION: 'ASK_QUESTION',
+    REQUEST_JOIN_GROUP: 'REQUEST_JOIN_GROUP',
+    ACCEPT_JOIN_GROUP: 'ACCEPT_JOIN_GROUP',
 };
 
 export const SocketEvent = {

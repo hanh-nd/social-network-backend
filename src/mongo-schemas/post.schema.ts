@@ -28,7 +28,7 @@ export class Post extends MongoBaseSchema {
     @Prop({ required: true, type: Types.ObjectId, ref: User.name, index: true })
     author: Partial<User>;
 
-    @Prop({ required: true, type: String })
+    @Prop({ required: false, default: '', type: String })
     content: string;
 
     @Prop({ required: true, default: Privacy.PUBLIC, type: Number })
