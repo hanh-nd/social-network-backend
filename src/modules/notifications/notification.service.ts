@@ -84,7 +84,6 @@ export class NotificationService {
         action: string,
         urgent = false,
     ) {
-        console.log('to', to, user);
         if (`${user._id}` == `${to._id}`) {
             return;
         }
