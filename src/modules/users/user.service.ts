@@ -130,6 +130,7 @@ export class UserService {
                 ...body,
                 userId: toObjectId(userId),
                 birthday: moment(birthday).utc(true).toISOString(),
+                dob: moment(birthday).utc(true).format(`MMDD`),
             },
             {
                 upsert: true,
@@ -482,17 +483,19 @@ export class UserService {
                 $or: [
                     {
                         privacy: Privacy.PUBLIC,
+                        author: user._id,
+                        isAnonymous: false,
                     },
                     {
                         privacy: Privacy.SUBSCRIBED,
                         author: {
                             $in: loginUser.subscribingIds,
+                            $eq: user._id,
                         },
+                        isAnonymous: false,
                     },
-                    {
-                        author: loginUser._id,
-                    },
-                ],
+                    loginUserId == userId && { author: loginUser._id },
+                ].filter((e) => e),
                 discussedIn: null,
                 postedInGroup: null,
             },
@@ -500,6 +503,7 @@ export class UserService {
                 sort: [['createdAt', 'desc']],
                 populate: [
                     'author',
+                    'tagIds',
                     {
                         path: 'postShared',
                         populate: ['author'],

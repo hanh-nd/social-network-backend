@@ -93,7 +93,7 @@ export class ModeratorPostService {
             const postSharedShareIds = existedPost.postShared.sharedIds;
             remove(postSharedShareIds, (id) => `${id}` == existedPost._id);
             await this.dataServices.posts.updateById(existedPost.postShared._id, {
-                shareIds: postSharedShareIds,
+                sharedIds: postSharedShareIds,
             });
         }
         return true;

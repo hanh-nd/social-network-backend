@@ -9,7 +9,7 @@ import { MongoGenericRepository } from 'src/common/repositories/mongo/mongo-gene
 import { IDataResources } from 'src/common/resources/data.resource';
 import { IGetUserListQuery, IUpdateProfileBody } from 'src/modules/users/user.interface';
 import { User, UserDocument } from 'src/mongo-schemas';
-import { IGetModUserStatisticQuery } from './moderator-user.interface';
+import { IGetModUserStatisticQuery, IUpdateUserRoleBody } from './moderator-user.interface';
 
 @Injectable()
 export class ModeratorUserService {
@@ -85,6 +85,7 @@ export class ModeratorUserService {
                 ...body,
                 userId: toObjectId(id),
                 birthday: moment(birthday).utc(true).toISOString(),
+                dob: moment(birthday).utc(true).format(`MMDD`),
             },
             {
                 upsert: true,
@@ -168,5 +169,18 @@ export class ModeratorUserService {
             };
         }
         return where;
+    }
+
+    async updateUserRole(userId: string, body: IUpdateUserRoleBody) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`Không tìm thấy người dùng này.`);
+        }
+
+        await this.dataServices.users.updateById(userId, {
+            roleId: toObjectId(body.roleId),
+        });
+
+        return true;
     }
 }

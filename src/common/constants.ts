@@ -98,6 +98,8 @@ export enum PermissionName {
     UPDATE_PROFILE = 'UPDATE_PROFILE',
     DELETE_PROFILE = 'DELETE_PROFILE',
     GET_USER_STATISTIC = 'GET_USER_STATISTIC',
+
+    UPDATE_USER_ROLE = 'UPDATE_USER_ROLE',
 }
 
 export const MANAGE_POST_PERMISSIONS = [
@@ -165,6 +167,7 @@ export const DEFAULT_ADMIN_PERMISSIONS = [
     ...ADMINISTRATOR_PROFILE_PERMISSIONS,
     PermissionName.GET_POST_STATISTIC,
     PermissionName.GET_USER_STATISTIC,
+    PermissionName.UPDATE_USER_ROLE,
 ];
 
 export const CommonMessage = {
@@ -233,6 +236,9 @@ export const NotificationTargetType = {
     MESSAGE: 'Message',
     USER: 'User',
     SYSTEM_MESSAGE: 'SystemMessage',
+    SURVEY: 'Survey',
+    GROUP: 'Group',
+    QUESTION: 'Question',
 };
 
 export const NotificationAction = {
@@ -243,6 +249,10 @@ export const NotificationAction = {
     SENT_SUBSCRIBE_REQUEST: 'SENT_SUBSCRIBE_REQUEST',
     ACCEPT_SUBSCRIBE_REQUEST: 'ACCEPT_SUBSCRIBE_REQUEST',
     SEND_MESSAGE: 'SEND_MESSAGE',
+    SEND_SURVEY: 'SEND_SURVEY',
+    ASK_QUESTION: 'ASK_QUESTION',
+    REQUEST_JOIN_GROUP: 'REQUEST_JOIN_GROUP',
+    ACCEPT_JOIN_GROUP: 'ACCEPT_JOIN_GROUP',
 };
 
 export const SocketEvent = {
@@ -258,6 +268,8 @@ export const SocketEvent = {
     USER_NOTIFICATION: 'USER_NOTIFICATION',
 
     POST_UPDATE: 'POST_UPDATE',
+
+    USER_SURVEY_MUSIC_RECOMMEND: 'USER_SURVEY_MUSIC_RECOMMEND',
 };
 
 export enum Gender {

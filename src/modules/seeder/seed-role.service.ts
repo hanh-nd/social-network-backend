@@ -1,3 +1,4 @@
+import { RedisService } from '@liaoliaots/nestjs-redis';
 import { Injectable } from '@nestjs/common';
 import { Command } from 'nestjs-command';
 import {
@@ -6,6 +7,7 @@ import {
     DEFAULT_USER_PERMISSIONS,
     RoleName,
 } from 'src/common/constants';
+import { RedisKey } from 'src/common/modules/redis/redis.constants';
 import { IDataServices } from 'src/common/repositories/data.service';
 
 const data = [
@@ -25,7 +27,7 @@ const data = [
 
 @Injectable()
 export class RoleSeedService {
-    constructor(private readonly dataServices: IDataServices) {}
+    constructor(private readonly dataServices: IDataServices, private readonly redisService: RedisService) {}
 
     @Command({ command: 'create:roles', describe: 'create default roles' })
     async create() {
@@ -48,6 +50,8 @@ export class RoleSeedService {
             );
         }
         console.log('===== Seeded successfully');
+        const client = await this.redisService.getClient();
+        await client.del(RedisKey.ROLES);
         return;
     }
 }

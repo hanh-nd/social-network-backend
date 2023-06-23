@@ -12,6 +12,8 @@ import {
     GroupDocument,
     GroupPost,
     GroupPostDocument,
+    JobConfig,
+    JobConfigDocument,
     JoinRequest,
     JoinRequestDocument,
     Message,
@@ -28,6 +30,10 @@ import {
     RoleDocument,
     SubscribeRequest,
     SubscribeRequestDocument,
+    Survey,
+    SurveyAnswer,
+    SurveyAnswerDocument,
+    SurveyDocument,
     SystemMessage,
     SystemMessageDocument,
     Tag,
@@ -66,6 +72,9 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     userDailyStatistics: IGenericRepository<UserDailyStatisticDocument>;
     systemMessages: IGenericRepository<SystemMessageDocument>;
     askUserQuestions: IGenericRepository<AskUserQuestionDocument>;
+    jobConfigs: IGenericRepository<JobConfigDocument>;
+    surveyAnswers: IGenericRepository<SurveyAnswerDocument>;
+    surveys: IGenericRepository<SurveyDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -106,6 +115,12 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private systemMessageModel: Model<SystemMessageDocument>,
         @InjectModel(AskUserQuestion.name)
         private askUserQuestionModel: Model<AskUserQuestionDocument>,
+        @InjectModel(JobConfig.name)
+        private jobConfigModel: Model<JobConfigDocument>,
+        @InjectModel(Survey.name)
+        private surveyModel: Model<SurveyDocument>,
+        @InjectModel(SurveyAnswer.name)
+        private surveyAnswerModel: Model<SurveyAnswerDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -128,5 +143,8 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.userDailyStatistics = new MongoGenericRepository<UserDailyStatisticDocument>(this.userDailyStatisticModel);
         this.systemMessages = new MongoGenericRepository<SystemMessageDocument>(this.systemMessageModel);
         this.askUserQuestions = new MongoGenericRepository<AskUserQuestionDocument>(this.askUserQuestionModel);
+        this.jobConfigs = new MongoGenericRepository<JobConfigDocument>(this.jobConfigModel);
+        this.surveys = new MongoGenericRepository<SurveyDocument>(this.surveyModel);
+        this.surveyAnswers = new MongoGenericRepository<SurveyAnswerDocument>(this.surveyAnswerModel);
     }
 }

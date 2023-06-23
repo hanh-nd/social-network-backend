@@ -98,6 +98,9 @@ export class User extends MongoBaseSchema {
         ref: 'Tag',
     })
     tagIds: ObjectId[];
+
+    @Prop({ required: false, type: Date })
+    lastLimitedAt: Date;
 }
 
 const BaseUserSchema = SchemaFactory.createForClass(User);

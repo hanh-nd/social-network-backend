@@ -46,7 +46,7 @@ export class CommentService {
             point: 0,
         };
         const createdComment = await this.dataServices.comments.create(createCommentBody);
-        return createdComment._id;
+        return createdComment;
     }
 
     async updateCommentInPost(commentId: string, author: User, post: Post, body: IUpdateCommentBody) {

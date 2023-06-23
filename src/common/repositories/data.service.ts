@@ -4,6 +4,7 @@ import {
     CommentDocument,
     GroupDocument,
     GroupPostDocument,
+    JobConfigDocument,
     JoinRequestDocument,
     MessageDocument,
     NotificationDocument,
@@ -12,6 +13,8 @@ import {
     ReportDocument,
     RoleDocument,
     SubscribeRequestDocument,
+    SurveyAnswerDocument,
+    SurveyDocument,
     SystemMessageDocument,
     TagDocument,
     UserDailyStatisticDocument,
@@ -41,4 +44,7 @@ export abstract class IDataServices {
     abstract userDailyStatistics: IGenericRepository<UserDailyStatisticDocument>;
     abstract systemMessages: IGenericRepository<SystemMessageDocument>;
     abstract askUserQuestions: IGenericRepository<AskUserQuestionDocument>;
+    abstract jobConfigs: IGenericRepository<JobConfigDocument>;
+    abstract surveys: IGenericRepository<SurveyDocument>;
+    abstract surveyAnswers: IGenericRepository<SurveyAnswerDocument>;
 }

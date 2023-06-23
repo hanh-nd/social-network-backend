@@ -10,6 +10,7 @@ import { IDataServices } from 'src/common/repositories/data.service';
 import { NotificationService } from '../notifications/notification.service';
 import { SystemMessageService } from '../system-messages/system-message.service';
 import { DefaultSystemMessageCode } from '../system-messages/sytem-message.constants';
+import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/5 * * * *';
 let isRunning = false;
@@ -25,21 +26,29 @@ export class OnlineAlertJob {
 
     private readonly logger = createWinstonLogger(OnlineAlertJob.name, this.configService);
 
-    @Cron(CRON_JOB_ONLINE_ALERT)
+    @Cron(CRON_JOB_ONLINE_ALERT, {
+        name: CronJobKey.ONLINE_ALERT,
+    })
     async scanOnlineUsersAlert() {
         try {
             if (isRunning) {
                 return;
             }
-            this.logger.info(`[OnlineAlertJob][scanOnlineUsersAlert] start cron job`);
+
+            const config = await this.dataServices.jobConfigs.findOne({
+                key: CronJobKey.ONLINE_ALERT,
+            });
+            if (config && !config.active) return;
+
+            this.logger.info(`[scanOnlineUsersAlert] start cron job`);
             isRunning = true;
             await this.scanAlertByLevel(1);
             await this.scanAlertByLevel(2);
             await this.scanAlertByLevel(3);
             isRunning = false;
-            this.logger.info(`[OnlineAlertJob][scanOnlineUsersAlert] stop cron job`);
+            this.logger.info(`[scanOnlineUsersAlert] stop cron job`);
         } catch (error) {
-            this.logger.error(`[OnlineAlertJob][scanOnlineUsersAlert] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[scanOnlineUsersAlert] ${error.stack || JSON.stringify(error)}`);
         }
     }
 
@@ -64,10 +73,16 @@ export class OnlineAlertJob {
                 alertSystemMessage,
                 NotificationAction.SEND_MESSAGE,
                 {
-                    minutes: alertMinutes,
+                    minutes: level * alertMinutes,
                 },
                 true,
             );
+
+            if (level === 3) {
+                this.dataServices.users.updateById(userId, {
+                    lastLimitedAt: new Date(),
+                });
+            }
         }
     }
 }

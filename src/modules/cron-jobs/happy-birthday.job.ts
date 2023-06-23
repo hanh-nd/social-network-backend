@@ -9,6 +9,7 @@ import { User } from 'src/mongo-schemas';
 import { NotificationService } from '../notifications/notification.service';
 import { SystemMessageService } from '../system-messages/system-message.service';
 import { DefaultSystemMessageCode } from '../system-messages/sytem-message.constants';
+import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_HAPPY_BIRTHDAY = process.env.CRON_JOB_HAPPY_BIRTHDAY || '0 6 * * *';
 let isRunning = false;
@@ -23,18 +24,26 @@ export class HappyBirthdayJob {
 
     private readonly logger = createWinstonLogger(HappyBirthdayJob.name, this.configService);
 
-    @Cron(CRON_JOB_HAPPY_BIRTHDAY)
+    @Cron(CRON_JOB_HAPPY_BIRTHDAY, {
+        name: CronJobKey.HAPPY_BIRTHDAY,
+    })
     async scanBirthdayUsers() {
         try {
             if (isRunning) {
                 return;
             }
-            this.logger.info(`[HappyBirthdayJob][scanBirthdayUsers] start cron job`);
+
+            const config = await this.dataServices.jobConfigs.findOne({
+                key: CronJobKey.HAPPY_BIRTHDAY,
+            });
+            if (config && !config.active) return;
+
+            this.logger.info(`[scanBirthdayUsers] start cron job`);
             isRunning = true;
 
             const birthdayUserDetails = await this.dataServices.userDetails.findAll(
                 {
-                    birthday: moment().toDate(),
+                    dob: moment().format(`MMDD`),
                 },
                 {
                     populate: 'userId',
@@ -48,16 +57,18 @@ export class HappyBirthdayJob {
             for (const userDetail of birthdayUserDetails) {
                 this.notificationService.create(
                     null,
-                    { _id: userDetail.userId } as unknown as Partial<User>,
+                    userDetail.userId as unknown as Partial<User>,
                     NotificationTargetType.SYSTEM_MESSAGE,
                     happyBirthdaySystemMessage,
                     NotificationAction.SEND_MESSAGE,
+                    {},
+                    true,
                 );
             }
             isRunning = false;
-            this.logger.info(`[HappyBirthdayJob][scanBirthdayUsers] stop cron job`);
+            this.logger.info(`[scanBirthdayUsers] stop cron job`);
         } catch (error) {
-            this.logger.error(`[HappyBirthdayJob][scanBirthdayUsers] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[scanBirthdayUsers] ${error.stack || JSON.stringify(error)}`);
         }
     }
 }
