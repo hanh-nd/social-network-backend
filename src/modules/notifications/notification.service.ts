@@ -84,9 +84,11 @@ export class NotificationService {
         action: string,
         urgent = false,
     ) {
+        console.log('to', to, user);
         if (`${user._id}` == `${to._id}`) {
             return;
         }
+
         // check notification, if existed (ignore soft-delete) => update deletedAt or return immediately
         const existedNotification = await this.dataServices.notifications.findOne(
             {
