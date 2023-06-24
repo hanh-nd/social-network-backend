@@ -8,10 +8,10 @@ import {
     ICreateSystemMessageBody,
     IGetSystemMessageQuery,
     IUpdateSystemMessageBody,
-} from './system-message.interfaces';
-import { SystemMessageService } from './system-message.service';
+} from './moderator-system-message.interfaces';
+import { SystemMessageService } from './moderator-system-message.service';
 
-@Controller('/system-messages')
+@Controller('/admin/system-messages')
 @UseGuards(AccessTokenGuard)
 export class SystemMessageController {
     constructor(private configService: ConfigService, private systemMessageService: SystemMessageService) {}

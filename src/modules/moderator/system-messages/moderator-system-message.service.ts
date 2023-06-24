@@ -8,7 +8,7 @@ import {
     ICreateSystemMessageBody,
     IGetSystemMessageQuery,
     IUpdateSystemMessageBody,
-} from './system-message.interfaces';
+} from './moderator-system-message.interfaces';
 
 @Injectable()
 export class SystemMessageService {
@@ -46,7 +46,7 @@ export class SystemMessageService {
         const where: any = {};
 
         if (keyword?.trim()) {
-            where.code = keyword.trim();
+            where.code = new RegExp(keyword.trim(), 'gi');
         }
 
         return where;

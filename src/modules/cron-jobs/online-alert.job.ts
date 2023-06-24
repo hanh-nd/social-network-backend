@@ -8,8 +8,8 @@ import { RedisService } from 'src/common/modules/redis/redis.service';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { NotificationService } from '../notifications/notification.service';
-import { SystemMessageService } from '../system-messages/system-message.service';
-import { DefaultSystemMessageCode } from '../system-messages/sytem-message.constants';
+import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
+import { DefaultSystemMessageCode } from '../moderator/system-messages/moderator-system-message.constants';
 import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/5 * * * *';

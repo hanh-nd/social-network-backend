@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { RedisModule } from 'src/common/modules/redis/redis.module';
 import { DataServicesModule } from 'src/common/repositories/data-services.module';
 import { NotificationModule } from '../notifications/notification.module';
-import { SystemMessageModule } from '../system-messages/system-message.module';
+import { SystemMessageModule } from '../moderator/system-messages/moderator-system-message.module';
 import { HappyBirthdayJob } from './happy-birthday.job';
 import { OnlineAlertJob } from './online-alert.job';
 import { ReducePointJob } from './reduce-point.job';
