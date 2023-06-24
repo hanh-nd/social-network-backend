@@ -6,7 +6,7 @@ import { NotificationAction, NotificationTargetType } from 'src/common/constants
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { NotificationService } from '../notifications/notification.service';
-import { SystemMessageService } from '../system-messages/system-message.service';
+import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
 import { CronJobKey } from './cron-job.constants';
 
 let isRunning = false;

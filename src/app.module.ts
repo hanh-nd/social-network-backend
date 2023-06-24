@@ -35,7 +35,7 @@ import { SearchModule } from './modules/search/search.module';
 import { SeedsModule } from './modules/seeder/seed.module';
 import { StatisticModule } from './modules/statistics/statistic.module';
 import { SurveyModule } from './modules/surveys/surveys.module';
-import { SystemMessageModule } from './modules/system-messages/system-message.module';
+import { SystemMessageModule } from './modules/moderator/system-messages/moderator-system-message.module';
 import { TagModule } from './modules/tags/tag.module';
 import { UserModule } from './modules/users/user.module';
 

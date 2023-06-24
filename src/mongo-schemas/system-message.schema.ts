@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
-import { SystemMessageType } from 'src/modules/system-messages/sytem-message.constants';
+import { SystemMessageType } from 'src/modules/moderator/system-messages/moderator-system-message.constants';
 
 export type SystemMessageDocument = SystemMessage & Document;
 

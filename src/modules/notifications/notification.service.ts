@@ -7,7 +7,7 @@ import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Notification, Survey, SystemMessage, User } from 'src/mongo-schemas';
 import { SocketGateway } from '../gateway/socket.gateway';
-import { SystemMessageService } from '../system-messages/system-message.service';
+import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
 import { IGetNotificationListQuery } from './notification.interface';
 
 @Injectable()
