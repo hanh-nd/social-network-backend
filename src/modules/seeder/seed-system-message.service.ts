@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Command } from 'nestjs-command';
 import { IDataServices } from 'src/common/repositories/data.service';
-import { DefaultSystemMessageCode, SystemMessageType } from '../system-messages/sytem-message.constants';
+import {
+    DefaultSystemMessageCode,
+    SystemMessageType,
+} from '../moderator/system-messages/moderator-system-message.constants';
 
 const data = [
     {

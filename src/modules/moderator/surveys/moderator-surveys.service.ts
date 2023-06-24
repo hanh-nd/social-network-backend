@@ -84,10 +84,14 @@ export class ModeratorSurveyService {
         const where: any = {};
 
         if (keyword?.trim()) {
-            where.$or = {
-                name: new RegExp(keyword.trim(), 'gi'),
-                description: new RegExp(keyword.trim(), 'gi'),
-            };
+            where.$or = [
+                {
+                    name: new RegExp(keyword.trim(), 'gi'),
+                },
+                {
+                    description: new RegExp(keyword.trim(), 'gi'),
+                },
+            ];
         }
 
         return where;
