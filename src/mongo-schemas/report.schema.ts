@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ReportAction } from 'src/common/constants';
+import { ReportAction, SystemReporter } from 'src/common/constants';
 import { ReportTarget } from 'src/common/interfaces';
 import { MongoCollection } from './constant';
 import { MongoBaseSchema } from './mongo.base.schema';
@@ -22,7 +22,7 @@ export type ReportDocument = Report & Document;
 export class Report extends MongoBaseSchema {
     _id: string;
 
-    @Prop({ required: true, type: Types.ObjectId, ref: User.name })
+    @Prop({ required: false, type: Types.ObjectId, ref: User.name })
     author: Partial<User>;
 
     @Prop({ required: true, type: Types.ObjectId, refPath: 'targetType' })
@@ -39,6 +39,9 @@ export class Report extends MongoBaseSchema {
 
     @Prop({ required: false, type: String })
     note: string;
+
+    @Prop({ type: String })
+    systemReporter: SystemReporter;
 }
 
 const BaseReportSchema = SchemaFactory.createForClass(Report);

@@ -18,6 +18,7 @@ import {
     ReportTargetType,
     SHARE_POST_POINT,
     SocketEvent,
+    SystemReporter,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds } from 'src/common/helper';
 import { ChatGPTService } from 'src/common/modules/chatgpt/chatgpt.service';
@@ -163,7 +164,9 @@ export class PostService {
             await this.dataServices.posts.updateById(post._id, {
                 tagIds: toObjectIds(tagIds),
             });
-        } catch (error) {}
+        } catch (error) {
+            this.logger.error(`[updatePostTagIds] ${error.stack || JSON.stringify(error)}`);
+        }
     }
 
     async updatePostIsToxic(post: Post) {
@@ -180,7 +183,16 @@ export class PostService {
             await this.dataServices.posts.updateById(post._id, {
                 isToxic: isToxic,
             });
-        } catch (error) {}
+
+            if (isToxic) {
+                // Tạo báo cáo
+                await this.reportService.create(SystemReporter.CHAT_GPT, ReportTargetType.POST, post, {
+                    reportReason: response.text,
+                });
+            }
+        } catch (error) {
+            this.logger.error(`[updatePostIsToxic] ${error.stack || JSON.stringify(error)}`);
+        }
     }
 
     async getUserPosts(userId: string) {
