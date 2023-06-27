@@ -11,13 +11,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
     versionKey: false,
 })
 export class Address {
-    @Prop({ required: true, type: String })
+    @Prop({ required: false, type: String })
     province: string;
 
-    @Prop({ required: true, type: String })
+    @Prop({ required: false, type: String })
     district: string;
 
-    @Prop({ required: true, type: String })
+    @Prop({ required: false, type: String })
     ward: string;
 
     @Prop({ required: false, type: String })
