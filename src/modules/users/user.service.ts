@@ -455,6 +455,9 @@ export class UserService {
                     $gte: userPointMinValue,
                     $lte: userPointMaxValue,
                 },
+                _id: {
+                    $nin: [toObjectId(userId), ...user.subscribingIds],
+                },
             },
             {
                 skip: skip,

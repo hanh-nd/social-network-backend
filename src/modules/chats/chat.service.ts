@@ -30,7 +30,9 @@ export class ChatService {
             // tìm đoạn chat đã tồn tại
             const existedChat = await this.dataServices.chats.findOne({
                 type: ChatType.PRIVATE,
-                members: toObjectIds(members),
+                members: {
+                    $in: toObjectIds(members),
+                },
             });
 
             if (existedChat) {

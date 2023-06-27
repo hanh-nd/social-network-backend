@@ -29,6 +29,8 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
                 'privacy',
                 'pictureIds',
                 'videoIds',
+                'isToxic',
+                'isAnonymous',
                 'createdAt',
                 'updatedAt',
                 'deletedAt',
@@ -48,6 +50,10 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
                     'avatarId',
                     'fullName',
                 ]);
+
+                if (`${postDto.postShared?.author?._id}` == `${user._id}`) {
+                    postDto.postShared.author.isSelf = true;
+                }
             }
         }
 
@@ -77,6 +83,12 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
 
         if (postDto.isAnonymous && !postDto?.author?.isSelf) {
             postDto.author = {
+                fullName: 'Người dùng ẩn danh',
+            };
+        }
+
+        if (postDto.postShared?.isAnonymous && !postDto?.postShared?.author?.isSelf) {
+            postDto.postShared.author = {
                 fullName: 'Người dùng ẩn danh',
             };
         }

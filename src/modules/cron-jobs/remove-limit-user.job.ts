@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
+import moment from 'moment';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
 import { NotificationService } from '../notifications/notification.service';
 import { CronJobKey } from './cron-job.constants';
 
+const CRON_JOB_REMOVE_LIMIT_USER = process.env.CRON_JOB_REMOVE_LIMIT_USER || '*/20 * * * *';
+
 let isRunning = false;
 
 @Injectable()
-export class DailyScanJob {
+export class RemoveLimitUserJob {
     constructor(
         private configService: ConfigService,
         private dataServices: IDataServices,
@@ -18,12 +21,12 @@ export class DailyScanJob {
         private systemMessageService: SystemMessageService,
     ) {}
 
-    private readonly logger = createWinstonLogger(DailyScanJob.name, this.configService);
+    private readonly logger = createWinstonLogger(RemoveLimitUserJob.name, this.configService);
 
-    @Cron(CronExpression.EVERY_DAY_AT_1AM, {
-        name: CronJobKey.DAILY_SCAN,
+    @Cron(CRON_JOB_REMOVE_LIMIT_USER, {
+        name: CronJobKey.REMOVE_LIMIT_USER,
     })
-    async dailyScan() {
+    async removeLimitUser() {
         try {
             if (isRunning) {
                 return;
@@ -34,12 +37,26 @@ export class DailyScanJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[dailyScan] start cron job`);
+            this.logger.info(`[removeLimitUser] start cron job`);
             isRunning = true;
+            await this.undoLimitUsers();
             isRunning = false;
-            this.logger.info(`[dailyScan] stop cron job`);
+            this.logger.info(`[removeLimitUser] stop cron job`);
         } catch (error) {
-            this.logger.error(`[dailyScan] ${error.stack || JSON.stringify(error)}`);
+            this.logger.error(`[removeLimitUser] ${error.stack || JSON.stringify(error)}`);
         }
+    }
+
+    async undoLimitUsers() {
+        await this.dataServices.users.bulkUpdate(
+            {
+                lastLimitedAt: {
+                    $lte: moment().subtract(20, 'minutes').toDate(),
+                },
+            },
+            {
+                lastLimitedAt: null,
+            },
+        );
     }
 }

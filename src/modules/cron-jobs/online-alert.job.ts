@@ -7,9 +7,9 @@ import { RedisKey } from 'src/common/modules/redis/redis.constants';
 import { RedisService } from 'src/common/modules/redis/redis.service';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
-import { NotificationService } from '../notifications/notification.service';
-import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
 import { DefaultSystemMessageCode } from '../moderator/system-messages/moderator-system-message.constants';
+import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
+import { NotificationService } from '../notifications/notification.service';
 import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/5 * * * *';
@@ -66,6 +66,7 @@ export class OnlineAlertJob {
             DefaultSystemMessageCode.TIME_LIMIT_WARNING,
         );
         for (const userId of matchedUsers) {
+            const userSpentTimeSeconds = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
             this.notificationService.create(
                 null,
                 { _id: userId },
@@ -73,7 +74,7 @@ export class OnlineAlertJob {
                 alertSystemMessage,
                 NotificationAction.SEND_MESSAGE,
                 {
-                    minutes: level * alertMinutes,
+                    minutes: Math.round(userSpentTimeSeconds / 60),
                 },
                 true,
             );
