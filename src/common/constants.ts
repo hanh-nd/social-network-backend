@@ -220,6 +220,10 @@ export enum ReportAction {
     REJECTED = 'REJECTED',
 }
 
+export enum SystemReporter {
+    CHAT_GPT = 'CHAT_GPT',
+}
+
 export const ReportTargetType = {
     POST: 'Post',
     COMMENT: 'Comment',
