@@ -85,7 +85,7 @@ export class AuthService {
         await this.dataServices.userDetails.create({
             userId: toObjectId(createdUser._id),
             ...body,
-            birthday: moment(body.birthday).utc(true).toDate(),
+            birthday: moment(body.birthday, 'YYYY/MM/DD').utc(true).toDate(),
         });
         await this.elasticsearchService.index<User>(ElasticsearchIndex.USER, {
             id: createdUser._id,
