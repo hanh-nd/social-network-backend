@@ -12,6 +12,7 @@ export interface IUpdateProfileBody {
     coverId?: string;
     phone?: string;
     fullName?: string;
+    email?: string;
     birthday?: Date;
     address?: IAddress;
     describe?: string;
