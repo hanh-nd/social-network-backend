@@ -37,7 +37,7 @@ export class ReducePointJob {
                 },
                 {
                     point: {
-                        $inc: -100,
+                        $inc: -50,
                     },
                 },
             );

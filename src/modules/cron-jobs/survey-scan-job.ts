@@ -5,8 +5,8 @@ import * as moment from 'moment';
 import { NotificationAction, NotificationTargetType } from 'src/common/constants';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
-import { NotificationService } from '../notifications/notification.service';
 import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';
+import { NotificationService } from '../notifications/notification.service';
 import { CronJobKey } from './cron-job.constants';
 
 let isRunning = false;
@@ -49,8 +49,8 @@ export class SurveyScanJob {
     async scanSurveys() {
         const surveys = await this.dataServices.surveys.findAll({
             askDate: {
-                $gte: moment().subtract(1, 'minute').toDate(),
-                $lte: moment().toDate(),
+                $gte: moment().subtract(1, 'minute').utc(true).toDate(),
+                $lte: moment().utc(true).toDate(),
             },
         });
 
@@ -82,6 +82,23 @@ export class SurveyScanJob {
                     }),
                 );
             } while (users.length);
+
+            const surveyRepeatDays = survey.repeatDays.sort() || [];
+            const todayIsoWeekday = moment().isoWeekday();
+            const todayIndex = surveyRepeatDays.findIndex((e) => e == todayIsoWeekday);
+            if (todayIndex < 0) return;
+
+            const nextRepeatDay = surveyRepeatDays[todayIndex + 1] || surveyRepeatDays[0];
+            if (nextRepeatDay) {
+                const toIncreaseDate =
+                    nextRepeatDay > todayIsoWeekday
+                        ? nextRepeatDay - todayIsoWeekday
+                        : 7 - todayIsoWeekday + nextRepeatDay;
+
+                await this.dataServices.surveys.updateById(survey._id, {
+                    askDate: moment(survey.askDate).add(toIncreaseDate, 'days').toDate(),
+                });
+            }
         }
     }
 }

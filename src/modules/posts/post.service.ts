@@ -132,8 +132,8 @@ export class PostService {
             ],
         });
 
-        this.updatePostTagIds(post);
-        this.updatePostIsToxic(post);
+        await this.updatePostIsToxic(post);
+        await this.updatePostTagIds(post);
         const postDto = await this.dataResources.posts.mapToDto(post);
         return postDto as Post;
     }
