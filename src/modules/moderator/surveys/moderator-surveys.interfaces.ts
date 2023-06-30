@@ -10,9 +10,12 @@ export interface ICreateSurveyBody {
     question: string;
     askDate: Date;
     urgent: boolean;
+    repeatDays: number[];
 }
 
-export interface IUpdateSurveyBody extends Partial<ICreateSurveyBody> {}
+export interface IUpdateSurveyBody extends Partial<ICreateSurveyBody> {
+    repeatDays: number[];
+}
 
 export interface IAnswerSurveyBody {
     answer: string;

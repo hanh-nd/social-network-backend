@@ -12,7 +12,7 @@ import { SystemMessageService } from '../moderator/system-messages/moderator-sys
 import { NotificationService } from '../notifications/notification.service';
 import { CronJobKey } from './cron-job.constants';
 
-const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/5 * * * *';
+const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/1 * * * *';
 let isRunning = false;
 @Injectable()
 export class OnlineAlertJob {
@@ -55,7 +55,7 @@ export class OnlineAlertJob {
     async scanAlertByLevel(level = 1) {
         const alertMinutes = Math.ceil(this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE) / 60);
         const client = await this.redisService.getClient();
-        const timeSpentRange = [level * alertMinutes * 60, (level + 1) * alertMinutes * 60];
+        const timeSpentRange = [level * alertMinutes * 60, (level * alertMinutes + 1) * 60];
         const matchedUsers = await client.zrangebyscore(
             RedisKey.ONLINE_USERS,
             timeSpentRange[0],
@@ -66,6 +66,8 @@ export class OnlineAlertJob {
             DefaultSystemMessageCode.TIME_LIMIT_WARNING,
         );
         for (const userId of matchedUsers) {
+            const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
+            if (!cachedUserLastOnline) continue;
             const userSpentTimeSeconds = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
             this.notificationService.create(
                 null,

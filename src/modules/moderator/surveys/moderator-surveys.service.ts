@@ -23,14 +23,15 @@ export class ModeratorSurveyService {
     ) {}
 
     async createSurvey(body: ICreateSurveyBody) {
-        const { askDate, type = SurveyType.CARE, name, description, question, urgent } = body;
+        const { askDate, type = SurveyType.CARE, name, description, question, urgent, repeatDays } = body;
         const createdSurvey = await this.dataServices.surveys.create({
             name,
             description,
             type,
             question,
-            askDate: moment(askDate, 'YYYY-MM-DD HH:mm:ss').toDate(),
+            askDate: moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate(),
             urgent,
+            repeatDays,
         });
 
         return createdSurvey;
@@ -48,7 +49,7 @@ export class ModeratorSurveyService {
         };
 
         if (askDate) {
-            toUpdateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').toDate();
+            toUpdateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate();
         }
         const updatedSurvey = await this.dataServices.surveys.updateById(id, toUpdateBody);
         return updatedSurvey;

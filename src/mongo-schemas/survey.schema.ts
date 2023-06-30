@@ -40,6 +40,9 @@ export class Survey extends MongoBaseSchema {
 
     @Prop({ required: false, type: Object })
     filter: Object;
+
+    @Prop({ default: [], type: [Number] })
+    repeatDays: number[];
 }
 
 const BaseSurveySchema = SchemaFactory.createForClass(Survey);
