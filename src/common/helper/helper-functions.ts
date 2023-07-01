@@ -31,7 +31,7 @@ export function capitalize(word: string) {
 }
 
 export function extractJSONFromText(text: string) {
-    const formattedText = text.replace(/ /g, '').replace(/\n/g, '').replace('\n', '');
+    const formattedText = text.replace(/  /g, '').replace(/\n/g, '').replace('\n', '');
     let json = null;
     const regex = /\[.*?\]/; // Regex pattern to match JSON arrays
     const match = formattedText.match(regex);
