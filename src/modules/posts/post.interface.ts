@@ -16,6 +16,7 @@ export interface IUpdatePostBody {
     privacy?: number;
     pictureIds?: string[];
     videoIds?: string[];
+    tagIds?: string[];
 }
 
 export interface IGetPostListQuery extends ICommonGetListQuery {}

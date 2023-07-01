@@ -1,5 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, ReportAction, ReportTargetType } from 'src/common/constants';
+import {
+    DEFAULT_PAGE_LIMIT,
+    DEFAULT_PAGE_VALUE,
+    ReportAction,
+    ReportTargetType,
+    SystemReporter,
+} from 'src/common/constants';
 import { toObjectId } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
 import { IDataServices } from 'src/common/repositories/data.service';
@@ -94,9 +100,23 @@ export class ModeratorReportService {
     }
 
     async rejectReport(id: string) {
+        const report = await this.dataServices.reports.findById(id);
+        if (!report) {
+            throw new NotFoundException(`Không tìm thấy báo cáo này`);
+        }
+
         await this.dataServices.reports.updateById(id, {
             action: ReportAction.REJECTED,
         });
+
+        if (report.systemReporter === SystemReporter.CHAT_GPT) {
+            if (report.targetType === ReportTargetType.POST) {
+                await this.dataServices.posts.updateById((report.target._id ?? report.target) as unknown as string, {
+                    isToxic: false,
+                });
+            }
+        }
+
         return true;
     }
 

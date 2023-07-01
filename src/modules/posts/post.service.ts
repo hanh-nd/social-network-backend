@@ -132,13 +132,17 @@ export class PostService {
             ],
         });
 
-        await this.updatePostIsToxic(post);
-        await this.updatePostTagIds(post);
+        this.updatePostMetaData(post);
         const postDto = await this.dataResources.posts.mapToDto(post);
         return postDto as Post;
     }
 
-    async updatePostTagIds(post: Post) {
+    private async updatePostMetaData(post: Post) {
+        await this.updatePostIsToxic(post);
+        await this.updatePostTagIds(post);
+    }
+
+    private async updatePostTagIds(post: Post) {
         const tagNames = await this.tagService.getTagNames();
         try {
             const response = await this.chatGPTService.sendMessage(
@@ -169,7 +173,7 @@ export class PostService {
         }
     }
 
-    async updatePostIsToxic(post: Post) {
+    private async updatePostIsToxic(post: Post) {
         try {
             const response = await this.chatGPTService.sendMessage(
                 `Give me just the text "1" if and only if the paragraph below contains toxic words, or else "0":\n${post.content}`,
@@ -379,7 +383,7 @@ export class PostService {
     }
 
     async updateUserPost(userId: string, postId: string, body: IUpdatePostBody) {
-        const { content, privacy, pictureIds, videoIds } = body;
+        const { content, privacy, pictureIds, videoIds, tagIds } = body;
         const existedPost = await this.dataServices.posts.findOne(
             {
                 author: toObjectId(userId),
@@ -400,6 +404,10 @@ export class PostService {
 
         if (videoIds) {
             toUpdateBody.videoIds = toObjectIds(videoIds);
+        }
+
+        if (tagIds) {
+            toUpdateBody.tagIds = toObjectIds(tagIds);
         }
 
         await this.dataServices.posts.updateById(existedPost._id, toUpdateBody);
