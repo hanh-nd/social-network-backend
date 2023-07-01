@@ -24,6 +24,7 @@ export class SurveyScanJob {
 
     @Cron(CronExpression.EVERY_MINUTE, {
         name: CronJobKey.SURVEY_SCAN,
+        timeZone: 'Asia/Bangkok',
     })
     async surveyScan() {
         try {

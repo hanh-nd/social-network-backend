@@ -25,6 +25,7 @@ export class RemoveLimitUserJob {
 
     @Cron(CRON_JOB_REMOVE_LIMIT_USER, {
         name: CronJobKey.REMOVE_LIMIT_USER,
+        timeZone: 'Asia/Bangkok',
     })
     async removeLimitUser() {
         try {

@@ -15,6 +15,7 @@ export class ReducePointJob {
 
     @Cron(CRON_JOB_REDUCE_POINT, {
         name: CronJobKey.REDUCE_POINT,
+        timeZone: 'Asia/Bangkok',
     })
     async reducePostPoints() {
         try {

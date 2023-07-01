@@ -26,6 +26,7 @@ export class HappyBirthdayJob {
 
     @Cron(CRON_JOB_HAPPY_BIRTHDAY, {
         name: CronJobKey.HAPPY_BIRTHDAY,
+        timeZone: 'Asia/Bangkok',
     })
     async scanBirthdayUsers() {
         try {
