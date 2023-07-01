@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
-import moment from 'moment';
+import * as moment from 'moment';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { SystemMessageService } from '../moderator/system-messages/moderator-system-message.service';

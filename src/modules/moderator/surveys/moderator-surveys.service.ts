@@ -9,7 +9,6 @@ import { createWinstonLogger } from 'src/common/modules/winston';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Survey } from 'src/mongo-schemas';
-import { SurveyType } from './moderator-surveys.constants';
 import {
     ICreateSurveyBody,
     IGetSurveyListQuery,
@@ -29,17 +28,23 @@ export class ModeratorSurveyService {
     private readonly logger = createWinstonLogger(ModeratorSurveyService.name, this.configService);
 
     async createSurvey(body: ICreateSurveyBody) {
-        const { askDate, type = SurveyType.CARE, name, description, question, urgent, repeatDays } = body;
-        const createdSurvey = await this.dataServices.surveys.create({
-            name,
-            description,
-            type,
-            question,
-            askDate: moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate(),
-            urgent,
-            repeatDays,
-        });
-        this.updateQuickAnswers(createdSurvey);
+        const { askDate, quickAnswers } = body;
+        const toCreateBody: Partial<Survey> = {
+            ...body,
+        };
+
+        if (askDate) {
+            toCreateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate();
+        }
+
+        if (quickAnswers) {
+            toCreateBody.quickAnswers = `${quickAnswers}`.split(';').map((e) => e.trim());
+        }
+
+        const createdSurvey = await this.dataServices.surveys.create(toCreateBody);
+        if (!quickAnswers) {
+            this.updateQuickAnswers(createdSurvey);
+        }
         return createdSurvey;
     }
 
@@ -49,7 +54,7 @@ export class ModeratorSurveyService {
             throw new NotFoundException(`Không tìm thấy khảo sát này.`);
         }
 
-        const { askDate } = body;
+        const { askDate, quickAnswers } = body;
         const toUpdateBody: Partial<Survey> = {
             ...body,
         };
@@ -57,7 +62,15 @@ export class ModeratorSurveyService {
         if (askDate) {
             toUpdateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate();
         }
-        if (body.question && existedSurvey.question !== body.question) {
+
+        if (quickAnswers) {
+            toUpdateBody.quickAnswers = `${quickAnswers}`.split(';').map((e) => e.trim());
+        }
+
+        if (
+            body.quickAnswers ||
+            (!existedSurvey.quickAnswers && body.question && existedSurvey.question !== body.question)
+        ) {
             this.updateQuickAnswers(existedSurvey);
         }
         const updatedSurvey = await this.dataServices.surveys.updateById(id, toUpdateBody);

@@ -11,6 +11,7 @@ export interface ICreateSurveyBody {
     askDate: Date;
     urgent: boolean;
     repeatDays: number[];
+    quickAnswers: string[];
 }
 
 export interface IUpdateSurveyBody extends Partial<ICreateSurveyBody> {
