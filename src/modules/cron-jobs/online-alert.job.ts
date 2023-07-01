@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import * as moment from 'moment';
 import { ConfigKey } from 'src/common/config';
 import { NotificationAction, NotificationTargetType } from 'src/common/constants';
 import { RedisKey } from 'src/common/modules/redis/redis.constants';
@@ -28,6 +29,7 @@ export class OnlineAlertJob {
 
     @Cron(CRON_JOB_ONLINE_ALERT, {
         name: CronJobKey.ONLINE_ALERT,
+        timeZone: 'Asia/Bangkok',
     })
     async scanOnlineUsersAlert() {
         try {
@@ -53,7 +55,8 @@ export class OnlineAlertJob {
     }
 
     async scanAlertByLevel(level = 1) {
-        const alertMinutes = Math.ceil(this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE) / 60);
+        const ALERT_TIME_RANGE = this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE);
+        const alertMinutes = Math.ceil(ALERT_TIME_RANGE / 60);
         const client = await this.redisService.getClient();
         const timeSpentRange = [level * alertMinutes * 60, (level * alertMinutes + 1) * 60];
         const matchedUsers = await client.zrangebyscore(
@@ -68,6 +71,10 @@ export class OnlineAlertJob {
         for (const userId of matchedUsers) {
             const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
             if (!cachedUserLastOnline) continue;
+            const currentTimeMoment = moment();
+            const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
+            if (timeDiff >= 120) continue;
+
             const userSpentTimeSeconds = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
             this.notificationService.create(
                 null,

@@ -22,6 +22,7 @@ export class DailyScanJob {
 
     @Cron(CronExpression.EVERY_DAY_AT_1AM, {
         name: CronJobKey.DAILY_SCAN,
+        timeZone: 'Asia/Bangkok',
     })
     async dailyScan() {
         try {

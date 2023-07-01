@@ -29,6 +29,7 @@ export class SleepReminderJob {
 
     @Cron(CRON_JOB_SLEEP_REMINDER, {
         name: CronJobKey.SLEEP_REMINDER,
+        timeZone: 'Asia/Bangkok',
     })
     async scanOnlineUsers() {
         try {
