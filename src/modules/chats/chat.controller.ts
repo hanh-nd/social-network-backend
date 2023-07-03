@@ -19,7 +19,6 @@ export class ChatController {
     private readonly logger = createWinstonLogger(ChatController.name, this.configService);
 
     @Post('/')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async createChat(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: ICreateChatBody) {
         try {
             const result = await this.chatService.createChat(loginUser.userId, body);
@@ -31,7 +30,6 @@ export class ChatController {
     }
 
     @Get('/')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async getUserChats(@LoginUser() loginUser) {
         try {
             const result = await this.chatService.getUserChats(loginUser.userId);
@@ -43,7 +41,6 @@ export class ChatController {
     }
 
     @Patch('/:id')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async updateChat(@LoginUser() loginUser, @Param('id') chatId, @Body(new TrimBodyPipe()) body: IUpdateChatBody) {
         try {
             const result = await this.chatService.updateChat(loginUser.userId, chatId, body);
@@ -55,7 +52,6 @@ export class ChatController {
     }
 
     @Post('/:id/members/:memberId')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async addOrRemoveMember(@LoginUser() loginUser, @Param('id') chatId: string, @Param('memberId') targetId: string) {
         try {
             const result = await this.chatService.addOrRemoveMember(loginUser.userId, chatId, targetId);
@@ -67,7 +63,6 @@ export class ChatController {
     }
 
     @Post('/:id/members/:memberId/admin')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async makeOrRemoveAdministrator(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -83,7 +78,6 @@ export class ChatController {
     }
 
     @Post('/:id/members/:memberId/block')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async blockOrUnblockMember(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -99,7 +93,6 @@ export class ChatController {
     }
 
     @Delete('/:id')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async deleteChat(@LoginUser() loginUser, @Param('id') chatId) {
         try {
             const result = await this.chatService.deleteChat(loginUser.userId, chatId);
@@ -111,7 +104,6 @@ export class ChatController {
     }
 
     @Get('/:id/messages')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async getMessages(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -127,7 +119,6 @@ export class ChatController {
     }
 
     @Delete('/:id/messages/:messageId')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async deleteMessage(@LoginUser() loginUser, @Param('id') chatId: string, @Param('messageId') messageId: string) {
         try {
             const result = await this.chatService.deleteMessage(loginUser.userId, chatId, messageId);
@@ -139,7 +130,6 @@ export class ChatController {
     }
 
     @Post('/:id/messages/:messageId')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async reportMessage(
         @LoginUser() loginUser,
         @Param('id') chatId: string,
@@ -156,7 +146,6 @@ export class ChatController {
     }
 
     @Get('/:id')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async getChatDetail(@LoginUser() loginUser, @Param('id') chatId: string) {
         try {
             const result = await this.chatService.getChatDetail(loginUser.userId, chatId);
@@ -168,7 +157,6 @@ export class ChatController {
     }
 
     @Post('/:id/leave')
-    @Permissions(MANAGE_CHAT_PERMISSIONS)
     async leaveChat(@LoginUser() loginUser, @Param('id') chatId: string) {
         try {
             const result = await this.chatService.leaveChat(loginUser.userId, chatId);
