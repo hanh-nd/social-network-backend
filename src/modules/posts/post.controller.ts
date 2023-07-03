@@ -21,7 +21,6 @@ export class PostController {
     private readonly logger = createWinstonLogger(PostController.name, this.configService);
 
     @Post('/')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async createNewPost(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: ICreatePostBody) {
         try {
             const result = await this.postService.createNewPost(loginUser.userId, body);
@@ -33,7 +32,6 @@ export class PostController {
     }
 
     @Get('/news-feed')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getNewsFeed(@LoginUser() loginUser, @Query() query: IGetPostListQuery) {
         try {
             const result = await this.postService.getNewsFeed(loginUser.userId, query);
@@ -45,7 +43,6 @@ export class PostController {
     }
 
     @Get('/me')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getUserPosts(@LoginUser() loginUser) {
         try {
             const result = await this.postService.getUserPosts(loginUser.userId);
@@ -57,7 +54,6 @@ export class PostController {
     }
 
     @Get('/interested')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getUserInterestedPosts(@LoginUser() loginUser, @Query(new RemoveEmptyQueryPipe()) query: IGetPostListQuery) {
         try {
             const result = await this.postService.getUserInterestedTagPosts(loginUser.userId, query);
@@ -69,7 +65,6 @@ export class PostController {
     }
 
     @Get('/:id')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostDetail(@LoginUser() loginUser, @Param('id') postId: string) {
         try {
             const result = await this.postService.getDetail(loginUser.userId, postId);
@@ -81,7 +76,6 @@ export class PostController {
     }
 
     @Patch('/:postId')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async updatePost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -97,7 +91,6 @@ export class PostController {
     }
 
     @Delete('/:postId')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async deletePost(@LoginUser() loginUser, @Param('postId') postId: string) {
         try {
             const result = await this.postService.deleteUserPost(loginUser.userId, postId);
@@ -109,7 +102,6 @@ export class PostController {
     }
 
     @Get('/:postId/comments')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostComments(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -125,7 +117,6 @@ export class PostController {
     }
 
     @Post('/:postId/comments')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async createPostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -141,7 +132,6 @@ export class PostController {
     }
 
     @Patch('/:postId/comments/:commentId')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async updatePostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -158,7 +148,6 @@ export class PostController {
     }
 
     @Delete('/:postId/comments/:commentId')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async deletePostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -174,7 +163,6 @@ export class PostController {
     }
 
     @Get('/:postId/reactions')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostReactions(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -190,7 +178,6 @@ export class PostController {
     }
 
     @Post('/:postId/react')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async reactOrUndoReactPost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -206,7 +193,6 @@ export class PostController {
     }
 
     @Get('/:postId/comments/:commentId/reactions')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getPostCommentReactions(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -223,7 +209,6 @@ export class PostController {
     }
 
     @Post('/:postId/comments/:commentId/react')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async reactOrUndoReactPostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -245,7 +230,6 @@ export class PostController {
     }
 
     @Post('/:postId/report')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async reportPost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -261,7 +245,6 @@ export class PostController {
     }
 
     @Post('/:postId/comments/:commentId/report')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async reportPostComment(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -278,7 +261,6 @@ export class PostController {
     }
 
     @Post('/:postId/share')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async sharePost(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
@@ -294,7 +276,6 @@ export class PostController {
     }
 
     @Get('/:postId/shares')
-    @Permissions(MANAGE_POST_PERMISSIONS)
     async getSharePosts(
         @LoginUser() loginUser,
         @Param('postId') postId: string,
