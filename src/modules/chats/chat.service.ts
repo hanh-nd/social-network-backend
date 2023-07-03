@@ -31,7 +31,7 @@ export class ChatService {
             const existedChat = await this.dataServices.chats.findOne({
                 type: ChatType.PRIVATE,
                 members: {
-                    $in: toObjectIds(members),
+                    $all: toObjectIds(members),
                 },
             });
 
