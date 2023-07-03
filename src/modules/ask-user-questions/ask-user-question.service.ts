@@ -1,9 +1,15 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE } from 'src/common/constants';
+import {
+    DEFAULT_PAGE_LIMIT,
+    DEFAULT_PAGE_VALUE,
+    NotificationAction,
+    NotificationTargetType,
+} from 'src/common/constants';
 import { toObjectId } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { AskUserQuestion } from 'src/mongo-schemas';
+import { NotificationService } from '../notifications/notification.service';
 import {
     ICreateAskUserQuestionBody,
     IGetAskUserQuestionQuery,
@@ -12,7 +18,11 @@ import {
 
 @Injectable()
 export class AskUserQuestionService {
-    constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
+    constructor(
+        private dataServices: IDataServices,
+        private dataResources: IDataResources,
+        private notificationService: NotificationService,
+    ) {}
 
     async create(userId: string, body: ICreateAskUserQuestionBody) {
         const { receiver } = body;
@@ -22,6 +32,17 @@ export class AskUserQuestionService {
             receiver: toObjectId(receiver),
         };
         const createdQuestion = await this.dataServices.askUserQuestions.create(toCreateAskUserQuestionBody);
+        this.notificationService.create(
+            {
+                _id: userId,
+            },
+            {
+                _id: receiver,
+            },
+            NotificationTargetType.QUESTION,
+            createdQuestion,
+            NotificationAction.ASK_QUESTION,
+        );
         return createdQuestion;
     }
 

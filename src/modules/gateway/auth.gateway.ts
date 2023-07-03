@@ -27,4 +27,14 @@ export class AuthGateway {
         client.join(`${userId}`);
         return;
     }
+
+    @SubscribeMessage(SocketEvent.USER_LOGOUT)
+    async receiveUserLogout(client: ISocket, payload: IUserLoginPayload): Promise<WsResponse<unknown>> {
+        console.info('receive event USER_LOGOUT: ', payload);
+        const { userId } = payload;
+        if (!userId) return;
+
+        client.leave(`${userId}`);
+        return;
+    }
 }
