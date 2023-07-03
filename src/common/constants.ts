@@ -261,6 +261,7 @@ export const NotificationAction = {
 
 export const SocketEvent = {
     USER_LOGIN: 'USER_LOGIN',
+    USER_LOGOUT: 'USER_LOGOUT',
 
     USER_REACT: 'USER_REACT',
     USER_SUBSCRIBE_PUBLIC: 'USER_SUBSCRIBE_PUBLIC',

@@ -80,6 +80,17 @@ export class JoinRequestService {
         });
 
         if (status !== SubscribeRequestStatus.ACCEPTED) {
+            this.notificationService.create(
+                {
+                    _id: group?.administrators?.[0]?.user?._id ?? (group?.administrators?.[0]?.user as string),
+                },
+                {
+                    _id: existedJoinRequest.sender as string,
+                },
+                NotificationTargetType.GROUP,
+                group,
+                NotificationAction.ACCEPT_JOIN_GROUP,
+            );
             return {
                 success: false,
             };
