@@ -242,7 +242,7 @@ export const NotificationTargetType = {
     SYSTEM_MESSAGE: 'SystemMessage',
     SURVEY: 'Survey',
     GROUP: 'Group',
-    QUESTION: 'Question',
+    QUESTION: 'AskUserQuestion',
 };
 
 export const NotificationAction = {
