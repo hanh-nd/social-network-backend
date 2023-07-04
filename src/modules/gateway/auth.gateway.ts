@@ -5,12 +5,13 @@ import { WebsocketExceptionsFilter } from './exceptions';
 import { SocketGateway } from './socket.gateway';
 import { ISocket, IUserLoginPayload } from './socket.interfaces';
 
-@WebSocketGateway({
+@WebSocketGateway(3011, {
     allowEIO3: true,
     cors: {
         origin: true,
         credentials: true,
     },
+    namespace: 'api',
 })
 @UseFilters(WebsocketExceptionsFilter)
 export class AuthGateway {

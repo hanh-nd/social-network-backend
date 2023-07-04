@@ -11,12 +11,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { WebsocketExceptionsFilter } from './exceptions';
 
-@WebSocketGateway({
+@WebSocketGateway(3011, {
     allowEIO3: true,
     cors: {
         origin: true,
         credentials: true,
     },
+    namespace: 'api',
 })
 @UseFilters(new WebsocketExceptionsFilter())
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
