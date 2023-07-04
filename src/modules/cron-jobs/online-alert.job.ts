@@ -73,7 +73,7 @@ export class OnlineAlertJob {
             if (!cachedUserLastOnline) continue;
             const currentTimeMoment = moment();
             const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
-            if (timeDiff >= 120) continue;
+            if (timeDiff >= 60) continue;
 
             const userSpentTimeSeconds = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
             this.notificationService.create(

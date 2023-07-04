@@ -34,7 +34,7 @@ export class ModeratorSurveyService {
         };
 
         if (askDate) {
-            toCreateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate();
+            toCreateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').subtract(7, 'hours').toDate();
         }
 
         if (quickAnswers) {
@@ -60,7 +60,7 @@ export class ModeratorSurveyService {
         };
 
         if (askDate) {
-            toUpdateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate();
+            toUpdateBody.askDate = moment(askDate, 'YYYY-MM-DD HH:mm:ss').subtract(7, 'hours').toDate();
         }
 
         if (quickAnswers) {
@@ -68,7 +68,7 @@ export class ModeratorSurveyService {
         }
 
         if (
-            body.quickAnswers ||
+            !body.quickAnswers ||
             (!existedSurvey.quickAnswers && body.question && existedSurvey.question !== body.question)
         ) {
             this.updateQuickAnswers(existedSurvey);

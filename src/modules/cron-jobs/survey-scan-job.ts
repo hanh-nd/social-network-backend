@@ -50,8 +50,8 @@ export class SurveyScanJob {
     async scanSurveys() {
         const surveys = await this.dataServices.surveys.findAll({
             askDate: {
-                $gte: moment().subtract(1, 'minute').utc(true).toDate(),
-                $lte: moment().utc(true).toDate(),
+                $gte: moment().subtract(1, 'minute').toDate(),
+                $lte: moment().toDate(),
             },
         });
 
