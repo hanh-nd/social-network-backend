@@ -101,6 +101,7 @@ export class ChatService {
                 },
             },
             {
+                sort: [['lastMessageAt', -1]],
                 populate: [
                     {
                         path: 'members',
@@ -388,6 +389,10 @@ export class ChatService {
         }
 
         const message = await this.messageService.createMessage(user, chat, body);
+
+        await this.dataServices.chats.updateById(chatId, {
+            lastMessageAt: Date.now(),
+        });
         return { chat, message };
     }
 

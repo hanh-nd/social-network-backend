@@ -70,6 +70,7 @@ export class HappyBirthdayJob {
             this.logger.info(`[scanBirthdayUsers] stop cron job`);
         } catch (error) {
             this.logger.error(`[scanBirthdayUsers] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 }

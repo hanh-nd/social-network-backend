@@ -103,7 +103,6 @@ export class PostResource extends IGenericResource<PostDocument, UserDocument> {
         delete postDto.commentIds;
         delete postDto.reactIds;
         delete postDto.sharedIds;
-        delete postDto.point;
         delete postDto.isDeletedBySystem;
 
         return postDto;

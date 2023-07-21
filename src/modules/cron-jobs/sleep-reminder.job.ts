@@ -15,6 +15,8 @@ import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_SLEEP_REMINDER = process.env.CRON_JOB_SLEEP_REMINDER || '*/5 0-4,21-23 * * *';
 let isRunning = false;
+const AVAILABLE_RANGES = [1, 5, 10, 15, 20, 25, 30];
+
 @Injectable()
 export class SleepReminderJob {
     constructor(
@@ -45,7 +47,14 @@ export class SleepReminderJob {
             this.logger.info(`[scanOnlineUsers] start cron job`);
             isRunning = true;
             const client = await this.redisService.getClient();
-            const matchedUserIds = await client.zrangebyscore(RedisKey.ONLINE_USERS, 1, '+inf');
+            const matchedUserIds: string[] = await AVAILABLE_RANGES.reduce(
+                async (idsPromise: Promise<string[]>, range: number) => {
+                    const currentIds = await idsPromise;
+                    const matchedUserIds = await client.zrangebyscore(`${RedisKey.ONLINE_USERS}_${range}`, 1, '+inf');
+                    return [...currentIds, ...matchedUserIds];
+                },
+                Promise.resolve([]),
+            );
 
             if (matchedUserIds.length) {
                 const sleepReminderSystemMessage = await this.systemMessageService.getMessageByCode(
@@ -72,6 +81,7 @@ export class SleepReminderJob {
             this.logger.info(`[scanOnlineUsers] stop cron job`);
         } catch (error) {
             this.logger.error(`[scanOnlineUsers] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 }

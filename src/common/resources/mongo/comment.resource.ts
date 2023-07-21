@@ -51,7 +51,6 @@ export class CommentResource extends IGenericResource<CommentDocument, UserDocum
         }
 
         delete commentDto.reactIds;
-        delete commentDto.point;
         return commentDto;
     }
 }

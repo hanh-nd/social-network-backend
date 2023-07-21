@@ -101,6 +101,9 @@ export class User extends MongoBaseSchema {
 
     @Prop({ required: false, type: Date })
     lastLimitedAt: Date;
+
+    @Prop({ required: false, default: 5, type: Number })
+    alertRange: number;
 }
 
 const BaseUserSchema = SchemaFactory.createForClass(User);

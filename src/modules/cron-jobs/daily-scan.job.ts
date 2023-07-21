@@ -41,6 +41,7 @@ export class DailyScanJob {
             this.logger.info(`[dailyScan] stop cron job`);
         } catch (error) {
             this.logger.error(`[dailyScan] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 }

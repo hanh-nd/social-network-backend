@@ -90,7 +90,6 @@ export class GroupPostResource extends IGenericResource<GroupPostDocument, UserD
         delete groupPostDto.post.commentIds;
         delete groupPostDto.post.reactIds;
         delete groupPostDto.post.sharedIds;
-        delete groupPostDto.post.point;
         delete groupPostDto.post.isDeletedBySystem;
 
         return groupPostDto;

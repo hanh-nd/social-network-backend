@@ -850,7 +850,7 @@ export class PostService {
         }
 
         const { tagIds = [] } = user;
-        if (!tagIds) return [];
+        if (!tagIds.length) return [];
 
         const { page = DEFAULT_PAGE_VALUE, limit = DEFAULT_PAGE_LIMIT } = query;
         const skip = (+page - 1) * +limit;

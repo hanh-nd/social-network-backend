@@ -29,6 +29,7 @@
     "dependencies": {
         "@elastic/elasticsearch": "^8.7.0",
         "@liaoliaots/nestjs-redis": "^9.0.5",
+        "@nestjs/bull": "^10.0.1",
         "@nestjs/common": "^9.0.0",
         "@nestjs/config": "^2.3.1",
         "@nestjs/core": "^9.0.0",
@@ -45,6 +46,7 @@
         "@types/lodash": "^4.14.192",
         "@types/multer-gridfs-storage": "^4.0.5",
         "bcrypt": "^5.1.0",
+        "bull": "^4.10.4",
         "chatgpt": "^5.2.4",
         "ioredis": "^5.3.2",
         "isomorphic-fetch": "^3.0.0",

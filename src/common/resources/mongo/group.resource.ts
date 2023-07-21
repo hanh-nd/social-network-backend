@@ -75,7 +75,6 @@ export class GroupResource extends IGenericResource<GroupDocument, UserDocument>
                 delete post.commentIds;
                 delete post.reactIds;
                 delete post.sharedIds;
-                delete post.point;
                 delete post.isDeletedBySystem;
 
                 return groupPost;

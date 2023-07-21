@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AccessLogInterceptor } from './common/interceptors/access-log.interceptor';
+import { BullModule } from './common/modules/bull/bull.module';
 import { ChatGPTModule } from './common/modules/chatgpt/chatgpt.module';
 import { ElasticsearchModule } from './common/modules/elasticsearch';
 import { MongoModule } from './common/modules/mongo';
@@ -28,6 +29,7 @@ import { MessageModule } from './modules/messages/message.module';
 import { ModeratorPostModule } from './modules/moderator/posts/moderator-post.module';
 import { ModeratorReportModule } from './modules/moderator/reports/moderator-report.module';
 import { ModeratorSurveyModule } from './modules/moderator/surveys/moderator-surveys.module';
+import { SystemMessageModule } from './modules/moderator/system-messages/moderator-system-message.module';
 import { ModeratorUserModule } from './modules/moderator/users/moderator-user.module';
 import { PostModule } from './modules/posts/post.module';
 import { RoleModule } from './modules/roles/role.module';
@@ -35,7 +37,6 @@ import { SearchModule } from './modules/search/search.module';
 import { SeedsModule } from './modules/seeder/seed.module';
 import { StatisticModule } from './modules/statistics/statistic.module';
 import { SurveyModule } from './modules/surveys/surveys.module';
-import { SystemMessageModule } from './modules/moderator/system-messages/moderator-system-message.module';
 import { TagModule } from './modules/tags/tag.module';
 import { UserModule } from './modules/users/user.module';
 
@@ -77,6 +78,7 @@ import { UserModule } from './modules/users/user.module';
         CoreSettingsModule,
         ModeratorSurveyModule,
         SurveyModule,
+        BullModule,
     ],
     controllers: [AppController],
     providers: [

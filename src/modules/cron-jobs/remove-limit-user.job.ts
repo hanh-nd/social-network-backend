@@ -45,6 +45,7 @@ export class RemoveLimitUserJob {
             this.logger.info(`[removeLimitUser] stop cron job`);
         } catch (error) {
             this.logger.error(`[removeLimitUser] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 

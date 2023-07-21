@@ -37,8 +37,8 @@ export class ReducePointJob {
                     },
                 },
                 {
-                    point: {
-                        $inc: -50,
+                    $inc: {
+                        point: -50,
                     },
                 },
             );
@@ -57,6 +57,7 @@ export class ReducePointJob {
             this.logger.info(`[reducePostPoints] stop cron job`);
         } catch (error) {
             this.logger.error(`[reducePostPoints] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 }
