@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import * as moment from 'moment';
-import { ConfigKey } from 'src/common/config';
 import { NotificationAction, NotificationTargetType } from 'src/common/constants';
 import { RedisKey } from 'src/common/modules/redis/redis.constants';
 import { RedisService } from 'src/common/modules/redis/redis.service';
@@ -15,6 +14,8 @@ import { CronJobKey } from './cron-job.constants';
 
 const CRON_JOB_ONLINE_ALERT = process.env.CRON_JOB_ONLINE_ALERT || '*/1 * * * *';
 let isRunning = false;
+const AVAILABLE_RANGES = [1, 5, 10, 15, 20, 25, 30];
+
 @Injectable()
 export class OnlineAlertJob {
     constructor(
@@ -51,47 +52,48 @@ export class OnlineAlertJob {
             this.logger.info(`[scanOnlineUsersAlert] stop cron job`);
         } catch (error) {
             this.logger.error(`[scanOnlineUsersAlert] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 
     async scanAlertByLevel(level = 1) {
-        const ALERT_TIME_RANGE = this.configService.get<number>(ConfigKey.ALERT_TIME_RANGE);
-        const alertMinutes = Math.ceil(ALERT_TIME_RANGE / 60);
         const client = await this.redisService.getClient();
-        const timeSpentRange = [level * alertMinutes * 60, (level * alertMinutes + 1) * 60];
-        const matchedUsers = await client.zrangebyscore(
-            RedisKey.ONLINE_USERS,
-            timeSpentRange[0],
-            level == 3 ? '+inf' : `(${timeSpentRange[1]}`,
-        );
-
-        const alertSystemMessage = await this.systemMessageService.getMessageByCode(
-            DefaultSystemMessageCode.TIME_LIMIT_WARNING,
-        );
-        for (const userId of matchedUsers) {
-            const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
-            if (!cachedUserLastOnline) continue;
-            const currentTimeMoment = moment();
-            const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
-            if (timeDiff >= 60) continue;
-
-            const userSpentTimeSeconds = +(await client.zscore(RedisKey.ONLINE_USERS, userId)) || 0;
-            this.notificationService.create(
-                null,
-                { _id: userId },
-                NotificationTargetType.SYSTEM_MESSAGE,
-                alertSystemMessage,
-                NotificationAction.SEND_MESSAGE,
-                {
-                    minutes: Math.round(userSpentTimeSeconds / 60),
-                },
-                true,
+        for (const range of AVAILABLE_RANGES) {
+            const timeSpentRange = [level * range * 60, (level * range + 1) * 60];
+            const matchedUsers = await client.zrangebyscore(
+                `${RedisKey.ONLINE_USERS}_${range}`,
+                timeSpentRange[0],
+                level == 3 ? '+inf' : `(${timeSpentRange[1]}`,
             );
 
-            if (level === 3) {
-                this.dataServices.users.updateById(userId, {
-                    lastLimitedAt: new Date(),
-                });
+            const alertSystemMessage = await this.systemMessageService.getMessageByCode(
+                DefaultSystemMessageCode.TIME_LIMIT_WARNING,
+            );
+            for (const userId of matchedUsers) {
+                const cachedUserLastOnline = await client.get(`${RedisKey.LAST_ONLINE}_${userId}`);
+                if (!cachedUserLastOnline) continue;
+                const currentTimeMoment = moment();
+                const timeDiff = currentTimeMoment.diff(moment(cachedUserLastOnline, `YYYY-MM-DD HH:mm:ss`), 'second');
+                if (timeDiff >= 60) continue;
+
+                const userSpentTimeSeconds = +(await client.zscore(`${RedisKey.ONLINE_USERS}_${range}`, userId)) || 0;
+                this.notificationService.create(
+                    null,
+                    { _id: userId },
+                    NotificationTargetType.SYSTEM_MESSAGE,
+                    alertSystemMessage,
+                    NotificationAction.SEND_MESSAGE,
+                    {
+                        minutes: Math.round(userSpentTimeSeconds / 60),
+                    },
+                    true,
+                );
+
+                if (level === 3) {
+                    this.dataServices.users.updateById(userId, {
+                        lastLimitedAt: new Date(),
+                    });
+                }
             }
         }
     }

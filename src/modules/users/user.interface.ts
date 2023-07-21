@@ -35,3 +35,7 @@ export interface IRemoveSubscriberBody {
 }
 
 export interface IGetUserListQuery extends ICommonGetListQuery {}
+
+export interface IUpdateAlertTimeRange {
+    alertRange: number;
+}

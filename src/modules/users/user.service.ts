@@ -18,6 +18,8 @@ import {
 } from 'src/common/constants';
 import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
+import { RedisKey } from 'src/common/modules/redis/redis.constants';
+import { RedisService } from 'src/common/modules/redis/redis.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { User } from 'src/mongo-schemas';
@@ -31,7 +33,7 @@ import {
     IUpdateSubscribeRequestBody,
 } from '../subscribe-requests/subscribe-request.interface';
 import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
-import { IChangePasswordBody, IGetUserListQuery, IUpdateProfileBody } from './user.interface';
+import { IChangePasswordBody, IGetUserListQuery, IUpdateAlertTimeRange, IUpdateProfileBody } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -43,6 +45,7 @@ export class UserService {
         private socketGateway: SocketGateway,
         private subscribeRequestService: SubscribeRequestService,
         private notificationService: NotificationService,
+        private redisService: RedisService,
     ) {}
 
     async getUserProfile(loginUserId: string, userId: string) {
@@ -518,5 +521,36 @@ export class UserService {
         );
         const postDtos = await this.dataResources.posts.mapToDtoList(posts, loginUser);
         return postDtos;
+    }
+
+    async updateAlertTimeRange(userId: string, body: IUpdateAlertTimeRange) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new NotFoundException(`Không tìm thấy người dùng này.`);
+        }
+
+        const { alertRange = 5 } = body;
+        if (alertRange === user.alertRange) {
+            // Không có gì thay đổi
+            return true;
+        }
+
+        // Cập nhật config redis
+        const client = await this.redisService.getClient();
+        await client.set(`${RedisKey.USER_ALERT_RANGE}_${userId}`, alertRange);
+
+        // Chuyển sang online alert range khác
+        const currentScore = +(await client.zscore(`${RedisKey.ONLINE_USERS}_${user.alertRange}`, userId)) || 0;
+        await Promise.all([
+            client.zadd(`${RedisKey.ONLINE_USERS}_${alertRange}`, currentScore, userId),
+            client.zrem(`${RedisKey.ONLINE_USERS}_${user.alertRange}`, userId),
+        ]);
+
+        // Cập nhật db
+        await this.dataServices.users.updateById(userId, {
+            alertRange: alertRange,
+        });
+
+        return true;
     }
 }

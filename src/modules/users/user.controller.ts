@@ -12,7 +12,13 @@ import {
     IGetSubscribeRequestListQuery,
     IUpdateSubscribeRequestBody,
 } from '../subscribe-requests/subscribe-request.interface';
-import { IChangePasswordBody, IGetUserListQuery, IRemoveSubscriberBody, IUpdateProfileBody } from './user.interface';
+import {
+    IChangePasswordBody,
+    IGetUserListQuery,
+    IRemoveSubscriberBody,
+    IUpdateAlertTimeRange,
+    IUpdateProfileBody,
+} from './user.interface';
 import { UserService } from './user.service';
 
 @Controller('/users')
@@ -213,6 +219,17 @@ export class UserController {
             return new SuccessResponse(user);
         } catch (error) {
             this.logger.error(`[getUserInformation] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Patch('/setting')
+    async updateUserSetting(@LoginUser() loginUser, @Body(new TrimBodyPipe()) body: IUpdateAlertTimeRange) {
+        try {
+            const result = await this.userService.updateAlertTimeRange(loginUser.userId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[updateUserSetting] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

@@ -44,6 +44,7 @@ export class SurveyScanJob {
             this.logger.info(`[surveyScan] stop cron job`);
         } catch (error) {
             this.logger.error(`[surveyScan] ${error.stack || JSON.stringify(error)}`);
+            isRunning = false;
         }
     }
 
