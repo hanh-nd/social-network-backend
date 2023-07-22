@@ -9,6 +9,7 @@ export interface ICreateAskUserQuestionBody {
 export interface IGetAskUserQuestionQuery extends ICommonGetListQuery {
     userId?: string;
     pending?: boolean;
+    asked?: boolean;
 }
 
 export interface IUpdateAskUserQuestionBody {

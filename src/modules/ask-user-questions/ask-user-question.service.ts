@@ -70,7 +70,7 @@ export class AskUserQuestionService {
     }
 
     private buildWhereQuery(query?: IGetAskUserQuestionQuery) {
-        const { keyword, userId, pending } = query;
+        const { keyword, userId, pending, asked } = query;
 
         const where: any = {};
 
@@ -78,14 +78,16 @@ export class AskUserQuestionService {
             where.code = keyword.trim();
         }
 
-        if (userId) {
-            where.receiver = toObjectId(userId);
-        }
-
         if (+pending) {
             where.answer = {
                 $eq: null,
             };
+        }
+
+        if (+asked) {
+            where.sender = toObjectId(userId);
+        } else {
+            where.receiver = toObjectId(userId);
         }
 
         return where;
@@ -98,6 +100,17 @@ export class AskUserQuestionService {
         }
 
         const updatedQuestion = await this.dataServices.askUserQuestions.updateById(id, body);
+        this.notificationService.create(
+            {
+                _id: `${existedAskUserQuestion.receiver}`,
+            },
+            {
+                _id: `${existedAskUserQuestion.sender}`,
+            },
+            NotificationTargetType.QUESTION,
+            updatedQuestion,
+            NotificationAction.ANSWER_QUESTION,
+        );
         return updatedQuestion;
     }
 

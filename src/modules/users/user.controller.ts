@@ -1,13 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { USER_PROFILE_PERMISSIONS } from 'src/common/constants';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
-import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
+import { AuthorizationGuard } from 'src/common/guards/authorization.guard';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
 import { IGetPostListQuery } from '../posts/post.interface';
+import { ICreateReportBody } from '../reports/report.interface';
 import {
     IGetSubscribeRequestListQuery,
     IUpdateSubscribeRequestBody,
@@ -230,6 +230,21 @@ export class UserController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[updateUserSetting] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Post('/:id/report')
+    async reportUser(
+        @LoginUser() loginUser,
+        @Param('id') targetUserId: string,
+        @Body(new TrimBodyPipe()) body: ICreateReportBody,
+    ) {
+        try {
+            const result = await this.userService.reportUser(loginUser.userId, targetUserId, body);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[reportUser] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }

@@ -10,6 +10,7 @@ import { NotificationModule } from '../notifications/notification.module';
 import { SubscribeRequestModule } from '../subscribe-requests/subscribe-request.module';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { ReportModule } from '../reports/report.module';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { UserService } from './user.service';
         NotificationModule,
         SubscribeRequestModule,
         RedisModule,
+        ReportModule,
     ],
     providers: [JwtService, UserService],
     controllers: [UserController],
