@@ -76,7 +76,7 @@ export class SystemMessageService {
         const systemMessage = await this.dataServices.systemMessages.findOne({
             code,
         });
-        this.redisService.set(`${RedisKey.SYSTEM_MESSAGE_CODES}_${code}`, code);
+        this.redisService.set(`${RedisKey.SYSTEM_MESSAGE_CODES}_${code}`, systemMessage);
         return systemMessage;
     }
 

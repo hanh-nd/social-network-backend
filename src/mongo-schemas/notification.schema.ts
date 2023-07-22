@@ -27,7 +27,7 @@ export class Notification extends MongoBaseSchema {
     @Prop({ required: true, type: Types.ObjectId, ref: User.name })
     to: Partial<User>;
 
-    @Prop({ required: true, type: Types.ObjectId, refPath: 'targetType' })
+    @Prop({ required: false, type: Types.ObjectId, refPath: 'targetType' })
     target: Partial<NotificationTarget>;
 
     @Prop({ required: true, type: String })

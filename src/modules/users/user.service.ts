@@ -14,6 +14,7 @@ import {
     NotificationAction,
     NotificationTargetType,
     Privacy,
+    ReportTargetType,
     SubscribeRequestStatus,
 } from 'src/common/constants';
 import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
@@ -34,6 +35,8 @@ import {
 } from '../subscribe-requests/subscribe-request.interface';
 import { SubscribeRequestService } from '../subscribe-requests/subscribe-request.service';
 import { IChangePasswordBody, IGetUserListQuery, IUpdateAlertTimeRange, IUpdateProfileBody } from './user.interface';
+import { ICreateReportBody } from '../reports/report.interface';
+import { ReportService } from '../reports/report.service';
 
 @Injectable()
 export class UserService {
@@ -46,6 +49,7 @@ export class UserService {
         private subscribeRequestService: SubscribeRequestService,
         private notificationService: NotificationService,
         private redisService: RedisService,
+        private reportService: ReportService,
     ) {}
 
     async getUserProfile(loginUserId: string, userId: string) {
@@ -552,5 +556,21 @@ export class UserService {
         });
 
         return true;
+    }
+
+    async reportUser(loginUserId: string, targetUserId: string, body: ICreateReportBody) {
+        const [loginUser, targetUser] = await Promise.all([
+            this.dataServices.users.findById(loginUserId),
+            this.dataServices.users.findById(targetUserId),
+        ]);
+        if (!loginUser) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+
+        if (!targetUser) {
+            throw new BadGatewayException(`Không tìm thấy người dùng.`);
+        }
+        const createdReportId = await this.reportService.create(loginUser, ReportTargetType.USER, targetUser, body);
+        return createdReportId;
     }
 }
