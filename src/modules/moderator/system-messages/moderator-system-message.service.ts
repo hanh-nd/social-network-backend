@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE } from 'src/common/constants';
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
+import { RedisKey } from 'src/common/modules/redis/redis.constants';
+import { RedisService } from 'src/common/modules/redis/redis.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { SystemMessage, User } from 'src/mongo-schemas';
@@ -12,7 +14,11 @@ import {
 
 @Injectable()
 export class SystemMessageService {
-    constructor(private dataServices: IDataServices, private dataResources: IDataResources) {}
+    constructor(
+        private dataServices: IDataServices,
+        private dataResources: IDataResources,
+        private redisService: RedisService,
+    ) {}
 
     async createMessage(body: ICreateSystemMessageBody) {
         const { code } = body;
@@ -59,13 +65,19 @@ export class SystemMessageService {
         }
 
         const updatedMessage = await this.dataServices.systemMessages.updateById(id, body);
+        this.redisService.delete(`${RedisKey.SYSTEM_MESSAGE_CODES}_${updatedMessage.code}`);
         return updatedMessage;
     }
 
     async getMessageByCode(code: string) {
-        return await this.dataServices.systemMessages.findOne({
+        const cachedData = await this.redisService.get<SystemMessage>(`${RedisKey.SYSTEM_MESSAGE_CODES}_${code}`);
+        if (cachedData) return cachedData;
+
+        const systemMessage = await this.dataServices.systemMessages.findOne({
             code,
         });
+        this.redisService.set(`${RedisKey.SYSTEM_MESSAGE_CODES}_${code}`, code);
+        return systemMessage;
     }
 
     async deleteMessage(id: string) {

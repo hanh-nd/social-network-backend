@@ -85,7 +85,7 @@ export class AuthService {
         await this.dataServices.userDetails.create({
             userId: toObjectId(createdUser._id),
             ...body,
-            birthday: moment(body.birthday, 'YYYY/MM/DD').utc(true).toDate(),
+            birthday: body.birthday ? moment(body.birthday, 'YYYY/MM/DD').utc(true).toDate() : null,
         });
         await this.elasticsearchService.index<User>(ElasticsearchIndex.USER, {
             id: createdUser._id,
@@ -225,5 +225,19 @@ export class AuthService {
             accessToken,
             refreshToken,
         };
+    }
+
+    async preRegister(body: IRegisterBody) {
+        const existedUser = await this.dataServices.users.findOne({
+            $or: [{ username: body.username }, { email: body.email }],
+        });
+
+        if (existedUser) {
+            if (body.username === existedUser.username) {
+                throw new ItemAlreadyExistedException('Tài khoản đã tồn tại.');
+            }
+            throw new ItemAlreadyExistedException('Email đã tồn tại.');
+        }
+        return true;
     }
 }
