@@ -1,4 +1,4 @@
-import { Body, Controller, InternalServerErrorException, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard, RefreshTokenGuard } from 'src/common/guards';
@@ -77,6 +77,17 @@ export class AuthController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[logout] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Post('/pre-register')
+    async preRegister(@Body(new TrimBodyPipe()) body: IRegisterBody) {
+        try {
+            const token = await this.authService.preRegister(body);
+            return new SuccessResponse(token);
+        } catch (error) {
+            this.logger.error(`[preRegister] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
