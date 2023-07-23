@@ -23,4 +23,5 @@ export enum MongoCollection {
     JOB_CONFIG = 'job_configs',
     SURVEY = 'surveys',
     SURVEY_ANSWER = 'survey_answers',
+    CONFIG = 'configs',
 }
