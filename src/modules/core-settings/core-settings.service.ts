@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
+import { RedisKey } from 'src/common/modules/redis/redis.constants';
+import { RedisService } from 'src/common/modules/redis/redis.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IUpdateJobBody } from './core-settings.interface';
 
 @Injectable()
 export class CoreSettingsService {
-    constructor(private schedulerRegistry: SchedulerRegistry, private dataServices: IDataServices) {
+    constructor(
+        private schedulerRegistry: SchedulerRegistry,
+        private dataServices: IDataServices,
+        private redisService: RedisService,
+    ) {
         setTimeout(async () => {
             await this.syncJobList();
         }, 1000);
@@ -90,5 +96,17 @@ export class CoreSettingsService {
         job.start();
 
         return true;
+    }
+
+    async getConfig<T>(key: string): Promise<T | null> {
+        const data = await this.redisService.get<T>(`${RedisKey.CONFIGS}_${key}`);
+        if (data) return data;
+
+        const config = await this.dataServices.configs.findOne({ key: key });
+        if (config) {
+            this.redisService.set<T>(`${RedisKey.CONFIGS}_${key}`, config.value as T);
+        }
+
+        return (config?.value as T) || null;
     }
 }

@@ -3,6 +3,7 @@ export * from './administrator.schema';
 export * from './ask-user-questions.schema';
 export * from './chat.schema';
 export * from './comment.schema';
+export * from './config.schema';
 export * from './constant';
 export * from './group-post.schema';
 export * from './group.schema';

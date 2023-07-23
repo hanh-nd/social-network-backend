@@ -8,6 +8,8 @@ import {
     ChatDocument,
     Comment,
     CommentDocument,
+    Config,
+    ConfigDocument,
     Group,
     GroupDocument,
     GroupPost,
@@ -75,6 +77,7 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     jobConfigs: IGenericRepository<JobConfigDocument>;
     surveyAnswers: IGenericRepository<SurveyAnswerDocument>;
     surveys: IGenericRepository<SurveyDocument>;
+    configs: IGenericRepository<ConfigDocument>;
 
     constructor(
         @InjectModel(User.name)
@@ -121,6 +124,8 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private surveyModel: Model<SurveyDocument>,
         @InjectModel(SurveyAnswer.name)
         private surveyAnswerModel: Model<SurveyAnswerDocument>,
+        @InjectModel(Config.name)
+        private configModel: Model<ConfigDocument>,
     ) {}
 
     onApplicationBootstrap() {
@@ -146,5 +151,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.jobConfigs = new MongoGenericRepository<JobConfigDocument>(this.jobConfigModel);
         this.surveys = new MongoGenericRepository<SurveyDocument>(this.surveyModel);
         this.surveyAnswers = new MongoGenericRepository<SurveyAnswerDocument>(this.surveyAnswerModel);
+        this.configs = new MongoGenericRepository<ConfigDocument>(this.configModel);
     }
 }

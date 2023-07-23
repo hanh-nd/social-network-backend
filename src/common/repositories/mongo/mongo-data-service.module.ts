@@ -7,6 +7,8 @@ import {
     ChatSchema,
     Comment,
     CommentSchema,
+    Config,
+    ConfigSchema,
     Group,
     GroupPost,
     GroupPostSchema,
@@ -73,6 +75,7 @@ import { MongoDataServices } from './mongo-data.service';
         MongooseModule.forFeature([{ name: JobConfig.name, schema: JobConfigSchema }]),
         MongooseModule.forFeature([{ name: Survey.name, schema: SurveySchema }]),
         MongooseModule.forFeature([{ name: SurveyAnswer.name, schema: SurveyAnswerSchema }]),
+        MongooseModule.forFeature([{ name: Config.name, schema: ConfigSchema }]),
     ],
     providers: [
         {

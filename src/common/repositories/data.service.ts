@@ -2,6 +2,7 @@ import {
     AskUserQuestionDocument,
     ChatDocument,
     CommentDocument,
+    ConfigDocument,
     GroupDocument,
     GroupPostDocument,
     JobConfigDocument,
@@ -47,4 +48,5 @@ export abstract class IDataServices {
     abstract jobConfigs: IGenericRepository<JobConfigDocument>;
     abstract surveys: IGenericRepository<SurveyDocument>;
     abstract surveyAnswers: IGenericRepository<SurveyAnswerDocument>;
+    abstract configs: IGenericRepository<ConfigDocument>;
 }
