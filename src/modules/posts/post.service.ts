@@ -216,9 +216,13 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me just the text "1" if and only if the paragraph below contains toxic words in Vietnamese, or else "0":\n${post.content}`,
+                content: `Give me the text "1" and the reason why it is toxic if and only if the paragraph below contains toxic words in Vietnamese and why it is toxic, or else just the text "0", if you cannot determine give me the text "0":\n${post.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+            prompts.push({
+                role: 'assistant',
+                content: response.text,
+            });
             this.logger.info(
                 `[updatePostIsToxic] postId = ${post._id}, message = ${response.text}, prompts=${JSON.stringify(
                     prompts,
@@ -566,9 +570,13 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me just the text "1" if and only if the paragraph below contains toxic words in Vietnamese, or else "0":\n${comment.content}`,
+                content: `Give me the text "1" and the reason why it is toxic if and only if the paragraph below contains toxic words in Vietnamese and why it is toxic, or else just the text "0", if you cannot determine give me the text "0":\n${comment.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+            prompts.push({
+                role: 'assistant',
+                content: response.text,
+            });
             this.logger.info(
                 `[updateCommentIsToxic] commentId = ${comment._id}, message = ${
                     response.text
