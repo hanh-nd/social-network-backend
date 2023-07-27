@@ -28,7 +28,7 @@ export class ReducePointJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[reducePostPoints] start cron job`);
+            console.info(`[reducePostPoints] start cron job`);
             isRunning = true;
             await this.dataServices.posts.bulkUpdate(
                 {
@@ -54,7 +54,7 @@ export class ReducePointJob {
                 },
             );
             isRunning = false;
-            this.logger.info(`[reducePostPoints] stop cron job`);
+            console.info(`[reducePostPoints] stop cron job`);
         } catch (error) {
             this.logger.error(`[reducePostPoints] ${error.stack || JSON.stringify(error)}`);
             isRunning = false;

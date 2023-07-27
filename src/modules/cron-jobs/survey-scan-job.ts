@@ -37,11 +37,11 @@ export class SurveyScanJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[surveyScan] start cron job`);
+            console.info(`[surveyScan] start cron job`);
             isRunning = true;
             await this.scanSurveys();
             isRunning = false;
-            this.logger.info(`[surveyScan] stop cron job`);
+            console.info(`[surveyScan] stop cron job`);
         } catch (error) {
             this.logger.error(`[surveyScan] ${error.stack || JSON.stringify(error)}`);
             isRunning = false;
