@@ -78,33 +78,39 @@ export class ModeratorSurveyService {
     }
 
     private async updateQuickAnswers(survey: Survey) {
-        const response = await this.chatGPTService.sendMessage(
-            `Give me 3 answer for the following question: "${survey.question}", in the json array of 3 objects with following interface: { answer }`,
-        );
+        const prompts = [];
+        prompts.push({
+            role: 'user',
+            content: `Give me 3 answer for the following question: "${survey.question}", in the json array of 3 objects with following interface: { answer }`,
+        });
+        const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+        prompts.push({
+            role: 'assistant',
+            content: response.text,
+        });
         this.logger.info(`[getQuickAnswers] postId = ${survey._id}, message = ${response.text}`);
-        const json = await extractJSONFromText(response.text);
+        let json = await extractJSONFromText(response.text);
+
+        let retriedTimes = 0;
+        while ((!json || !isArray(json)) && retriedTimes < 3) {
+            retriedTimes++;
+            prompts.push({
+                role: 'user',
+                content: `Please give me the answers a in a JSON array format with 3 objects of key answer.`,
+            });
+            const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+            prompts.push({
+                role: 'assistant',
+                content: resendResponse.text,
+            });
+            this.logger.info(`[getQuickAnswers] answerId = ${survey._id}, message = ${resendResponse.text}`);
+            json = await extractJSONFromText(resendResponse.text);
+        }
         if (json && isArray(json)) {
             const quickAnswers = json.map((j) => j.answer);
             await this.dataServices.surveys.updateById(survey._id, {
                 quickAnswers: quickAnswers,
             });
-        } else {
-            const lastId = response.id;
-            const resendResponse = await this.chatGPTService.sendMessage(
-                `Please give me the answers a in a JSON array format with 3 objects of key answer.`,
-                {
-                    parentMessageId: lastId,
-                },
-            );
-            this.logger.info(`[getQuickAnswers] answerId = ${survey._id}, message = ${resendResponse.text}`);
-
-            const json = await extractJSONFromText(resendResponse.text);
-            if (json && isArray(json)) {
-                const quickAnswers = json.map((j) => j.answer);
-                await this.dataServices.surveys.updateById(survey._id, {
-                    quickAnswers: quickAnswers,
-                });
-            }
         }
     }
 

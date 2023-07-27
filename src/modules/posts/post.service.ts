@@ -145,21 +145,51 @@ export class PostService {
     private async updatePostTagIds(post: Post) {
         const tagNames = await this.tagService.getTagNames();
         try {
-            const response = await this.chatGPTService.sendMessage(
-                `Give me 3 tags in the list "${tagNames.join(
+            const prompts = [];
+            prompts.push({
+                role: 'user',
+                content: `Give me 3 tags in the list "${tagNames.join(
                     ', ',
-                )}" separated by comma that best fit for the paragraph below:\n${post.content}`,
-            );
+                )}" separated by commas that best fit for the paragraph below:\n${post.content}`,
+            });
+            const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+            prompts.push({
+                role: 'assistant',
+                content: response.text,
+            });
             this.logger.info(`[updatePostTagIds] postId = ${post._id}, message = ${response.text}`);
-            const names = _.flatten((response.text || '').split(',').map((tag) => tag.split('\n'))) as string[];
-            const formattedNames = names.map((name) =>
-                name
-                    .replace('\n', '')
-                    .replace(/^\d+\.\s/, '')
-                    .replace('.', '')
-                    .trim(),
-            );
-            const tags = await this.tagService.getTag(formattedNames);
+            let names = tagNames.reduce((names: string[], currentTagName: string) => {
+                const regex = new RegExp(currentTagName, 'gi');
+                const isMatched = regex.test(response.text);
+                if (isMatched) {
+                    names.push(currentTagName);
+                }
+                return names;
+            }, []);
+
+            let retriedTimes = 0;
+            while (!names.length && retriedTimes < 3) {
+                retriedTimes++;
+                prompts.push({
+                    role: 'user',
+                    content: `Please give me 3 tags that separated by commas for the paragraph above`,
+                });
+                const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+                prompts.push({
+                    role: 'assistant',
+                    content: resendResponse.text,
+                });
+                names = tagNames.reduce((names: string[], currentTagName: string) => {
+                    const regex = new RegExp(currentTagName, 'gi');
+                    const isMatched = regex.test(resendResponse.text);
+                    if (isMatched) {
+                        names.push(currentTagName);
+                    }
+                    return names;
+                }, []);
+                this.logger.info(`[updatePostTagIds] postId = ${post._id}, message = ${resendResponse.text}`);
+            }
+            const tags = await this.tagService.getTag(names);
             const tagIds = tags.map((t) => t._id);
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
                 postId: post._id,
@@ -175,11 +205,29 @@ export class PostService {
 
     private async updatePostIsToxic(post: Post) {
         try {
-            const response = await this.chatGPTService.sendMessage(
-                `Give me just the text "1" if and only if the paragraph below contains toxic words, or else "0":\n${post.content}`,
-            );
+            const prompts = [];
+            prompts.push({
+                role: 'user',
+                content: `Give me just the text "1" if and only if the paragraph below contains bad sentiment words, or else "0":\n${post.content}`,
+            });
+            const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             this.logger.info(`[updatePostIsToxic] postId = ${post._id}, message = ${response.text}`);
-            const isToxic = /Yes|1/.test(response.text);
+            let responseText = response.text;
+            let retriedTimes = 0;
+            while (responseText.length > 10 && retriedTimes < 3) {
+                retriedTimes++;
+                prompts.push({
+                    role: 'user',
+                    content: `Please give me just the text "1" or "0" for the paragraph above.`,
+                });
+                const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+                prompts.push({
+                    role: 'assistant',
+                    content: resendResponse.text,
+                });
+                responseText = resendResponse.text;
+            }
+            const isToxic = /Yes|1/.test(responseText);
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
                 postId: post._id,
                 isToxic: isToxic,
@@ -410,8 +458,8 @@ export class PostService {
             toUpdateBody.tagIds = toObjectIds(tagIds);
         }
 
-        await this.dataServices.posts.updateById(existedPost._id, toUpdateBody);
-
+        const updatedPost = await this.dataServices.posts.updateById(existedPost._id, toUpdateBody);
+        this.updatePostMetaData(updatedPost);
         await this.elasticsearchService.updateById<Post>(ElasticsearchIndex.POST, existedPost._id, {
             id: existedPost._id,
             content: content ?? existedPost.content,
@@ -491,9 +539,57 @@ export class PostService {
             post,
             NotificationAction.COMMENT,
         );
-
+        this.updateCommentIsToxic(createdComment);
         const populatedComment = await createdComment.populate(['author']);
         return this.dataResources.comments.mapToDto(populatedComment);
+    }
+
+    private async updateCommentIsToxic(comment: Comment) {
+        try {
+            const prompts = [];
+            prompts.push({
+                role: 'user',
+                content: `Give me just the text "1" if and only if the paragraph below contains bad sentiment words, or else "0":\n${comment.content}`,
+            });
+            const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+            this.logger.info(`[updateCommentIsToxic] postId = ${comment._id}, message = ${response.text}`);
+            let responseText = response.text;
+            let retriedTimes = 0;
+            while (responseText.length > 10 && retriedTimes < 3) {
+                retriedTimes++;
+                prompts.push({
+                    role: 'user',
+                    content: `Please give me just the text "1" or "0" for the paragraph above.`,
+                });
+                const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+                prompts.push({
+                    role: 'assistant',
+                    content: resendResponse.text,
+                });
+                responseText = resendResponse.text;
+            }
+            const isToxic = /Yes|1/.test(responseText);
+            this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
+                postId: comment.post,
+                comment: {
+                    _id: comment._id,
+                    isToxic: isToxic,
+                },
+            });
+
+            await this.dataServices.comments.updateById(comment._id, {
+                isToxic: isToxic,
+            });
+
+            if (isToxic) {
+                // Tạo báo cáo
+                await this.reportService.create(SystemReporter.CHAT_GPT, ReportTargetType.COMMENT, comment, {
+                    reportReason: response.text,
+                });
+            }
+        } catch (error) {
+            this.logger.error(`[updateCommentIsToxic] ${error.stack || JSON.stringify(error)}`);
+        }
     }
 
     async updatePostComment(userId: string, postId: string, commentId: string, body: IUpdateCommentBody) {
@@ -509,7 +605,8 @@ export class PostService {
             throw new BadGatewayException(`Không tìm thấy bài viết này.`);
         }
 
-        await this.commentService.updateCommentInPost(commentId, user, post, body);
+        const updatedComment = await this.commentService.updateCommentInPost(commentId, user, post, body);
+        this.updateCommentIsToxic(updatedComment);
         return true;
     }
 

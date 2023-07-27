@@ -67,48 +67,48 @@ export class SurveyService {
 
     private async updateSurveyAnswer(survey: Survey, surveyAnswer: SurveyAnswer) {
         if (survey.type === SurveyType.CARE) {
-            const response = await this.chatGPTService.sendMessage(`
-            Recommend some youtube music and link provided for me if I got question: "${survey.question}" and my answer is: "${surveyAnswer.answer}", in a JSON array format of title, and link.`);
+            const prompts = [];
+            prompts.push({
+                role: 'user',
+                content: `
+            Recommend some youtube music and link provided for me if I got question: "${survey.question}" and my answer is: "${surveyAnswer.answer}", in a JSON array format of title, and link.`,
+            });
+            const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+            prompts.push({
+                role: 'assistant',
+                content: response.text,
+            });
             this.logger.info(`[updateSurveyAnswer] answerId = ${surveyAnswer._id}, message = ${response.text}`);
-            const json = await extractJSONFromText(response.text);
-            if (json) {
-                if (isArray(json)) {
-                    this.socketGateway.server
-                        .to(`${surveyAnswer.user}`)
-                        .emit(SocketEvent.USER_SURVEY_MUSIC_RECOMMEND, json);
+            let json = await extractJSONFromText(response.text);
 
-                    await this.dataServices.surveyAnswers.updateById(surveyAnswer._id, {
-                        additionalData: {
-                            recommendedMusics: json,
-                        },
-                    });
-                }
-            } else {
-                const lastId = response.id;
-                const resendResponse = await this.chatGPTService.sendMessage(
-                    `Please give me the youtube link a in a JSON array format of title, and link.`,
-                    {
-                        parentMessageId: lastId,
-                    },
-                );
+            let retriedTimes = 0;
+            while ((!json || !isArray(json)) && retriedTimes < 3) {
+                retriedTimes++;
+                prompts.push({
+                    role: 'user',
+                    content: `Please give me the youtube link a in a JSON array format of title, and link.`,
+                });
+                const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
+                prompts.push({
+                    role: 'assistant',
+                    content: resendResponse.text,
+                });
                 this.logger.info(
                     `[updateSurveyAnswer] answerId = ${surveyAnswer._id}, message = ${resendResponse.text}`,
                 );
+                json = await extractJSONFromText(resendResponse.text);
+            }
 
-                const json = await extractJSONFromText(resendResponse.text);
-                if (json) {
-                    if (isArray(json)) {
-                        this.socketGateway.server
-                            .to(`${surveyAnswer.user}`)
-                            .emit(SocketEvent.USER_SURVEY_MUSIC_RECOMMEND, json);
+            if (json && isArray(json)) {
+                this.socketGateway.server
+                    .to(`${surveyAnswer.user}`)
+                    .emit(SocketEvent.USER_SURVEY_MUSIC_RECOMMEND, json);
 
-                        await this.dataServices.surveyAnswers.updateById(surveyAnswer._id, {
-                            additionalData: {
-                                recommendedMusics: json,
-                            },
-                        });
-                    }
-                }
+                await this.dataServices.surveyAnswers.updateById(surveyAnswer._id, {
+                    additionalData: {
+                        recommendedMusics: json,
+                    },
+                });
             }
         }
     }
