@@ -230,11 +230,11 @@ export class PostService {
             );
             let responseText = response.text;
             let retriedTimes = 0;
-            while (responseText.length > 10 && retriedTimes < 3) {
+            while (responseText.split(' ').length > 10 && retriedTimes < 3) {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
-                    content: `Just give me the text "1" or "0" for the paragraph above.`,
+                    content: `Just give me only the text "1" or "0" for the result above.`,
                 });
                 const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
                 prompts.push({
@@ -588,7 +588,7 @@ export class PostService {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
-                    content: `Just give me the text "1" or "0" for the paragraph above.`,
+                    content: `Just give me only the text "1" or "0" for the result above.`,
                 });
                 const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
                 prompts.push({
