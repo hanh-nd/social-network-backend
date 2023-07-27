@@ -60,12 +60,12 @@ export class CommentService {
             throw new BadRequestException(`Không tìm thấy bình luận này.`);
         }
 
-        await this.dataServices.comments.updateById(toUpdateComment._id, {
+        const updatedComment = await this.dataServices.comments.updateById(toUpdateComment._id, {
             ...body,
             pictureId: toObjectId(pictureId),
             videoId: toObjectId(videoId),
         });
-        return toUpdateComment._id;
+        return updatedComment;
     }
 
     async deleteCommentInPost(commentId: string, author: User, post: Post) {

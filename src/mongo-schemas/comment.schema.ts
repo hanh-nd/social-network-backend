@@ -47,6 +47,9 @@ export class Comment extends MongoBaseSchema {
 
     @Prop({ required: true, default: 0, type: Number })
     point: number;
+
+    @Prop({ required: false, default: false, type: Boolean })
+    isToxic: boolean;
 }
 
 const BaseCommentSchema = SchemaFactory.createForClass(Comment);
