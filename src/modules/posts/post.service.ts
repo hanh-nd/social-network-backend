@@ -208,7 +208,7 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me just the text "1" if and only if the paragraph below contains bad sentiment words, or else "0":\n${post.content}`,
+                content: `Give me just the text "1" if and only if the paragraph below contains toxic words in Vietnamese, or else "0":\n${post.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             this.logger.info(`[updatePostIsToxic] postId = ${post._id}, message = ${response.text}`);
@@ -218,7 +218,7 @@ export class PostService {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
-                    content: `Please give me just the text "1" or "0" for the paragraph above.`,
+                    content: `Just give me the text "1" or "0" for the paragraph above.`,
                 });
                 const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
                 prompts.push({
@@ -226,6 +226,7 @@ export class PostService {
                     content: resendResponse.text,
                 });
                 responseText = resendResponse.text;
+                this.logger.info(`[updatePostIsToxic] postId = ${post._id}, message = ${resendResponse.text}`);
             }
             const isToxic = /Yes|1/.test(responseText);
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
@@ -549,17 +550,17 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me just the text "1" if and only if the paragraph below contains bad sentiment words, or else "0":\n${comment.content}`,
+                content: `Give me just the text "1" if and only if the paragraph below contains toxic words in Vietnamese, or else "0":\n${comment.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
-            this.logger.info(`[updateCommentIsToxic] postId = ${comment._id}, message = ${response.text}`);
+            this.logger.info(`[updateCommentIsToxic] commentId = ${comment._id}, message = ${response.text}`);
             let responseText = response.text;
             let retriedTimes = 0;
             while (responseText.length > 10 && retriedTimes < 3) {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
-                    content: `Please give me just the text "1" or "0" for the paragraph above.`,
+                    content: `Just give me the text "1" or "0" for the paragraph above.`,
                 });
                 const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
                 prompts.push({
@@ -567,6 +568,7 @@ export class PostService {
                     content: resendResponse.text,
                 });
                 responseText = resendResponse.text;
+                this.logger.info(`[updateCommentIsToxic] commentId = ${comment._id}, message = ${resendResponse.text}`);
             }
             const isToxic = /Yes|1/.test(responseText);
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {

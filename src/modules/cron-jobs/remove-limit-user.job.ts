@@ -38,11 +38,11 @@ export class RemoveLimitUserJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[removeLimitUser] start cron job`);
+            console.info(`[removeLimitUser] start cron job`);
             isRunning = true;
             await this.undoLimitUsers();
             isRunning = false;
-            this.logger.info(`[removeLimitUser] stop cron job`);
+            console.info(`[removeLimitUser] stop cron job`);
         } catch (error) {
             this.logger.error(`[removeLimitUser] ${error.stack || JSON.stringify(error)}`);
             isRunning = false;

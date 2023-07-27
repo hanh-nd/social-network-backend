@@ -43,13 +43,13 @@ export class OnlineAlertJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[scanOnlineUsersAlert] start cron job`);
+            console.info(`[scanOnlineUsersAlert] start cron job`);
             isRunning = true;
             await this.scanAlertByLevel(1);
             await this.scanAlertByLevel(2);
             await this.scanAlertByLevel(3);
             isRunning = false;
-            this.logger.info(`[scanOnlineUsersAlert] stop cron job`);
+            console.info(`[scanOnlineUsersAlert] stop cron job`);
         } catch (error) {
             this.logger.error(`[scanOnlineUsersAlert] ${error.stack || JSON.stringify(error)}`);
             isRunning = false;

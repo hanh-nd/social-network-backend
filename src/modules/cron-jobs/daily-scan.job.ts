@@ -35,10 +35,10 @@ export class DailyScanJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[dailyScan] start cron job`);
+            console.info(`[dailyScan] start cron job`);
             isRunning = true;
             isRunning = false;
-            this.logger.info(`[dailyScan] stop cron job`);
+            console.info(`[dailyScan] stop cron job`);
         } catch (error) {
             this.logger.error(`[dailyScan] ${error.stack || JSON.stringify(error)}`);
             isRunning = false;

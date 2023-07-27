@@ -88,7 +88,7 @@ export class ModeratorSurveyService {
             role: 'assistant',
             content: response.text,
         });
-        this.logger.info(`[getQuickAnswers] postId = ${survey._id}, message = ${response.text}`);
+        this.logger.info(`[getQuickAnswers] surveyId = ${survey._id}, message = ${response.text}`);
         let json = await extractJSONFromText(response.text);
 
         let retriedTimes = 0;
@@ -96,14 +96,14 @@ export class ModeratorSurveyService {
             retriedTimes++;
             prompts.push({
                 role: 'user',
-                content: `Please give me the answers a in a JSON array format with 3 objects of key answer.`,
+                content: `Give me the answers a in a JSON array format with 3 objects of key answer.`,
             });
             const resendResponse = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             prompts.push({
                 role: 'assistant',
                 content: resendResponse.text,
             });
-            this.logger.info(`[getQuickAnswers] answerId = ${survey._id}, message = ${resendResponse.text}`);
+            this.logger.info(`[getQuickAnswers] surveyId = ${survey._id}, message = ${resendResponse.text}`);
             json = await extractJSONFromText(resendResponse.text);
         }
         if (json && isArray(json)) {

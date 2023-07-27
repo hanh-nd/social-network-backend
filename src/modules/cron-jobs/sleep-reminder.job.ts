@@ -44,7 +44,7 @@ export class SleepReminderJob {
             });
             if (config && !config.active) return;
 
-            this.logger.info(`[scanOnlineUsers] start cron job`);
+            console.info(`[scanOnlineUsers] start cron job`);
             isRunning = true;
             const client = await this.redisService.getClient();
             const matchedUserIds: string[] = await AVAILABLE_RANGES.reduce(
@@ -78,7 +78,7 @@ export class SleepReminderJob {
                 }
             }
             isRunning = false;
-            this.logger.info(`[scanOnlineUsers] stop cron job`);
+            console.info(`[scanOnlineUsers] stop cron job`);
         } catch (error) {
             this.logger.error(`[scanOnlineUsers] ${error.stack || JSON.stringify(error)}`);
             isRunning = false;
