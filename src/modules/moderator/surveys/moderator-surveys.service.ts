@@ -88,7 +88,11 @@ export class ModeratorSurveyService {
             role: 'assistant',
             content: response.text,
         });
-        this.logger.info(`[getQuickAnswers] surveyId = ${survey._id}, message = ${response.text}`);
+        this.logger.info(
+            `[getQuickAnswers] surveyId = ${survey._id}, message = ${response.text}, prompts=${JSON.stringify(
+                prompts,
+            )}`,
+        );
         let json = await extractJSONFromText(response.text);
 
         let retriedTimes = 0;
@@ -103,7 +107,11 @@ export class ModeratorSurveyService {
                 role: 'assistant',
                 content: resendResponse.text,
             });
-            this.logger.info(`[getQuickAnswers] surveyId = ${survey._id}, message = ${resendResponse.text}`);
+            this.logger.info(
+                `[getQuickAnswers] surveyId = ${survey._id}, message = ${resendResponse.text}, prompts=${JSON.stringify(
+                    prompts,
+                )}`,
+            );
             json = await extractJSONFromText(resendResponse.text);
         }
         if (json && isArray(json)) {

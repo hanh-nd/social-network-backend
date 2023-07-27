@@ -78,7 +78,11 @@ export class SurveyService {
                 role: 'assistant',
                 content: response.text,
             });
-            this.logger.info(`[updateSurveyAnswer] answerId = ${surveyAnswer._id}, message = ${response.text}`);
+            this.logger.info(
+                `[updateSurveyAnswer] answerId = ${surveyAnswer._id}, message = ${
+                    response.text
+                }, prompts=${JSON.stringify(prompts)}`,
+            );
             let json = await extractJSONFromText(response.text);
 
             let retriedTimes = 0;
@@ -94,7 +98,9 @@ export class SurveyService {
                     content: resendResponse.text,
                 });
                 this.logger.info(
-                    `[updateSurveyAnswer] answerId = ${surveyAnswer._id}, message = ${resendResponse.text}`,
+                    `[updateSurveyAnswer] answerId = ${surveyAnswer._id}, message = ${
+                        resendResponse.text
+                    }, prompts=${JSON.stringify(prompts)}`,
                 );
                 json = await extractJSONFromText(resendResponse.text);
             }

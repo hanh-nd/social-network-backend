@@ -157,7 +157,11 @@ export class PostService {
                 role: 'assistant',
                 content: response.text,
             });
-            this.logger.info(`[updatePostTagIds] postId = ${post._id}, message = ${response.text}`);
+            this.logger.info(
+                `[updatePostTagIds] postId = ${post._id}, message = ${response.text}, prompts=${JSON.stringify(
+                    prompts,
+                )}`,
+            );
             let names = tagNames.reduce((names: string[], currentTagName: string) => {
                 const regex = new RegExp(currentTagName, 'gi');
                 const isMatched = regex.test(response.text);
@@ -187,7 +191,11 @@ export class PostService {
                     }
                     return names;
                 }, []);
-                this.logger.info(`[updatePostTagIds] postId = ${post._id}, message = ${resendResponse.text}`);
+                this.logger.info(
+                    `[updatePostTagIds] postId = ${post._id}, message = ${
+                        resendResponse.text
+                    }, prompts=${JSON.stringify(prompts)}`,
+                );
             }
             const tags = await this.tagService.getTag(names);
             const tagIds = tags.map((t) => t._id);
@@ -211,7 +219,11 @@ export class PostService {
                 content: `Give me just the text "1" if and only if the paragraph below contains toxic words in Vietnamese, or else "0":\n${post.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
-            this.logger.info(`[updatePostIsToxic] postId = ${post._id}, message = ${response.text}`);
+            this.logger.info(
+                `[updatePostIsToxic] postId = ${post._id}, message = ${response.text}, prompts=${JSON.stringify(
+                    prompts,
+                )}`,
+            );
             let responseText = response.text;
             let retriedTimes = 0;
             while (responseText.length > 10 && retriedTimes < 3) {
@@ -226,7 +238,11 @@ export class PostService {
                     content: resendResponse.text,
                 });
                 responseText = resendResponse.text;
-                this.logger.info(`[updatePostIsToxic] postId = ${post._id}, message = ${resendResponse.text}`);
+                this.logger.info(
+                    `[updatePostIsToxic] postId = ${post._id}, message = ${
+                        resendResponse.text
+                    }, prompts=${JSON.stringify(prompts)}`,
+                );
             }
             const isToxic = /Yes|1/.test(responseText);
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
@@ -553,7 +569,11 @@ export class PostService {
                 content: `Give me just the text "1" if and only if the paragraph below contains toxic words in Vietnamese, or else "0":\n${comment.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
-            this.logger.info(`[updateCommentIsToxic] commentId = ${comment._id}, message = ${response.text}`);
+            this.logger.info(
+                `[updateCommentIsToxic] commentId = ${comment._id}, message = ${
+                    response.text
+                }, prompts=${JSON.stringify(prompts)}`,
+            );
             let responseText = response.text;
             let retriedTimes = 0;
             while (responseText.length > 10 && retriedTimes < 3) {
@@ -568,7 +588,11 @@ export class PostService {
                     content: resendResponse.text,
                 });
                 responseText = resendResponse.text;
-                this.logger.info(`[updateCommentIsToxic] commentId = ${comment._id}, message = ${resendResponse.text}`);
+                this.logger.info(
+                    `[updateCommentIsToxic] commentId = ${comment._id}, message = ${
+                        resendResponse.text
+                    }, prompts=${JSON.stringify(prompts)}`,
+                );
             }
             const isToxic = /Yes|1/.test(responseText);
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
