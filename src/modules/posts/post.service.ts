@@ -216,7 +216,7 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me the text "1" and the reason why it is toxic if and only if the paragraph below contains toxic words and why it is toxic, or else just the text "0", if you cannot determine give me the text "0":\n${post.content}`,
+                content: `Give me the text "1" if and only if the paragraph below contains negative sentiment words and why it is negative, or else just the text "0", if you cannot determine give me the text "0":\n${post.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             prompts.push({
@@ -570,7 +570,7 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me the text "1" and the reason why it is toxic if and only if the paragraph below contains toxic words and why it is toxic, or else just the text "0", if you cannot determine give me the text "0":\n${comment.content}`,
+                content: `Give me the text "1" if and only if the paragraph below contains negative sentiment words and why it is negative, or else just the text "0", if you cannot determine give me the text "0":\n${comment.content}`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             prompts.push({
