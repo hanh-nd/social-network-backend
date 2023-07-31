@@ -65,5 +65,14 @@ export abstract class Provider {
 
     public abstract askStream(req: ProviderRequest, stream: EventStream): Promise<void>;
 
-    public abstract sendMessage(message: string, options?: SendMessageOptions): Promise<ProviderResponse>;
+    public async sendMessage(message: string, options: SendMessageOptions = {}) {
+        const { model = ModelType.GPT3p5Turbo } = options;
+        const [content, messages] = PromptToString(message, this.getLimit(model));
+        return this.ask({
+            model,
+            prompt: content,
+            messages,
+            ...options,
+        });
+    }
 }

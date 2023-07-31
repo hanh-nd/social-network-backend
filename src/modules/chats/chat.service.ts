@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import { toObjectId, toObjectIds, toStringArray } from 'src/common/helper';
+import { ChatGPTService } from 'src/common/modules/chatgpt/chatgpt.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { Chat, User } from 'src/mongo-schemas';
@@ -16,6 +17,7 @@ export class ChatService {
         private dataServices: IDataServices,
         private dataResources: IDataResources,
         private messageService: MessageService,
+        private chatGPTService: ChatGPTService,
     ) {}
 
     async createChat(userId: string, body: ICreateChatBody) {
@@ -518,5 +520,9 @@ export class ChatService {
         });
 
         return true;
+    }
+
+    ask(message: string) {
+        return this.chatGPTService.sendMessage(message);
     }
 }
