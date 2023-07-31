@@ -2,14 +2,13 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } f
 import { ConfigService } from '@nestjs/config';
 import { LoginUser } from 'src/common/decorators/login-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards';
+import { AuthorizationGuard } from 'src/common/guards/authorization.guard';
 import { SuccessResponse } from 'src/common/helper';
 import { createWinstonLogger } from 'src/common/modules/winston';
 import { RemoveEmptyQueryPipe, TrimBodyPipe } from 'src/common/pipes';
 import { ICreateReportBody } from '../reports/report.interface';
 import { ICreateChatBody, IGetMessageListQuery, IUpdateChatBody } from './chat.interfaces';
 import { ChatService } from './chat.service';
-import { AuthorizationGuard, Permissions } from 'src/common/guards/authorization.guard';
-import { MANAGE_CHAT_PERMISSIONS } from 'src/common/constants';
 
 @Controller('/chats')
 @UseGuards(AccessTokenGuard, AuthorizationGuard)
@@ -163,6 +162,17 @@ export class ChatController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[ChatController][leaveChat] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Post('/ask')
+    async ask(@Body() body: { message: string }) {
+        try {
+            const result = await this.chatService.ask(body.message);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[ChatController][ask] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
