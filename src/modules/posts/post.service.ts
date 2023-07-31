@@ -584,7 +584,7 @@ export class PostService {
             );
             let responseText = response.text;
             let retriedTimes = 0;
-            while (responseText.length > 15 && retriedTimes < 3) {
+            while (responseText.split(' ').length > 15 && retriedTimes < 3) {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
