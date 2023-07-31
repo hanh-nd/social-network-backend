@@ -216,7 +216,7 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me the text "1" if and only if the paragraph below contains negative sentiment words and why it is negative, or else just the text "0", if you cannot determine give me the text "0":\n${post.content}`,
+                content: `Give me the text "1" if and only if the paragraph below contains negative sentiment words and why it is negative, or else just the text "0", if you cannot determine give me the text "0":\n${post.content}\nProvide the answer within 8 words.`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             prompts.push({
@@ -230,7 +230,7 @@ export class PostService {
             );
             let responseText = response.text;
             let retriedTimes = 0;
-            while (responseText.split(' ').length > 10 && retriedTimes < 3) {
+            while (responseText.split(' ').length > 15 && retriedTimes < 3) {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
@@ -570,7 +570,7 @@ export class PostService {
             const prompts = [];
             prompts.push({
                 role: 'user',
-                content: `Give me the text "1" if and only if the paragraph below contains negative sentiment words and why it is negative, or else just the text "0", if you cannot determine give me the text "0":\n${comment.content}`,
+                content: `Give me the text "1" if and only if the paragraph below contains negative sentiment words and why it is negative, or else just the text "0", if you cannot determine give me the text "0":\n${comment.content}\nProvide the answer within 8 words.`,
             });
             const response = await this.chatGPTService.sendMessage(JSON.stringify(prompts));
             prompts.push({
@@ -584,7 +584,7 @@ export class PostService {
             );
             let responseText = response.text;
             let retriedTimes = 0;
-            while (responseText.length > 10 && retriedTimes < 3) {
+            while (responseText.length > 15 && retriedTimes < 3) {
                 retriedTimes++;
                 prompts.push({
                     role: 'user',
