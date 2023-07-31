@@ -6,7 +6,7 @@ import { OpenAIProvider } from './openai';
 import { VitalentumProvider } from './vitalentum';
 
 export enum ProviderType {
-    Vitalentum = 'vitalentum',
+    // Vitalentum = 'vitalentum',
     ChatGptAI = 'chatgptai',
     AiService = 'aiservice',
     OpenAI = 'openai',
@@ -26,7 +26,7 @@ export class ChatProviderFactory {
 
     init() {
         // register new model here
-        this.providerMap.set(ProviderType.Vitalentum, new VitalentumProvider(this.options));
+        // this.providerMap.set(ProviderType.Vitalentum, new VitalentumProvider(this.options));
         this.providerMap.set(ProviderType.ChatGptAI, new ChatGptAIProvider(this.options));
         this.providerMap.set(ProviderType.AiService, new AiServiceProvider(this.options));
         this.providerMap.set(ProviderType.OpenAI, new OpenAIProvider(this.coreSettingsService, this.options));
