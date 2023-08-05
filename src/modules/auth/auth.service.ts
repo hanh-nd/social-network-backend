@@ -8,6 +8,7 @@ import { DefaultInternalServerErrorException } from 'src/common/exception/defaul
 import { ItemAlreadyExistedException } from 'src/common/exception/item-already-existed.exception';
 import { generateRandomString, toObjectId } from 'src/common/helper';
 import { ElasticsearchService } from 'src/common/modules/elasticsearch';
+import { NodeMailerService } from 'src/common/modules/nodemailer/nodemailer.service';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
 import { User } from 'src/mongo-schemas';
@@ -28,6 +29,7 @@ export class AuthService {
         private dataServices: IDataServices,
         private dataResources: IDataResources,
         private elasticsearchService: ElasticsearchService,
+        private nodeMailerService: NodeMailerService,
     ) {}
 
     async login(body: ILoginBody) {
@@ -127,6 +129,7 @@ export class AuthService {
             expiredIn: moment().add(1, 'days').toISOString(),
         });
 
+        await this.nodeMailerService.sendActivationEmail(body.email, generatedUserToken);
         return true;
     }
 
