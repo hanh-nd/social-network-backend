@@ -58,6 +58,10 @@ export class ChatGptAIProvider extends Provider {
         }
     }
 
+    public getDefaultModel(): ModelType {
+        return ModelType.GPT4;
+    }
+
     public async ask(req: ProviderRequest): Promise<ProviderResponse> {
         try {
             const paramResponse = await this.client.get('/');
@@ -93,13 +97,4 @@ export class ChatGptAIProvider extends Provider {
     }
 
     public async askStream(req: ProviderRequest, stream: EventStream) {}
-
-    public async sendMessage(message: string, { model = ModelType.GPT3p5Turbo }: SendMessageOptions = {}) {
-        const [content, messages] = PromptToString(message, this.getLimit(model));
-        return this.ask({
-            model,
-            prompt: content,
-            messages,
-        });
-    }
 }
