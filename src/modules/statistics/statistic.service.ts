@@ -20,7 +20,7 @@ export class StatisticService {
         const startStatisticDay = moment().subtract(range, 'day').format('YYYYMMDD');
         const userDailyStatistics = await this.dataServices.userDailyStatistics.findAll({
             userId: toObjectId(userId),
-            createDate: {
+            createdDate: {
                 $gte: startStatisticDay,
             },
         });
