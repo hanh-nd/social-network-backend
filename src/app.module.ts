@@ -26,6 +26,7 @@ import { GroupPostModule } from './modules/group-posts/group-post.module';
 import { GroupModule } from './modules/groups/group.module';
 import { JoinRequestModule } from './modules/join-requests/join-request.module';
 import { MessageModule } from './modules/messages/message.module';
+import { ModeratorGroupModule } from './modules/moderator/groups/moderator-group.module';
 import { ModeratorPostModule } from './modules/moderator/posts/moderator-post.module';
 import { ModeratorReportModule } from './modules/moderator/reports/moderator-report.module';
 import { ModeratorSurveyModule } from './modules/moderator/surveys/moderator-surveys.module';
@@ -66,6 +67,7 @@ import { UserModule } from './modules/users/user.module';
         ChatModule,
         TagModule,
         ModeratorPostModule,
+        ModeratorGroupModule,
         ModeratorReportModule,
         ModeratorUserModule,
         RoleModule,
