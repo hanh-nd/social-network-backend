@@ -32,14 +32,23 @@ export class ChatGateway {
         const { userId } = client;
 
         const { chat, message } = await this.chatService.createMessage(userId, chatId, body);
+        await chat.update({
+            deletedFor: [],
+        });
         const { members = [], blockedIds = [] } = chat;
         const activeMembers = _.difference(
             toStringArray(members as unknown as ObjectId[]),
             toStringArray(blockedIds as unknown as ObjectId[]),
         );
         this.socketGateway.server.to(activeMembers).emit(SocketEvent.USER_CHAT, {
-            chatId: chatId,
+            chat: await chat.populate([
+                {
+                    path: 'members',
+                    select: '_id avatarId fullName',
+                },
+            ]),
             message,
+            userId: userId,
         });
         return;
     }
@@ -60,6 +69,7 @@ export class ChatGateway {
         this.socketGateway.server.to(activeMembers).emit(SocketEvent.USER_RECALL, {
             chatId: chatId,
             message: message,
+            userId: userId,
         });
         return;
     }

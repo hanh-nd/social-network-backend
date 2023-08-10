@@ -18,3 +18,7 @@ export interface IUserRecallPayload {
 export interface ISocket extends Socket {
     userId?: string;
 }
+
+export interface ICheckOnlinePayload {
+    userId: string;
+}

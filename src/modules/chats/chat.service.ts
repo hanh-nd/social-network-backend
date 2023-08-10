@@ -117,6 +117,25 @@ export class ChatService {
         return chatDtos;
     }
 
+    async getUnreadCount(userId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const unreadCount = await this.dataServices.chats.count({
+            members: toObjectId(user._id),
+            deletedFor: {
+                $ne: toObjectId(user._id),
+            },
+            readBy: {
+                $ne: toObjectId(user._id),
+            },
+        });
+
+        return unreadCount;
+    }
+
     async updateChat(userId: string, chatId: string, body: IUpdateChatBody) {
         const user = await this.dataServices.users.findById(userId);
         if (!user) {
@@ -247,12 +266,14 @@ export class ChatService {
 
         const targetUserAdmin = members.find((member) => `${member}` == targetId);
         if (targetUserAdmin) {
-            await this.addMember(user, chat, targetUser);
+            return {
+                toRemove: await this.removeMember(user, chat, targetUser),
+            };
         } else {
-            await this.removeMember(user, chat, targetUser);
+            return {
+                toAdd: await this.addMember(user, chat, targetUser),
+            };
         }
-
-        return true;
     }
 
     private async addMember(user: User, chat: Chat, targetUser: User) {
@@ -263,13 +284,13 @@ export class ChatService {
             members,
         });
 
-        return true;
+        return targetUser;
     }
 
     private async removeMember(user: User, chat: Chat, targetUser: User) {
         const { administrators = [], members = [] } = chat;
         const targetUserAdmin = administrators.find((admin) => `${admin.user}` == `${targetUser._id}`);
-        if (targetUserAdmin.isOwner) {
+        if (targetUserAdmin?.isOwner) {
             throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này với người sáng lập.`);
         }
 
@@ -281,7 +302,7 @@ export class ChatService {
             administrators,
         });
 
-        return true;
+        return targetUser;
     }
 
     async blockOrUnblockMember(userId: string, chatId: string, targetId: string) {
@@ -305,7 +326,7 @@ export class ChatService {
 
         const { members = [], blockedIds = [] } = chat;
         const targetUserMember = members.find((id) => `${id}` == targetId);
-        if (targetUserMember) {
+        if (!targetUserMember) {
             throw new ForbiddenException(`Người dùng này không phải thành viên đoạn chat.`);
         }
 
@@ -373,6 +394,20 @@ export class ChatService {
             deletedFor,
         });
 
+        await this.dataServices.messages.bulkUpdate(
+            {
+                chat: toObjectId(chatId),
+                deletedFor: {
+                    $ne: toObjectId(user._id),
+                },
+            },
+            {
+                $push: {
+                    deletedFor: toObjectId(userId),
+                },
+            },
+        );
+
         return true;
     }
 
@@ -390,10 +425,16 @@ export class ChatService {
             throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
         }
 
+        const { blockedIds = [] } = chat;
+        if (toStringArray(blockedIds as unknown as ObjectId[]).includes(`${userId}`)) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
         const message = await this.messageService.createMessage(user, chat, body);
 
         await this.dataServices.chats.updateById(chatId, {
             lastMessageAt: Date.now(),
+            readBy: [toObjectId(userId)],
         });
         return { chat, message };
     }
@@ -517,6 +558,31 @@ export class ChatService {
 
         await this.dataServices.chats.updateById(chat._id, {
             members,
+        });
+
+        return true;
+    }
+
+    async markRead(userId: string, chatId: string) {
+        const user = await this.dataServices.users.findById(userId);
+        if (!user) {
+            throw new ForbiddenException(`Bạn không có quyền thực hiện thao tác này.`);
+        }
+
+        const chat = await this.dataServices.chats.findOne({
+            _id: toObjectId(chatId),
+            members: toObjectId(userId),
+        });
+        if (!chat) {
+            throw new ForbiddenException(`Bạn không phải thành viên đoạn chat này.`);
+        }
+
+        const { readBy = [] } = chat;
+        if (readBy.find((id) => `${id}` == userId)) return true;
+        readBy.push(toObjectId(userId) as unknown as User);
+
+        await this.dataServices.chats.updateById(chat._id, {
+            readBy,
         });
 
         return true;

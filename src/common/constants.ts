@@ -277,6 +277,8 @@ export const SocketEvent = {
     POST_UPDATE: 'POST_UPDATE',
 
     USER_SURVEY_MUSIC_RECOMMEND: 'USER_SURVEY_MUSIC_RECOMMEND',
+
+    CHECK_ONLINE: 'CHECK_ONLINE',
 };
 
 export enum Gender {
