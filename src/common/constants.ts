@@ -218,6 +218,7 @@ export enum ReportAction {
     IN_PROGRESS = 'IN_PROGRESS',
     RESOLVED = 'RESOLVED',
     REJECTED = 'REJECTED',
+    CANCELED = ' CANCELED',
 }
 
 export enum SystemReporter {
