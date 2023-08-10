@@ -248,7 +248,10 @@ export class PostService {
                     }, prompts=${JSON.stringify(prompts)}`,
                 );
             }
-            const isToxic = /Yes|1/.test(responseText);
+            const isToxic =
+                responseText.trim() == '1' || responseText.trim() == '1.'
+                    ? true
+                    : /Yes|1/.test(responseText.replace(/[0-9]\./, '').trim());
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
                 postId: post._id,
                 isToxic: isToxic,
@@ -602,7 +605,10 @@ export class PostService {
                     }, prompts=${JSON.stringify(prompts)}`,
                 );
             }
-            const isToxic = /Yes|1/.test(responseText);
+            const isToxic =
+                responseText.trim() == '1' || responseText.trim() == '1.'
+                    ? true
+                    : /Yes|1/.test(responseText.replace(/[0-9]\./, '').trim());
             this.socketGateway.server.emit(SocketEvent.POST_UPDATE, {
                 postId: comment.post,
                 comment: {
