@@ -633,7 +633,7 @@ export class GroupService {
             throw new ForbiddenException(`Nhóm không tồn tại.`);
         }
 
-        const isUserAdministrator = group.administrators.find((admin) => admin.user == user._id);
+        const isUserAdministrator = group.administrators.find((admin) => `${admin.user}` == `${user._id}`);
         const status = isUserAdministrator
             ? SubscribeRequestStatus.ACCEPTED
             : group.reviewPost
