@@ -15,6 +15,7 @@ import {
     Privacy,
     ReactionTargetType,
     ReactionTypePoint,
+    ReportAction,
     ReportTargetType,
     SHARE_POST_POINT,
     SocketEvent,
@@ -516,6 +517,16 @@ export class PostService {
                 sharedIds: postSharedShareIds,
             });
         }
+        await this.dataServices.reports.updateOne(
+            {
+                action: ReportAction.PENDING,
+                targetType: ReportTargetType.POST,
+                target: toObjectId(postId),
+            },
+            {
+                action: ReportAction.CANCELED,
+            },
+        );
         return true;
     }
 

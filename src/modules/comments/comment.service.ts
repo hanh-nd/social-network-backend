@@ -1,5 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DEFAULT_PAGE_LIMIT, DEFAULT_PAGE_VALUE, OrderDirection } from 'src/common/constants';
+import {
+    DEFAULT_PAGE_LIMIT,
+    DEFAULT_PAGE_VALUE,
+    OrderDirection,
+    ReportAction,
+    ReportTargetType,
+} from 'src/common/constants';
 import { toObjectId } from 'src/common/helper';
 import { IDataServices } from 'src/common/repositories/data.service';
 import { IDataResources } from 'src/common/resources/data.resource';
@@ -79,6 +85,16 @@ export class CommentService {
         }
 
         await this.dataServices.comments.deleteById(toDeleteComment._id);
+        await this.dataServices.reports.updateOne(
+            {
+                action: ReportAction.PENDING,
+                targetType: ReportTargetType.COMMENT,
+                target: toObjectId(commentId),
+            },
+            {
+                action: ReportAction.CANCELED,
+            },
+        );
         return toDeleteComment._id;
     }
 }
