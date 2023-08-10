@@ -46,6 +46,9 @@ export class Chat extends MongoBaseSchema {
 
     @Prop({ required: false, default: null, type: Date })
     lastMessageAt: Date;
+
+    @Prop({ type: [Types.ObjectId], ref: User.name, default: [] })
+    readBy: Partial<User>[];
 }
 
 const BaseChatSchema = SchemaFactory.createForClass(Chat);

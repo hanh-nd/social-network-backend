@@ -40,6 +40,18 @@ export class ChatController {
         }
     }
 
+    @Get('/unread-count')
+    @UseGuards(AccessTokenGuard, AuthorizationGuard)
+    async getUnreadCount(@LoginUser() loginUser) {
+        try {
+            const result = await this.chatService.getUnreadCount(loginUser.userId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[ChatController][getUnreadCount] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
     @Patch('/:id')
     @UseGuards(AccessTokenGuard, AuthorizationGuard)
     async updateChat(@LoginUser() loginUser, @Param('id') chatId, @Body(new TrimBodyPipe()) body: IUpdateChatBody) {
@@ -173,6 +185,18 @@ export class ChatController {
             return new SuccessResponse(result);
         } catch (error) {
             this.logger.error(`[ChatController][leaveChat] ${error.stack || JSON.stringify(error)}`);
+            throw error;
+        }
+    }
+
+    @Post('/:id/mark-read')
+    @UseGuards(AccessTokenGuard, AuthorizationGuard)
+    async markRead(@LoginUser() loginUser, @Param('id') chatId: string) {
+        try {
+            const result = await this.chatService.markRead(loginUser.userId, chatId);
+            return new SuccessResponse(result);
+        } catch (error) {
+            this.logger.error(`[ChatController][markRead] ${error.stack || JSON.stringify(error)}`);
             throw error;
         }
     }
