@@ -90,11 +90,12 @@ export class GroupService {
             throw new ForbiddenException(`Nhóm không tồn tại hoặc bạn không có quyền thực hiện thao tác này.`);
         }
 
-        const { name, private: isPrivate, summary, coverId, reviewPost } = body;
+        const { name, private: isPrivate, summary, coverId, reviewPost, autoReject = false } = body;
         const toUpdateBody: Partial<Group> = {
             name,
             private: isPrivate,
             reviewPost,
+            autoReject,
             summary,
         };
         if (coverId) {

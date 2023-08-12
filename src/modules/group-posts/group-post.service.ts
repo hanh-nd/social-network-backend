@@ -61,11 +61,21 @@ export class GroupPostService {
     }
 
     async create(user: User, group: Group, body: ICreateGroupPostBody) {
-        const createdPost = await this.postService.createNewPost(user._id, {
-            ...body,
-            postedInGroupId: group._id,
-        });
-        const { status } = body;
+        const createdPost = await this.postService.createNewPost(
+            user._id,
+            {
+                ...body,
+                postedInGroupId: group._id,
+            },
+            { waitForChatGPT: true },
+        );
+        let { status } = body;
+
+        if (group.autoReject && createdPost.isToxic && status == SubscribeRequestStatus.PENDING) {
+            console.log(`in here`);
+            status = SubscribeRequestStatus.REJECTED;
+        }
+
         const toCreateBody: Partial<GroupPost> = {
             author: toObjectId(user._id) as unknown,
             group: toObjectId(group._id) as unknown,
@@ -92,11 +102,16 @@ export class GroupPostService {
     }
 
     async update(group: Group, groupPostId: string, body: IUpdateGroupPostBody) {
-        const existedGroupPost = await this.dataServices.groupPosts.findOne({
-            group: toObjectId(group._id),
-            _id: toObjectId(groupPostId),
-            status: SubscribeRequestStatus.PENDING,
-        });
+        const existedGroupPost = await this.dataServices.groupPosts.findOne(
+            {
+                group: toObjectId(group._id),
+                _id: toObjectId(groupPostId),
+                status: SubscribeRequestStatus.PENDING,
+            },
+            {
+                populate: 'post',
+            },
+        );
 
         if (!existedGroupPost) {
             throw new BadRequestException(`Không tìm thấy yêu cầu này.`);
@@ -118,6 +133,12 @@ export class GroupPostService {
             return {
                 success: false,
             };
+        }
+
+        if (existedGroupPost.post.isToxic) {
+            await this.dataServices.posts.updateById(existedGroupPost.post._id, {
+                isToxic: false,
+            });
         }
 
         return {

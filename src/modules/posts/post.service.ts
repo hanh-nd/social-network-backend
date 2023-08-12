@@ -63,7 +63,7 @@ export class PostService {
 
     private readonly logger = createWinstonLogger(PostService.name, this.configService);
 
-    async createNewPost(userId: string, body: ICreatePostBody) {
+    async createNewPost(userId: string, body: ICreatePostBody, options: any = {}) {
         const {
             content,
             privacy = Privacy.PUBLIC,
@@ -118,6 +118,12 @@ export class PostService {
             privacy: createdPost.privacy,
         });
 
+        if (options.waitForChatGPT) {
+            await this.updatePostMetaData(createdPost);
+        } else {
+            this.updatePostMetaData(createdPost);
+        }
+
         const post = await this.dataServices.posts.findById(createdPost._id, {
             populate: [
                 'author',
@@ -133,7 +139,6 @@ export class PostService {
             ],
         });
 
-        this.updatePostMetaData(post);
         const postDto = await this.dataResources.posts.mapToDto(post);
         return postDto as Post;
     }

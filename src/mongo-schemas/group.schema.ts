@@ -35,6 +35,9 @@ export class Group extends MongoBaseSchema {
     @Prop({ type: Boolean, default: false })
     reviewPost: boolean;
 
+    @Prop({ type: Boolean, default: true })
+    autoReject: boolean;
+
     @Prop({ type: String, required: false })
     summary: string;
 
