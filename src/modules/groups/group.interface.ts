@@ -5,6 +5,7 @@ export interface ICreateNewGroupBody {
     name: string;
     private?: boolean;
     reviewPost?: boolean;
+    autoReject?: boolean;
     summary?: string;
     coverId?: string;
 }
@@ -13,6 +14,7 @@ export interface IUpdateGroupBody {
     name?: string;
     private?: boolean;
     reviewPost?: boolean;
+    autoReject?: boolean;
     summary?: string;
     coverId?: string;
 }
